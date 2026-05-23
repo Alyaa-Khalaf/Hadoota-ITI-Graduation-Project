@@ -6,6 +6,7 @@ import dotenv from 'dotenv'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import connectDB from './config/db.js'
+import errorHandler from './middleware/errorHandler.js'
 
 dotenv.config()
 
@@ -27,7 +28,12 @@ app.use(express.urlencoded({ extended: true }))
 
 // Health Check
 app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: 'Server is running 🚀' })
+  res.json({
+    success: true,
+    message: 'Server is running 🚀',
+    data: null,
+    errors: []
+  })
 })
 
 // Socket.io
@@ -37,6 +43,9 @@ io.on('connection', (socket) => {
     console.log('❌ Client disconnected:', socket.id)
   })
 })
+
+// Error Handler — لازم يبقى آخر حاجة
+app.use(errorHandler)
 
 // Connect DB + Start Server
 const PORT = process.env.PORT || 5000
