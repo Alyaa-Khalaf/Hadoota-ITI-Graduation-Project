@@ -1,12 +1,13 @@
+import dotenv from 'dotenv'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
-import dotenv from 'dotenv'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import connectDB from './config/db.js'
 import errorHandler from './middleware/errorHandler.js'
+import notFound from './middleware/notFound.js'
 
 dotenv.config()
 
@@ -44,7 +45,15 @@ io.on('connection', (socket) => {
   })
 })
 
-// Error Handler — لازم يبقى آخر حاجة
+// Routes — (Add your routes here)
+// import authRoutes from './routes/auth.routes.js'
+// app.use('/api/auth', authRoutes)
+
+
+// 404 Handler - before error handler
+app.use(notFound)
+
+// Error Handler
 app.use(errorHandler)
 
 // Connect DB + Start Server
