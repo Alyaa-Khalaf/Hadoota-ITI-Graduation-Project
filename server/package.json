@@ -22,7 +22,7 @@
     "@langchain/openai": "^0.0.14",
     "stripe": "^14.18.0",
     "aws-sdk": "^2.1550.0",
-    "multer": "^1.4.5"
+    "multer": "^1.4.4-lts.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
