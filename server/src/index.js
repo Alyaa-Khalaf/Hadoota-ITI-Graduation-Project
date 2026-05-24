@@ -6,6 +6,7 @@ import dotenv from 'dotenv'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import connectDB from './config/db.js'
+import userRoutes from './routes/userRoutes.js'
 
 dotenv.config()
 
@@ -24,6 +25,7 @@ app.use(helmet())
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use('/api/users', userRoutes)
 
 // Health Check
 app.get('/api/health', (req, res) => {
