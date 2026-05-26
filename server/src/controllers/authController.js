@@ -232,3 +232,51 @@ export const forgotPassword = async (req, res, next) => {
     next(error)
   }
 }
+// @desc    Reset Password
+// @route   POST /api/auth/reset-password
+// @access  Public
+export const resetPassword = async (req, res, next) => {
+  try {
+    const { resetToken, newPassword } = req.body
+
+    // Verify reset token
+    const decoded = jwt.verify(resetToken, process.env.JWT_SECRET)
+
+    // Find user
+    const user = await User.findById(decoded.id).select('+resetPasswordToken +resetPasswordExpires')
+    
+    if (!user || user.resetPasswordToken !== resetToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'الـ Token غير صالح',
+        data: null,
+        errors: []
+      })
+    }
+
+    // Check if token expired
+    if (user.resetPasswordExpires < Date.now()) {
+      return res.status(400).json({
+        success: false,
+        message: 'الـ Token منتهي الصلاحية — اطلب رابط جديد',
+        data: null,
+        errors: []
+      })
+    }
+
+    // Update password
+    user.password = newPassword
+    user.resetPasswordToken = null
+    user.resetPasswordExpires = null
+    await user.save()
+
+    res.status(200).json({
+      success: true,
+      message: 'تم تغيير الباسورد بنجاح',
+      data: null,
+      errors: []
+    })
+  } catch (error) {
+    next(error)
+  }
+}
