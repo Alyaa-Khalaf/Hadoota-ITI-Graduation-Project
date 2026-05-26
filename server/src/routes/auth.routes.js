@@ -10,6 +10,7 @@ import {
 } from '../controllers/authController.js'
 import authMiddleware from '../middleware/auth.js'
 import validate from '../middleware/validate.js'
+import { authLimiter } from '../middleware/rateLimiter.js'
 
 const router = express.Router()
 
@@ -47,8 +48,8 @@ const forgotPasswordRules = [
 ]
 
 // Public routes
-router.post('/register', registerRules, validate, register)
-router.post('/login', loginRules, validate, login)
+router.post('/register', authLimiter, registerRules, validate, register)
+router.post('/login', authLimiter, loginRules, validate, login)
 router.post('/refresh', refreshToken)
 router.post('/forgot-password', forgotPasswordRules, validate, forgotPassword)
 

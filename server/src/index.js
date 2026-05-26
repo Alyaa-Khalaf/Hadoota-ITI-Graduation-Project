@@ -8,6 +8,8 @@ import { Server } from 'socket.io'
 import connectDB from './config/db.js'
 import errorHandler from './middleware/errorHandler.js'
 import notFound from './middleware/notFound.js'
+import { generalLimiter } from './middleware/rateLimiter.js'
+
 
 dotenv.config()
 
@@ -26,6 +28,7 @@ app.use(helmet())
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use('/api', generalLimiter)
 
 // Health Check
 app.get('/api/health', (req, res) => {
