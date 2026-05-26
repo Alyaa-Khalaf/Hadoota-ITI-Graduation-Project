@@ -45,9 +45,9 @@ io.on('connection', (socket) => {
   })
 })
 
-// Routes — (Add your routes here)
-// import authRoutes from './routes/auth.routes.js'
-// app.use('/api/auth', authRoutes)
+// Routes
+import authRoutes from './routes/auth.routes.js'
+app.use('/api/auth', authRoutes)
 
 
 // 404 Handler - before error handler
