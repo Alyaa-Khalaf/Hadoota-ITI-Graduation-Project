@@ -22,7 +22,25 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@/*": [
-        "./*"
+        "./app/*"
+      ],
+      "@/components/*": [
+        "./app/components/*"
+      ],
+      "@/hooks/*": [
+        "./app/hooks/*"
+      ],
+      "@/utils/*": [
+        "./app/utils/*"
+      ],
+      "@/services/*": [
+        "./app/services/*"
+      ],
+      "@/store/*": [
+        "./app/store/*"
+      ],
+      "@/types/*": [
+        "./app/types/*"
       ]
     },
     "allowJs": true,
