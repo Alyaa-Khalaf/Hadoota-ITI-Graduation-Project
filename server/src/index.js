@@ -1,12 +1,15 @@
+import dotenv from 'dotenv'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
-import dotenv from 'dotenv'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import connectDB from './config/db.js'
 import userRoutes from './routes/userRoutes.js'
+import errorHandler from './middleware/errorHandler.js'
+import notFound from './middleware/notFound.js'
+import { generalLimiter } from './middleware/rateLimiter.js'
 
 dotenv.config()
 
@@ -26,10 +29,16 @@ app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use('/api/users', userRoutes)
+app.use('/api', generalLimiter)
 
 // Health Check
 app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: 'Server is running 🚀' })
+  res.json({
+    success: true,
+    message: 'Server is running 🚀',
+    data: null,
+    errors: []
+  })
 })
 
 // Socket.io
@@ -39,6 +48,17 @@ io.on('connection', (socket) => {
     console.log('❌ Client disconnected:', socket.id)
   })
 })
+
+// Routes
+import authRoutes from './routes/auth.routes.js'
+app.use('/api/auth', authRoutes)
+
+
+// 404 Handler - before error handler
+app.use(notFound)
+
+// Error Handler
+app.use(errorHandler)
 
 // Connect DB + Start Server
 const PORT = process.env.PORT || 5000
