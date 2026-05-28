@@ -6,10 +6,10 @@ import morgan from 'morgan'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import connectDB from './config/db.js'
+import userRoutes from './routes/userRoutes.js'
 import errorHandler from './middleware/errorHandler.js'
 import notFound from './middleware/notFound.js'
 import { generalLimiter } from './middleware/rateLimiter.js'
-
 
 dotenv.config()
 
@@ -28,6 +28,7 @@ app.use(helmet())
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use('/api/users', userRoutes)
 app.use('/api', generalLimiter)
 
 // Health Check
