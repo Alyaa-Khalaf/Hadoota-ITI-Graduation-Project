@@ -20,6 +20,11 @@ export default function RegisterForm() {
       return;
     }
 
+    if (formData.password.length < 8) {
+      setError("يجب أن تكون كلمة المرور 8 أحرف أو أكثر!");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -42,6 +47,7 @@ export default function RegisterForm() {
 
       // تسجيل دخول تلقائي بعد الإنشاء أو التوجيه لصفحة تأكيد الإيميل
       localStorage.setItem("token", data.token);
+      localStorage.setItem("parentName", name);
       router.push("/onboarding");
     } catch (err: any) {
       setError(err.message || "تعذر إنشاء الحساب، يرجى المحاولة لاحقاً.");
@@ -88,6 +94,7 @@ export default function RegisterForm() {
           type="password"
           placeholder="••••••••"
           required
+          minLength={8}
           disabled={isLoading}
           value={formData.password}
           label=""

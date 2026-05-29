@@ -51,14 +51,11 @@ export default function Navbar() {
           <Link href="#pricing" className="transition hover:text-ink">الأسعار</Link>
         </nav>
 
-        {/* الأزرار بعد الوراثة من الفولدر ui */}
         <div className="flex items-center gap-5 font-sans">
-          {/* زرار تسجيل الدخول واخد ستايل الشفاف الموحد */}
           <Link href="/auth/login/">
             <Button variant="outline" className="!py-2.5 !px-6">تسجيل الدخول</Button>
           </Link>
           
-          {/* زرار جرب مجاناً واخد الستايل البرتقالي الأساسي الموحد */}
           <Link href="/auth/register/">
             <Button variant="primary" className="!py-2.5 !px-6">جرّب مجاناً</Button>
           </Link>
