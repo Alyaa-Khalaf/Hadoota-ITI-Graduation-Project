@@ -55,15 +55,6 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
                 // رقم الخطوة لو لسه مخلصتش
                 <span>{step}</span>
               )}
-
-              {/* نص صغير اختياري تحت النقطة يوضح اسم الخطوة (يظهر في الشاشات الكبيرة فقط) */}
-              {/* <span className={`absolute top-9 text-[10px] whitespace-nowrap font-bold ${isActive ? "text-primary" : "text-ink-muted"}`}>
-                {step === 1 && "ترحيب"}
-                {step === 2 && "طفلك"}
-                {step === 3 && "اهتمامات"}
-                {step === 4 && "الوقت"}
-                {step === 5 && "الهدية"}
-              </span> */}
             </div>
           );
         })}

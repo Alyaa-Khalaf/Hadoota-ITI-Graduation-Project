@@ -5,7 +5,6 @@ import Step2_ChildInfo from "@/components/onboarding/Step2_ChildInfo";
 import Step3_Interests from "@/components/onboarding/Step3_Interests";
 import Step4_ScreenTime from "@/components/onboarding/Step4_ScreenTime";
 import Step5_FreeStory from "@/components/onboarding/Step5_FreeStory";
-// لو عندك مؤشر خطوات تقدري تستدعيه هنا
 import StepIndicator from "@/components/onboarding/StepIndicator";
 
 export default function OnboardingPage() {
