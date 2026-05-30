@@ -12,10 +12,21 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
   // دالة بتزود رقم الخطوة عشان تروح للي بعدها
-  const nextStep = () => setCurrentStep((prev) => prev + 1);
+  const nextStep = () => {
+    // نضمن هنا إن العداد ميعديش الخطوة الخامسة والأخيرة
+    if (currentStep < 5) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      window.location.href = "/stories";
+    }
+  };
   
   // دالة بتقلل رقم الخطوة عشان ترجع للي قبلها
-  const prevStep = () => setCurrentStep((prev) => prev - 1);
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#FAF6F0] font-sans" dir="rtl">

@@ -1,4 +1,3 @@
-// enter email and Validation to prevent sending invalid and empty data
 "use client";
 import { useState } from "react";
 import Button from "../ui/Button";
@@ -17,67 +16,44 @@ export default function ForgotStep1_Email({ onNext, setEmail, email }: Step1Prop
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
-    if (!email) {
-      setError("الرجاء إدخال البريد الإلكتروني.");
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      // ⚠️ هنا هيتم استدعاء الـ API الخاص بعلياء لاحقاً:
-      // const response = await fetch('/api/auth/forgot-password', { ... })
-      
-      // محاكاة سريعة للانتظار (حذف بعد ربط الـ API)
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // 🚀 ربط API علياء لإرسال كود التحقق للإيميل
+      const res = await fetch("ضع_رابط_علياء_لإرسال_الكود_هنا", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
-      // لو كل شيء تمام، بننقل للخطوة الثانية (كود التأكيد)
-      onNext();
+      if (res.ok) {
+        onNext(); // لو الإيميل صح والكود اتبعث، انقل للخطوة التانية
+      } else {
+        setError("❌ هذا البريد الإلكتروني غير مسجل لدينا.");
+      }
     } catch (err) {
-      setError("حدث خطأ ما، يرجى التحقق من الإيميل والمحاولة مرة أخرى.");
+      setError("❌ حدث خطأ في الاتصال بالسيرفر، حاول مجدداً.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 text-right font-sans animate-fadeIn">
+    <form onSubmit={handleSubmit} className="space-y-6 text-right" dir="rtl">
       <div className="text-center space-y-2">
-        <h3 className="text-xl font-black text-ink">نسيت كلمة المرور؟ 🔑</h3>
-        <p className="text-xs font-bold text-ink-muted leading-relaxed">
-          أدخل بريدك الإلكتروني المسجل وسنقوم بإرسال رمز التحقق لإعادة تعيين كلمة المرور.
-        </p>
+        <h3 className="text-xl font-black text-gray-800">نسيت كلمة المرور؟ 🧐</h3>
+        <p className="text-xs font-bold text-gray-400">أدخل بريدك الإلكتروني لإرسال كود استعادة الحساب.</p>
       </div>
 
-      {/* عرض الأخطاء إن وجدت */}
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-xs font-bold rounded-xl text-center">
-          {error}
-        </div>
-      )}
+      {error && <div className="p-3 bg-red-50 text-red-600 text-xs font-bold rounded-xl text-center">{error}</div>}
 
       <div>
-        <label className="block text-sm font-black text-ink mb-1.5">البريد الإلكتروني</label>
-        <Input
-          type="email"
-          placeholder="example@gmail.com"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={isLoading}
-          label=""
-        />
+        <label className="block text-sm font-black text-gray-700 mb-1.5">البريد الإلكتروني</label>
+        <Input type="email" placeholder="name@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} label="" />
       </div>
 
-      <Button
-        type="submit"
-        variant="primary"
-        fullWidth={true}
-        disabled={isLoading}
-        className="!py-3.5 font-black"
-      >
-        {isLoading ? "جاري الإرسال... ⏳" : "إرسال رمز التحقق ✨"}
+      <Button type="submit" variant="primary" fullWidth={true} disabled={isLoading} className="!py-3.5 font-black">
+        {isLoading ? "جاري الإرسال... ⏳" : "إرسال كود التحقق 🚀"}
       </Button>
     </form>
   );

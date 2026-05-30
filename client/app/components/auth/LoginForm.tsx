@@ -28,13 +28,15 @@ export default function LoginForm() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "تأكد من صحة البيانات المحخلة");
+        throw new Error(data.message || "تأكد من صحة البيانات المدخلة");
       }
 
-      // حفظ التوكن والبيانات في الـ Cookies أو LocalStorage
+      // حفظ التوكن في الـ LocalStorage
       localStorage.setItem("token", data.token);
       
-      // التوجيه للوحة الأونبوردنج أو لوحة التحكم بناءً على الـ API
+      // 💡 ملحوظة: لو المشروع بيستخدم كوكيز للحماية، هتحتاجي تسجلي التوكن في الـ document.cookie هنا
+
+      // التوجيه للوحة الأونبوردنج
       router.push("/onboarding");
     } catch (err: any) {
       setError(err.message || "حدث خطأ أثناء تسجيل الدخول، يرجى المحاولة مرة أخرى.");
@@ -54,12 +56,14 @@ export default function LoginForm() {
       <div>
         <label className="block text-sm font-black text-ink mb-2">البريد الإلكتروني للوالدين</label>
         <Input
-                  type="email"
-                  placeholder="example@mail.com"
-                  required
-                  disabled={isLoading}
-                  value={formData.email}
-                  onChange={(e: { target: { value: any; }; }) => setFormData({ ...formData, email: e.target.value })} label={""}        />
+          type="email"
+          placeholder="example@mail.com"
+          required
+          disabled={isLoading}
+          value={formData.email}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, email: e.target.value })} 
+          label={""}        
+        />
       </div>
 
       <div>
@@ -70,12 +74,14 @@ export default function LoginForm() {
           </Link>
         </div>
         <Input
-                  type="password"
-                  placeholder="••••••••"
-                  required
-                  disabled={isLoading}
-                  value={formData.password}
-                  onChange={(e: { target: { value: any; }; }) => setFormData({ ...formData, password: e.target.value })} label={""}        />
+          type="password"
+          placeholder="••••••••"
+          required
+          disabled={isLoading}
+          value={formData.password}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, password: e.target.value })} 
+          label={""}        
+        />
       </div>
 
       <div className="pt-2">

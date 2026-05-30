@@ -1,4 +1,3 @@
-// for reset code which contain 6 digit
 "use client";
 import { useState } from "react";
 import Button from "../ui/Button";
@@ -18,81 +17,47 @@ export default function ForgotStep2_Code({ onNext, onPrev, email }: Step2Props) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
-    if (code.length < 4) { // أو 6 حسب الـ API بتاع علياء
-      setError("الرجاء إدخال رمز التحقق كاملاً.");
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      // ⚠️ هنا هيتم ربط الـ API للتحقق من صحة الكود:
-      // const response = await fetch('/api/auth/verify-code', { method: 'POST', body: JSON.stringify({ email, code }) })
-      
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      // 🚀 ربط API علياء للتأكد من صحة الكود
+      const res = await fetch("ضع_رابط_علياء_للتحقق_من_الكود_هنا", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
+      });
 
-      onNext(); // الكود صح؟ انقل لصفحة الباسورد الجديد
+      if (res.ok) {
+        onNext(); // لو الكود صح، انقل لشاشة الباسورد الجديد
+      } else {
+        setError("❌ الكود غير صحيح أو انتهت صلاحيته.");
+      }
     } catch (err) {
-      setError("الرمز غير صحيح أو انتهت صلاحيته. يرجى المحاولة مجدداً.");
+      setError("❌ حدث خطأ في السيرفر، يرجى المحاولة مرة أخرى.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 text-right font-sans animate-fadeIn">
+    <form onSubmit={handleSubmit} className="space-y-6 text-right" dir="rtl">
       <div className="text-center space-y-2">
-        <h3 className="text-xl font-black text-ink">تحقق من بريدك الإلكتروني 📩</h3>
-        <p className="text-xs font-bold text-emerald-600 bg-emerald-50 py-2 px-3 rounded-xl inline-block direction-ltr">
-          تم إرسال الرمز إلى: {email}
-        </p>
-        <p className="text-xs font-bold text-ink-muted">
-          يرجى إدخال رمز التحقق المكون من الأرقام المرسلة إليك لتأكيد هويتك.
-        </p>
+        <h3 className="text-xl font-black text-gray-800">أدخل كود التحقق 🔢</h3>
+        <p className="text-xs font-bold text-gray-400">قم بكتابة الكود المكون من 6 أرقام المرسل إلى إيميلك.</p>
       </div>
 
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-xs font-bold rounded-xl text-center">
-          {error}
-        </div>
-      )}
+      {error && <div className="p-3 bg-red-50 text-red-600 text-xs font-bold rounded-xl text-center">{error}</div>}
 
       <div>
-        <label className="block text-sm font-black text-ink mb-1.5">رمز التحقق</label>
-        <Input
-          type="text"
-          placeholder="123456"
-          maxLength={6}
-          required
-          className="text-center tracking-widest font-black text-lg"
-          value={code}
-          onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} // يقبل أرقام فقط
-          disabled={isLoading}
-          label=""
-        />
+        <label className="block text-sm font-black text-gray-700 mb-1.5">كود التحقق</label>
+        <Input type="text" placeholder="123456" maxLength={6} required value={code} onChange={(e) => setCode(e.target.value)} disabled={isLoading} label="" />
       </div>
 
-      <div className="flex gap-3 pt-2">
-        <Button
-          type="submit"
-          variant="primary"
-          fullWidth={true}
-          disabled={isLoading}
-          className="!py-3.5 font-black order-2"
-        >
-          {isLoading ? "جاري التحقق... ⏳" : "تأكيد الرمز 🔓"}
+      <div className="flex gap-3">
+        <Button type="submit" variant="primary" className="flex-1 !py-3.5 font-black" disabled={isLoading}>
+          {isLoading ? "جاري التحقق..." : "تأكيد الكود 🎯"}
         </Button>
-        <Button
-          type="button"
-          variant="sky"
-          fullWidth={false}
-          onClick={onPrev}
-          disabled={isLoading}
-          className="!py-3.5 px-6 font-bold text-ink order-1"
-        >
-          رجوع
-        </Button>
+        <Button type="button" variant="sky" className="!py-3.5 px-6 font-bold" onClick={onPrev} disabled={isLoading}>رجوع</Button>
       </div>
     </form>
   );
