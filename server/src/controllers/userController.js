@@ -1,5 +1,4 @@
-import bcrypt from "bcryptjs";
-import User from "../models/userModel.js";
+import User from "../models/User.js";
 import Child from "../models/childModel.js";
 import QuizSubmission from "../models/quizSubmissionModel.js";
 import Gamification from "../models/gamificationModel.js";
@@ -44,23 +43,23 @@ export const changePassword = async (req, res) => {
       return sendError(res, 400, "Old password and new password are required");
     }
 
-    if (newPassword.length < 6) {
-      return sendError(res, 400, "New password must be at least 6 characters");
+    if (newPassword.length < 8) {
+      return sendError(res, 400, "New password must be at least 8 characters");
     }
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select("+password");
 
     if (!user) {
       return sendError(res, 404, "User not found");
     }
 
-    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    const isMatch = await user.comparePassword(oldPassword);
 
     if (!isMatch) {
       return sendError(res, 400, "Old password is incorrect");
     }
 
-    user.password = await bcrypt.hash(newPassword, 10);
+    user.password = newPassword;
     await user.save();
 
     return sendSuccess(res, 200, "Password changed successfully");

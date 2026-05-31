@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../models/userModel.js";
+import User from "../models/User.js";
 import { sendError } from "../utils/apiResponse.js";
 
 export const protect = async (req, res, next) => {
@@ -18,7 +18,8 @@ export const protect = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.userId).select("-password");
+    const userId = decoded.id || decoded.userId;
+    const user = await User.findById(userId).select("-password");
 
     if (!user) {
       return sendError(res, 401, "Not authorized, user not found");

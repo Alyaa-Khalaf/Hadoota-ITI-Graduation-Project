@@ -1,0 +1,66 @@
+import { useCallback } from 'react'
+import { useAuthStore } from '@/store/useAuthStore'
+import { authService } from '@/services/authService'
+
+export const useAuth = () => {
+  const { user, token, isLoading, error, setUser, setToken, setLoading, setError, logout } = useAuthStore()
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      setLoading(true)
+      setError(null)
+      try {
+        const response = await authService.login(email, password)
+        if (response.success && response.data) {
+          setUser(response.data.user)
+          setToken(response.data.token)
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('token', response.data.token)
+          }
+        } else {
+          setError(response.error || 'Login failed')
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [setUser, setToken, setLoading, setError]
+  )
+
+  const register = useCallback(
+    async (name: string, email: string, password: string) => {
+      setLoading(true)
+      setError(null)
+      try {
+        const response = await authService.register(name, email, password)
+        if (response.success && response.data) {
+          setUser(response.data)
+        } else {
+          setError(response.error || 'Registration failed')
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [setUser, setLoading, setError]
+  )
+
+  const handleLogout = useCallback(() => {
+    authService.logout()
+    logout()
+  }, [logout])
+
+  return {
+    user,
+    token,
+    isLoading,
+    error,
+    login,
+    register,
+    logout: handleLogout,
+  }
+}
