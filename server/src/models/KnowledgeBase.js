@@ -33,10 +33,10 @@ const knowledgeBaseSchema = new mongoose.Schema({
     }
   },
   tags: [String],
-  language: {
+  lang: {
     type: String,
-    enum: ['ar', 'ar-eg'],
-    default: 'ar-eg'
+    enum: ['ar', 'en'],
+    default: 'ar'
   },
   embedding: {
     type: [Number],
@@ -52,10 +52,10 @@ const knowledgeBaseSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 // Vector Search Index
-knowledgeBaseSchema.index({ embedding: '2dsphere' })
+// knowledgeBaseSchema.index({ embedding: '2dsphere' })
 
 // Text Index للـ keyword search
-knowledgeBaseSchema.index({ title: 'text', content: 'text', tags: 'text' })
+// knowledgeBaseSchema.index({ title: 1, content: 1, tags: 1 })
 
 const KnowledgeBase = mongoose.model('KnowledgeBase', knowledgeBaseSchema)
 export default KnowledgeBase

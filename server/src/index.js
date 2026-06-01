@@ -6,10 +6,10 @@ import morgan from 'morgan'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import connectDB from './config/db.js'
-import userRoutes from './routes/userRoutes.js'
 import errorHandler from './middleware/errorHandler.js'
 import notFound from './middleware/notFound.js'
 import { generalLimiter } from './middleware/rateLimiter.js'
+import authRoutes from './routes/auth.routes.js'
 
 dotenv.config()
 
@@ -28,7 +28,6 @@ app.use(helmet())
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use('/api/users', userRoutes)
 app.use('/api', generalLimiter)
 
 // Health Check
@@ -50,11 +49,9 @@ io.on('connection', (socket) => {
 })
 
 // Routes
-import authRoutes from './routes/auth.routes.js'
 app.use('/api/auth', authRoutes)
 
-
-// 404 Handler - before error handler
+// 404 Handler
 app.use(notFound)
 
 // Error Handler
