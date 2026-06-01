@@ -6,7 +6,7 @@ const API_KEY = process.env.GOOGLE_API_KEY
 const genAI = new GoogleGenerativeAI(API_KEY)
 
 export const llm = new ChatGoogleGenerativeAI({
-  model: 'gemini-1.5-flash',
+  model: 'gemini-2.5-flash',
   apiKey: API_KEY,
   temperature: 0.7,
   maxOutputTokens: 2048,

@@ -62,7 +62,11 @@ const storySchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  completedAt: Date
+  completedAt: Date,
+  userChoices: [{
+    sceneOrder: Number,
+    timestamp: Date
+  }]
 }, { timestamps: true })
 
 // Text index للـ search
