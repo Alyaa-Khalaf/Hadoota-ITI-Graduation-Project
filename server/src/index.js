@@ -6,7 +6,11 @@ import morgan from 'morgan'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import connectDB from './config/db.js'
+import authRoutes from './routes/auth.routes.js'
 import userRoutes from './routes/userRoutes.js'
+import childRoutes from './routes/childRoutes.js'
+import quizRoutes from './routes/quizRoutes.js'
+import gamificationRoutes from './routes/gamificationRoutes.js'
 import errorHandler from './middleware/errorHandler.js'
 import notFound from './middleware/notFound.js'
 import { generalLimiter } from './middleware/rateLimiter.js'
@@ -28,8 +32,14 @@ app.use(helmet())
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use('/api/users', userRoutes)
 app.use('/api', generalLimiter)
+
+// Routes
+app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
+app.use('/api/children', childRoutes)
+app.use('/api/quiz', quizRoutes)
+app.use('/api/gamification', gamificationRoutes)
 
 // Health Check
 app.get('/api/health', (req, res) => {
@@ -49,12 +59,7 @@ io.on('connection', (socket) => {
   })
 })
 
-// Routes
-import authRoutes from './routes/auth.routes.js'
-app.use('/api/auth', authRoutes)
-
-
-// 404 Handler - before error handler
+// 404 Handler
 app.use(notFound)
 
 // Error Handler
