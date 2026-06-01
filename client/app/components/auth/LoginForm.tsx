@@ -32,7 +32,7 @@ export default function LoginForm() {
       }
 
       // حفظ التوكن في الـ LocalStorage
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("token", data.accessToken);
       
       // 💡 ملحوظة: لو المشروع بيستخدم كوكيز للحماية، هتحتاجي تسجلي التوكن في الـ document.cookie هنا
 
