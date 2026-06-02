@@ -1,4 +1,7 @@
 import dotenv from 'dotenv'
+import path from 'path'
+dotenv.config(); 
+dotenv.config({ path: path.resolve(process.cwd(), './.env.example') });
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
@@ -14,6 +17,8 @@ import gamificationRoutes from './routes/gamificationRoutes.js'
 import errorHandler from './middleware/errorHandler.js'
 import notFound from './middleware/notFound.js'
 import { generalLimiter } from './middleware/rateLimiter.js'
+import errorHandler from './middleware/errorHandler.js'
+
 
 dotenv.config()
 
@@ -59,7 +64,12 @@ io.on('connection', (socket) => {
   })
 })
 
-// 404 Handler
+import authRoutes from './routes/auth.routes.js'
+import childRoutes from './routes/child.routes.js';
+import progressRoutes from './routes/progress.routes.js';
+app.use('/api/auth', authRoutes)
+app.use('/api/children', childRoutes);
+app.use('/api/progress', progressRoutes);
 app.use(notFound)
 
 // Error Handler
