@@ -13,9 +13,9 @@ export const useAuth = () => {
         const response = await authService.login(email, password)
         if (response.success && response.data) {
           setUser(response.data.user)
-          setToken(response.data.token)
+          setToken(response.data.accessToken)
           if (typeof window !== 'undefined') {
-            localStorage.setItem('token', response.data.token)
+            localStorage.setItem('token', response.data.accessToken)
           }
         } else {
           setError(response.error || 'Login failed')

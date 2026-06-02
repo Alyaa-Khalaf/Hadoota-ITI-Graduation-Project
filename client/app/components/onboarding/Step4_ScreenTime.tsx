@@ -1,54 +1,104 @@
 "use client";
 import { useState } from "react";
 import Button from "../ui/Button";
+import Input from "../ui/Input";
 
-interface Step4Props {
+interface Step5Props {
   onNext: () => void;
   onPrev: () => void;
 }
 
-export default function Step4_ScreenTime({ onNext, onPrev }: Step4Props) {
-  const [time, setTime] = useState(1);
+export default function Step5_FreeStory({ onNext, onPrev }: Step5Props) {
+  const [childName, setChildName] = useState("");
+  const [childAge, setChildAge] = useState("");
+  const [childAvatar, setChildAvatar] = useState("👦");
+  const [interest, setInterest] = useState("Space");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSave = async () => {
-    setIsLoading(false);
+  const handleCreateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
     try {
-      // 🚀 ربط الـ API لحفظ ساعات وقت الشاشة
-      await fetch("ضع_رابط_api_حفظ_وقت_الشاشة_هنا", {
+      // 🚀 ربط الـ API لإنشاء بروفايل الطفل الأول وبدء أول قصة حرة له
+      await fetch("ضع_رابط_api_إنشاء_حساب_الطفل_الأول_هنا", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ screenTimeHours: time }),
+        body: JSON.stringify({
+          name: childName,
+          age: Number(childAge),
+          avatar: childAvatar,
+          interests: [interest]
+        }),
       });
-      
-      onNext(); // انقل للخطوة الأخيرة بعد الحفظ
+
+      onNext(); // لو نجح، انقل لشاشة النهاية بنجاح والدخول للداشبورد
     } catch (err) {
-      console.error("خطأ أثناء حفظ الوقت", err);
+      console.error("خطأ في إنشاء ملف الطفل", err);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="space-y-6 text-center text-right" dir="rtl">
-      <div>
-        <h3 className="text-xl font-black text-gray-800">تحديد وقت الشاشة ⏳</h3>
-        <p className="text-xs font-bold text-gray-400 mt-1">اضبط الوقت اليومي المسموح به لطفلك داخل التطبيق.</p>
+    <form onSubmit={handleCreateProfile} className="space-y-6 text-right" dir="rtl">
+      <div className="text-center">
+        <h3 className="text-xl font-black text-gray-800">تخصيص الحكاية الأولى 🧙‍♂️✨</h3>
+        <p className="text-xs font-bold text-gray-400 mt-1">أدخل بيانات طفلك لنصنع له أول قصة سحرية خاصة به مجاناً!</p>
       </div>
 
-      {/* العداد الذكي */}
-      <div className="flex items-center justify-center gap-6 bg-gray-50 p-6 rounded-3xl max-w-xs mx-auto">
-        <button type="button" className="text-2xl bg-white w-10 h-10 rounded-full shadow-sm font-black" onClick={() => setTime(time + 1)}>+</button>
-        <span className="text-2xl font-black text-gray-800">{time} ساعة</span>
-        <button type="button" className="text-2xl bg-white w-10 h-10 rounded-full shadow-sm font-black" onClick={() => time > 1 && setTime(time - 1)}>-</button>
+      <div className="space-y-4 max-w-sm mx-auto">
+        {/* حقل اسم الطفل */}
+        <Input 
+          type="text" 
+          placeholder="اسم البطل الصغير" 
+          required 
+          value={childName} 
+          onChange={(e) => setChildName(e.target.value)} 
+          label="اسم الطفل" 
+        />
+        
+        {/* قائمة اختيار عمر الطفل المستبدلة */}
+        <div>
+          <label className="block text-sm font-black text-gray-700 mb-1.5">عمر الطفل (سنوات)</label>
+          <select
+            required
+            value={childAge}
+            onChange={(e) => setChildAge(e.target.value)}
+            className="w-full p-3.5 rounded-xl border border-border-warm bg-white text-ink font-bold text-sm focus:outline-none focus:border-primary transition"
+          >
+            <option value="" disabled hidden>اختر العمر</option>
+            {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
+              <option key={num} value={num}>
+                {num} سنوات
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        {/* حقل اختيار الأفاتار */}
+        <div>
+          <label className="block text-xs font-black text-gray-700 mb-1.5">اختر الأفاتار المفضّل</label>
+          <div className="flex gap-4 justify-center text-3xl bg-gray-50 p-3 rounded-2xl">
+            {["👦", "👧", "👶", "🧚‍♂️"].map((emoji) => (
+              <span 
+                key={emoji} 
+                className={`cursor-pointer transition ${childAvatar === emoji ? "scale-125 border-b-2 border-primary" : ""}`} 
+                onClick={() => setChildAvatar(emoji)}
+              >
+                {emoji}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="flex gap-3 max-w-sm mx-auto pt-4">
-        <Button type="button" variant="primary" className="flex-1 !py-3 font-black" disabled={isLoading} onClick={handleSave}>
-          {isLoading ? "جاري الحفظ..." : "حفظ ومتابعة ✨"}
+        <Button type="submit" variant="primary" className="flex-1 !py-3 font-black" disabled={isLoading}>
+          {isLoading ? "جاري تجهيز السحر... 🪄" : "ابدأ حكايتك الأولى 📚✨"}
         </Button>
         <Button type="button" variant="sky" className="!py-3 px-6 font-bold" onClick={onPrev} disabled={isLoading}>رجوع</Button>
       </div>
-    </div>
+    </form>
   );
 }

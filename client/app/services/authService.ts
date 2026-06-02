@@ -2,7 +2,7 @@ import apiClient from '@/utils/api'
 import { User, ApiResponse } from '@/types'
 
 export const authService = {
-  login: async (email: string, password: string): Promise<ApiResponse<{ user: User; token: string }>> => {
+  login: async (email: string, password: string): Promise<ApiResponse<{ user: User; accessToken: string }>> => {
     const response = await apiClient.post('/auth/login', { email, password })
     return response.data
   },

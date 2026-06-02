@@ -90,10 +90,29 @@ export default function ParentInfoForm() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  // 1️⃣ جلب بيانات البروفايل (GET) باستخدام accessToken
+  
+  // 1️⃣ جلب بيانات البروفايل (GET) - نسخة مطورة لالتقاط التوكن تلقائياً
   useEffect(() => {
     const fetchParentData = async () => {
       try {
-        const token = localStorage.getItem("token");
+        // 1. محاولة جلب التوكن بالأسماء القياسية
+        let token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+        
+        // 2. إذا لم يجده، يبحث في الـ localStorage عن أي حقل يحتوي على توكن الـ JWT (الذي يبدأ بـ ey)
+        if (!token) {
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key) {
+              const value = localStorage.getItem(key);
+              if (value && value.startsWith("eyJ")) {
+                token = value;
+                break;
+              }
+            }
+          }
+        }
+        
         const res = await fetch("http://localhost:5000/api/users/profile", {
           method: "GET",
           headers: {
@@ -102,11 +121,13 @@ export default function ParentInfoForm() {
         });
 
         const result = await res.json();
+        console.log("رد السيرفر بالكامل داخل الفورم:", result);
 
         if (res.ok && result.success) {
           setName(result.data.name || "");
           setEmail(result.data.email || "");
           setAvatar(result.data.avatar || "👩");
+          setError(""); // مسح الأخطاء عند النجاح
         } else {
           setError(result.message || "فشل في جلب بيانات الحساب.");
         }
@@ -120,6 +141,7 @@ export default function ParentInfoForm() {
     fetchParentData();
   }, []);
 
+  // 2️⃣ تحديث بيانات البروفايل (PUT)
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -127,7 +149,8 @@ export default function ParentInfoForm() {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      
       const res = await fetch("http://localhost:5000/api/users/profile", {
         method: "PUT",
         headers: {
@@ -157,7 +180,11 @@ export default function ParentInfoForm() {
   };
 
   if (isFetching) {
-    return <div className="text-center py-6 font-bold text-gray-500" dir="rtl">جاري تحميل البيانات... ⏳</div>;
+    return (
+      <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm text-center py-12 font-bold text-gray-400" dir="rtl">
+        جاري تحميل البيانات الأساسية... ⏳
+      </div>
+    );
   }
 
   return (
@@ -173,8 +200,8 @@ export default function ParentInfoForm() {
             {avatar}
           </div>
           <div className="space-y-1">
-            <h4 className="font-black text-gray-800 text-sm">{name}</h4>
-            <p className="text-xs text-gray-500">{email}</p>
+            <h4 className="font-black text-gray-800 text-sm">{name || "لم يتم تحديد اسم"}</h4>
+            <p className="text-xs text-gray-500">{email || "لا يوجد بريد إلكتروني"}</p>
           </div>
           <Button 
             type="button" 
@@ -200,7 +227,7 @@ export default function ParentInfoForm() {
             <select 
               value={avatar} 
               onChange={(e) => setAvatar(e.target.value)}
-              className="w-full p-2.5 border border-gray-200 rounded-xl text-xl bg-white"
+              className="w-full p-2.5 border border-gray-200 rounded-xl text-xl bg-white focus:outline-none focus:border-primary"
               disabled={isLoading}
             >
               <option value="👩">👩</option>
