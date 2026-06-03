@@ -6,13 +6,16 @@ import morgan from 'morgan'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import connectDB from './config/db.js'
+import authRoutes from './routes/auth.routes.js'
+import userRoutes from './routes/userRoutes.js'
+import childRoutes from './routes/childRoutes.js'
+import quizRoutes from './routes/quizRoutes.js'
+import gamificationRoutes from './routes/gamificationRoutes.js'
+import storyRoutes from './routes/storyRoutes.js'
 import errorHandler from './middleware/errorHandler.js'
 import notFound from './middleware/notFound.js'
 import { generalLimiter } from './middleware/rateLimiter.js'
 import { socketAuthMiddleware } from './middleware/socketAuth.js'
-import authRoutes from './routes/auth.routes.js'
-import storyRoutes from './routes/storyRoutes.js'
-import childRoutes from './routes/childRoutes.js'
 import Child from './models/Child.js'
 
 
@@ -32,6 +35,13 @@ app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use('/api', generalLimiter)
+
+// Routes
+app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
+app.use('/api/children', childRoutes)
+app.use('/api/quiz', quizRoutes)
+app.use('/api/gamification', gamificationRoutes)
 
 // Health Check
 app.get('/api/health', (req, res) => {
@@ -139,11 +149,14 @@ io.on('connection', (socket) => {
   })
 })
 
+<<<<<<< HEAD
 // Routes
 app.use('/api/auth', authRoutes)
 app.use('/api/children', childRoutes)
 app.use('/api/stories', storyRoutes)
 
+=======
+>>>>>>> feature/rofida-parent-ui
 // 404 Handler
 app.use(notFound)
 
@@ -156,6 +169,9 @@ connectDB().then(() => {
   httpServer.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`)
   })
+}).catch(err => {
+  console.error('❌ Database connection failed:', err.message)
+  process.exit(1)
 })
 
 export { io }
