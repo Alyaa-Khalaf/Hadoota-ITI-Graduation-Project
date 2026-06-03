@@ -1,103 +1,101 @@
 "use client";
 import { useState } from "react";
 import Button from "../ui/Button";
-import Input from "../ui/Input";
 
-interface Step5Props {
+interface Step4Props {
   onNext: () => void;
   onPrev: () => void;
 }
 
-export default function Step5_FreeStory({ onNext, onPrev }: Step5Props) {
-  const [childName, setChildName] = useState("");
-  const [childAge, setChildAge] = useState("");
-  const [childAvatar, setChildAvatar] = useState("👦");
-  const [interest, setInterest] = useState("Space");
-  const [isLoading, setIsLoading] = useState(false);
+export default function Step4_ScreenTime({ onNext, onPrev }: Step4Props) {
+  const [dailyLimit, setDailyLimit] = useState("30");
+  const [bestTime, setBestTime] = useState("evening");
+  const [sessionDuration, setSessionDuration] = useState("15");
 
-  const handleCreateProfile = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      // 🚀 ربط الـ API لإنشاء بروفايل الطفل الأول وبدء أول قصة حرة له
-      await fetch("ضع_رابط_api_إنشاء_حساب_الطفل_الأول_هنا", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: childName,
-          age: Number(childAge),
-          avatar: childAvatar,
-          interests: [interest]
-        }),
-      });
-
-      onNext(); // لو نجح، انقل لشاشة النهاية بنجاح والدخول للداشبورد
-    } catch (err) {
-      console.error("خطأ في إنشاء ملف الطفل", err);
-    } finally {
-      setIsLoading(false);
+    // Store screen time preferences
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('screenTimePrefs', JSON.stringify({
+        dailyLimit: Number(dailyLimit),
+        bestTime,
+        sessionDuration: Number(sessionDuration)
+      }));
     }
+    onNext();
   };
 
   return (
-    <form onSubmit={handleCreateProfile} className="space-y-6 text-right" dir="rtl">
+    <form onSubmit={handleSubmit} className="space-y-6 text-right" dir="rtl">
       <div className="text-center">
-        <h3 className="text-xl font-black text-gray-800">تخصيص الحكاية الأولى 🧙‍♂️✨</h3>
-        <p className="text-xs font-bold text-gray-400 mt-1">أدخل بيانات طفلك لنصنع له أول قصة سحرية خاصة به مجاناً!</p>
+        <h3 className="text-xl font-black text-gray-800">⏱️ وقت الشاشة</h3>
+        <p className="text-xs font-bold text-gray-400 mt-1">حدد الوقت المناسب لطفلك على التطبيق</p>
       </div>
 
       <div className="space-y-4 max-w-sm mx-auto">
-        {/* حقل اسم الطفل */}
-        <Input 
-          type="text" 
-          placeholder="اسم البطل الصغير" 
-          required 
-          value={childName} 
-          onChange={(e) => setChildName(e.target.value)} 
-          label="اسم الطفل" 
-        />
-        
-        {/* قائمة اختيار عمر الطفل المستبدلة */}
+        {/* الحد اليومي */}
         <div>
-          <label className="block text-sm font-black text-gray-700 mb-1.5">عمر الطفل (سنوات)</label>
-          <select
-            required
-            value={childAge}
-            onChange={(e) => setChildAge(e.target.value)}
-            className="w-full p-3.5 rounded-xl border border-border-warm bg-white text-ink font-bold text-sm focus:outline-none focus:border-primary transition"
-          >
-            <option value="" disabled hidden>اختر العمر</option>
-            {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
-              <option key={num} value={num}>
-                {num} سنوات
-              </option>
-            ))}
-          </select>
+          <label className="block text-sm font-black text-gray-700 mb-2">الحد اليومي المقترح (دقائق)</label>
+          <input
+            type="range"
+            min="10"
+            max="120"
+            step="10"
+            value={dailyLimit}
+            onChange={(e) => setDailyLimit(e.target.value)}
+            className="w-full"
+          />
+          <p className="text-center text-lg font-bold text-primary mt-2">{dailyLimit} دقيقة</p>
         </div>
-        
-        {/* حقل اختيار الأفاتار */}
+
+        {/* أفضل وقت */}
         <div>
-          <label className="block text-xs font-black text-gray-700 mb-1.5">اختر الأفاتار المفضّل</label>
-          <div className="flex gap-4 justify-center text-3xl bg-gray-50 p-3 rounded-2xl">
-            {["👦", "👧", "👶", "🧚‍♂️"].map((emoji) => (
-              <span 
-                key={emoji} 
-                className={`cursor-pointer transition ${childAvatar === emoji ? "scale-125 border-b-2 border-primary" : ""}`} 
-                onClick={() => setChildAvatar(emoji)}
-              >
-                {emoji}
-              </span>
+          <label className="block text-sm font-black text-gray-700 mb-2">أفضل وقت للاستخدام</label>
+          <div className="space-y-2">
+            {[
+              { value: 'morning', label: '🌅 الصباح' },
+              { value: 'afternoon', label: '☀️ بعد الظهر' },
+              { value: 'evening', label: '🌙 المساء' }
+            ].map((option) => (
+              <label key={option.value} className="flex items-center gap-3 p-3 border border-border-warm rounded-lg cursor-pointer hover:bg-gray-50">
+                <input
+                  type="radio"
+                  name="bestTime"
+                  value={option.value}
+                  checked={bestTime === option.value}
+                  onChange={(e) => setBestTime(e.target.value)}
+                  className="w-4 h-4"
+                />
+                <span className="font-bold text-gray-700">{option.label}</span>
+              </label>
             ))}
           </div>
+        </div>
+
+        {/* مدة الجلسة الواحدة */}
+        <div>
+          <label className="block text-sm font-black text-gray-700 mb-2">مدة الجلسة الواحدة المقترحة (دقائق)</label>
+          <select
+            value={sessionDuration}
+            onChange={(e) => setSessionDuration(e.target.value)}
+            className="w-full p-3.5 rounded-xl border border-border-warm bg-white text-ink font-bold text-sm focus:outline-none focus:border-primary transition"
+          >
+            <option value="10">10 دقائق</option>
+            <option value="15">15 دقيقة</option>
+            <option value="20">20 دقيقة</option>
+            <option value="30">30 دقيقة</option>
+            <option value="45">45 دقيقة</option>
+          </select>
         </div>
       </div>
 
       <div className="flex gap-3 max-w-sm mx-auto pt-4">
-        <Button type="submit" variant="primary" className="flex-1 !py-3 font-black" disabled={isLoading}>
-          {isLoading ? "جاري تجهيز السحر... 🪄" : "ابدأ حكايتك الأولى 📚✨"}
+        <Button type="submit" variant="primary" className="flex-1 !py-3 font-black">
+          التالي
         </Button>
-        <Button type="button" variant="sky" className="!py-3 px-6 font-bold" onClick={onPrev} disabled={isLoading}>رجوع</Button>
+        <Button type="button" variant="sky" className="!py-3 px-6 font-bold" onClick={onPrev}>
+          رجوع
+        </Button>
       </div>
     </form>
   );

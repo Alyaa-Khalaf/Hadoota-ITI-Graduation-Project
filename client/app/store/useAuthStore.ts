@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { User } from '@/types'
+import { persist } from 'zustand/middleware'
 
 interface AuthState {
   user: User | null
@@ -13,14 +14,21 @@ interface AuthState {
   logout: () => void
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  token: null,
-  isLoading: false,
-  error: null,
-  setUser: (user) => set({ user }),
-  setToken: (token) => set({ token }),
-  setLoading: (isLoading) => set({ isLoading }),
-  setError: (error) => set({ error }),
-  logout: () => set({ user: null, token: null }),
-}))
+export const useAuthStore = create<AuthState>(
+  persist(
+    (set) => ({
+      user: null,
+      token: null,
+      isLoading: false,
+      error: null,
+      setUser: (user) => set({ user }),
+      setToken: (token) => set({ token }),
+      setLoading: (isLoading) => set({ isLoading }),
+      setError: (error) => set({ error }),
+      logout: () => set({ user: null, token: null }),
+    }),
+    {
+      name: 'auth-store',
+    }
+  )
+)
