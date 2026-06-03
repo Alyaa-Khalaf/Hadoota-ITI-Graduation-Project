@@ -9,7 +9,7 @@ import Testimonials from "../components/landing/Testimonials";
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-story-bg text-ink overflow-x-hidden" dir="rtl">
+    <main className="min-h-screen bg-story-bg text-ink" dir="rtl">
       <Navbar />
       <Hero />
       <Features />
