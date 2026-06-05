@@ -1,6 +1,8 @@
 import QuizSubmission from "../models/quizSubmissionModel.js";
+import Child from "../models/childModel.js";
 import { getOrCreateGamification } from "../utils/gamificationHelper.js";
 import { sendSuccess, sendError } from "../utils/apiResponse.js";
+import { invalidateAnalyticsCache } from "../services/cacheService.js";
 
 const PASS_THRESHOLD = 60;
 
@@ -72,6 +74,11 @@ export const submitQuiz = async (req, res) => {
     });
 
     const { starsEarned } = await awardQuizStars(childId, score);
+
+    const child = await Child.findById(childId).select("parentId");
+    if (child) {
+      await invalidateAnalyticsCache(childId, child.parentId.toString());
+    }
 
     return sendSuccess(res, 201, "Quiz submitted successfully", {
       submissionId: submission._id,
