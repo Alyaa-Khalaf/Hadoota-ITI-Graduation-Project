@@ -13,6 +13,7 @@ import { socketAuthMiddleware } from './middleware/socketAuth.js'
 import authRoutes from './routes/auth.routes.js'
 import storyRoutes from './routes/storyRoutes.js'
 import childRoutes from './routes/childRoutes.js'
+import userRoutes from './routes/userRoutes.js'
 import Child from './models/Child.js'
 
 
@@ -141,6 +142,7 @@ io.on('connection', (socket) => {
 
 // Routes
 app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
 app.use('/api/children', childRoutes)
 app.use('/api/stories', storyRoutes)
 
