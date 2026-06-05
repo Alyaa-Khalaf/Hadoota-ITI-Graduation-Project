@@ -11,11 +11,12 @@ import notFound from './middleware/notFound.js'
 import { generalLimiter } from './middleware/rateLimiter.js'
 import { socketAuthMiddleware } from './middleware/socketAuth.js'
 import authRoutes from './routes/auth.routes.js'
-import storyRoutes from './routes/storyRoutes.js'
-import childRoutes from './routes/childRoutes.js'
 import userRoutes from './routes/userRoutes.js'
+import childRoutes from './routes/childRoutes.js'
+import storyRoutes from './routes/storyRoutes.js'
+import quizRoutes from './routes/quizRoutes.js'
+import gamificationRoutes from './routes/gamificationRoutes.js'
 import Child from './models/Child.js'
-
 
 const app = express()
 const httpServer = createServer(app)
@@ -46,17 +47,14 @@ app.get('/api/health', (req, res) => {
 
 // ============== SOCKET.IO SETUP ==============
 
-// Apply authentication middleware
 io.use(socketAuthMiddleware)
 
 io.on('connection', (socket) => {
   const userId = socket.data.userId
   console.log(`🔌 Authenticated client connected: ${socket.id} (User: ${userId})`)
 
-  // Store socket in socket.data for later use
   socket.data.rooms = new Set()
 
-  // ========== Join Child Room ==========
   socket.on('join:child', async (data) => {
     try {
       const { childId } = data
@@ -66,7 +64,6 @@ io.on('connection', (socket) => {
         return
       }
 
-      // Verify user owns this child
       const child = await Child.findById(childId)
       if (!child) {
         socket.emit('error', { message: 'Child not found' })
@@ -78,7 +75,6 @@ io.on('connection', (socket) => {
         return
       }
 
-      // Join room
       const roomName = `child:${childId}`
       socket.join(roomName)
       socket.data.rooms.add(roomName)
@@ -92,7 +88,6 @@ io.on('connection', (socket) => {
     }
   })
 
-  // ========== Leave Child Room ==========
   socket.on('leave:child', (data) => {
     try {
       const { childId } = data
@@ -113,7 +108,6 @@ io.on('connection', (socket) => {
     }
   })
 
-  // ========== Subscribe to Story ==========
   socket.on('story:subscribe', (storyId) => {
     const roomName = `story:${storyId}`
     socket.join(roomName)
@@ -121,7 +115,6 @@ io.on('connection', (socket) => {
     console.log(`📖 ${socket.id} subscribed to story: ${storyId}`)
   })
 
-  // ========== Unsubscribe from Story ==========
   socket.on('story:unsubscribe', (storyId) => {
     const roomName = `story:${storyId}`
     socket.leave(roomName)
@@ -129,12 +122,10 @@ io.on('connection', (socket) => {
     console.log(`📖 ${socket.id} unsubscribed from story: ${storyId}`)
   })
 
-  // ========== Disconnect ==========
   socket.on('disconnect', () => {
     console.log(`❌ Client disconnected: ${socket.id}`)
   })
 
-  // ========== Error Handler ==========
   socket.on('error', (error) => {
     console.error(`Socket error for ${socket.id}:`, error)
   })
@@ -145,6 +136,8 @@ app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/children', childRoutes)
 app.use('/api/stories', storyRoutes)
+app.use('/api/quiz', quizRoutes)
+app.use('/api/gamification', gamificationRoutes)
 
 // 404 Handler
 app.use(notFound)
@@ -158,6 +151,9 @@ connectDB().then(() => {
   httpServer.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`)
   })
+}).catch(err => {
+  console.error('❌ Database connection failed:', err.message)
+  process.exit(1)
 })
 
 export { io }

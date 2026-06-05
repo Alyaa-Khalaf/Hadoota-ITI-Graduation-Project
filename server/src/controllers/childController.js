@@ -1,91 +1,38 @@
-import Child from '../models/Child.js'
+import Child from "../models/childModel.js";
+import Gamification from "../models/gamificationModel.js";
+import { sendSuccess, sendError } from "../utils/apiResponse.js";
 
-export const createChild = async (req, res, next) => {
+// POST /api/children — helper for testing (parent creates a child profile)
+export const createChild = async (req, res) => {
   try {
-    const { name, age, interests, learningLevel } = req.body
-    const parentId = req.user?.id || req.user?._id
+    const { name, age, avatar } = req.body;
 
-    if (!parentId) {
-      return res.status(401).json({
-        success: false,
-        message: 'غير مصرح - لم يتم العثور على معرف المستخدم',
-        data: null,
-        errors: []
-      })
+    if (!name || !name.trim()) {
+      return sendError(res, 400, "Child name is required");
     }
 
     const child = await Child.create({
-      parentId,
-      name,
+      parentId: req.user._id,
+      name: name.trim(),
       age,
-      interests: interests || [],
-      learningLevel: learningLevel || 'beginner',
-      settings: {
-        allowedTopics: [],
-        screenTimeLimit: 30,
-        difficultyLevel: 'easy'
-      }
-    })
+      avatar: avatar || "",
+    });
 
-    res.status(201).json({
-      success: true,
-      message: 'تم إنشاء ملف الطفل بنجاح',
-      data: child,
-      errors: []
-    })
+    await Gamification.create({ childId: child._id });
+
+    return sendSuccess(res, 201, "Child created successfully", child);
   } catch (error) {
-    next(error)
+    return sendError(res, 500, "Server error", [error.message]);
   }
-}
+};
 
-export const getChild = async (req, res, next) => {
+// GET /api/children — list parent's children
+export const getChildren = async (req, res) => {
   try {
-    const { id } = req.params
-    const userId = req.user?.id || req.user?._id
+    const children = await Child.find({ parentId: req.user._id });
 
-    const child = await Child.findById(id)
-    if (!child) {
-      return res.status(404).json({
-        success: false,
-        message: 'الطفل غير موجود',
-        data: null,
-        errors: []
-      })
-    }
-
-    if (child.parentId.toString() !== userId.toString()) {
-      return res.status(401).json({
-        success: false,
-        message: 'غير مصرح للوصول لبيانات هذا الطفل',
-        data: null,
-        errors: []
-      })
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'تم الحصول على بيانات الطفل',
-      data: child,
-      errors: []
-    })
+    return sendSuccess(res, 200, "Children fetched successfully", children);
   } catch (error) {
-    next(error)
+    return sendError(res, 500, "Server error", [error.message]);
   }
-}
-
-export const getChildren = async (req, res, next) => {
-  try {
-    const userId = req.user?.id || req.user?._id
-
-    const children = await Child.find({ parentId: userId })
-
-    res.status(200).json({
-      success: true,
-      message: 'تم الحصول على أطفال المستخدم',
-      data: children,
-      errors: []
-    })
-  } catch (error) {
-    next(error)
-  }
-}
+};
