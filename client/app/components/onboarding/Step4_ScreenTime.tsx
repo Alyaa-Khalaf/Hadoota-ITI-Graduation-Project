@@ -1,103 +1,79 @@
 "use client";
 import { useState } from "react";
 import Button from "../ui/Button";
-import Input from "../ui/Input";
 
-interface Step5Props {
+interface Step4Props {
   onNext: () => void;
   onPrev: () => void;
+  isSubmitting?: boolean;
 }
 
-export default function Step5_FreeStory({ onNext, onPrev }: Step5Props) {
-  const [childName, setChildName] = useState("");
-  const [childAge, setChildAge] = useState("");
-  const [childAvatar, setChildAvatar] = useState("👦");
-  const [interest, setInterest] = useState("Space");
-  const [isLoading, setIsLoading] = useState(false);
+const SCREEN_TIME_OPTIONS = [
+  { value: "15", label: "١٥ دقيقة", desc: "للأطفال الصغار جداً" },
+  { value: "30", label: "٣٠ دقيقة", desc: "الأنسب لمعظم الأعمار" },
+  { value: "45", label: "٤٥ دقيقة", desc: "للأطفال الأكبر سناً" },
+  { value: "60", label: "ساعة كاملة", desc: "للأيام الخاصة فقط" },
+];
 
-  const handleCreateProfile = async (e: React.FormEvent) => {
+export default function Step4_ScreenTime({ onNext, onPrev, isSubmitting }: Step4Props) {
+  const [selected, setSelected] = useState("30");
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      // 🚀 ربط الـ API لإنشاء بروفايل الطفل الأول وبدء أول قصة حرة له
-      await fetch("ضع_رابط_api_إنشاء_حساب_الطفل_الأول_هنا", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: childName,
-          age: Number(childAge),
-          avatar: childAvatar,
-          interests: [interest]
-        }),
-      });
-
-      onNext(); // لو نجح، انقل لشاشة النهاية بنجاح والدخول للداشبورد
-    } catch (err) {
-      console.error("خطأ في إنشاء ملف الطفل", err);
-    } finally {
-      setIsLoading(false);
-    }
+    localStorage.setItem("tempScreenTime", selected);
+    onNext();
   };
 
   return (
-    <form onSubmit={handleCreateProfile} className="space-y-6 text-right" dir="rtl">
-      <div className="text-center">
-        <h3 className="text-xl font-black text-gray-800">تخصيص الحكاية الأولى 🧙‍♂️✨</h3>
-        <p className="text-xs font-bold text-gray-400 mt-1">أدخل بيانات طفلك لنصنع له أول قصة سحرية خاصة به مجاناً!</p>
+    <form onSubmit={handleSubmit} className="space-y-6 text-right font-sans animate-fadeIn">
+      <div className="text-center space-y-1">
+        <h3 className="text-xl font-black text-ink">وقت الشاشة اليومي ⏳</h3>
+        <p className="text-xs font-bold text-ink-muted">
+          حدد الوقت المناسب لطفلك يومياً على التطبيق.
+        </p>
       </div>
 
-      <div className="space-y-4 max-w-sm mx-auto">
-        {/* حقل اسم الطفل */}
-        <Input 
-          type="text" 
-          placeholder="اسم البطل الصغير" 
-          required 
-          value={childName} 
-          onChange={(e) => setChildName(e.target.value)} 
-          label="اسم الطفل" 
-        />
-        
-        {/* قائمة اختيار عمر الطفل المستبدلة */}
-        <div>
-          <label className="block text-sm font-black text-gray-700 mb-1.5">عمر الطفل (سنوات)</label>
-          <select
-            required
-            value={childAge}
-            onChange={(e) => setChildAge(e.target.value)}
-            className="w-full p-3.5 rounded-xl border border-border-warm bg-white text-ink font-bold text-sm focus:outline-none focus:border-primary transition"
+      <div className="grid grid-cols-2 gap-3">
+        {SCREEN_TIME_OPTIONS.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => setSelected(option.value)}
+            className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
+              selected === option.value
+                ? "border-primary bg-primary/5 scale-[1.02] shadow-sm"
+                : "border-border-warm bg-white hover:border-primary/30"
+            }`}
           >
-            <option value="" disabled hidden>اختر العمر</option>
-            {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
-              <option key={num} value={num}>
-                {num} سنوات
-              </option>
-            ))}
-          </select>
-        </div>
-        
-        {/* حقل اختيار الأفاتار */}
-        <div>
-          <label className="block text-xs font-black text-gray-700 mb-1.5">اختر الأفاتار المفضّل</label>
-          <div className="flex gap-4 justify-center text-3xl bg-gray-50 p-3 rounded-2xl">
-            {["👦", "👧", "👶", "🧚‍♂️"].map((emoji) => (
-              <span 
-                key={emoji} 
-                className={`cursor-pointer transition ${childAvatar === emoji ? "scale-125 border-b-2 border-primary" : ""}`} 
-                onClick={() => setChildAvatar(emoji)}
-              >
-                {emoji}
-              </span>
-            ))}
-          </div>
-        </div>
+            <span className="text-lg font-black text-ink">{option.label}</span>
+            <span className="text-xs font-bold text-ink-muted mt-1">{option.desc}</span>
+            {selected === option.value && (
+              <span className="text-primary text-sm font-bold mt-1">✓</span>
+            )}
+          </button>
+        ))}
       </div>
 
-      <div className="flex gap-3 max-w-sm mx-auto pt-4">
-        <Button type="submit" variant="primary" className="flex-1 !py-3 font-black" disabled={isLoading}>
-          {isLoading ? "جاري تجهيز السحر... 🪄" : "ابدأ حكايتك الأولى 📚✨"}
+      <div className="flex gap-3 pt-4">
+        <Button
+          type="submit"
+          variant="primary"
+          fullWidth={true}
+          disabled={isSubmitting}
+          className="!py-3.5 font-black order-2"
+        >
+          {isSubmitting ? "جاري الحفظ..." : "حفظ وإنهاء الإعداد ✅"}
         </Button>
-        <Button type="button" variant="sky" className="!py-3 px-6 font-bold" onClick={onPrev} disabled={isLoading}>رجوع</Button>
+        <Button
+          type="button"
+          variant="sky"
+          fullWidth={false}
+          onClick={onPrev}
+          disabled={isSubmitting}
+          className="!py-3.5 px-6 font-bold text-ink order-1"
+        >
+          رجوع
+        </Button>
       </div>
     </form>
   );
