@@ -45,9 +45,8 @@ export default function RegisterForm() {
         throw new Error(data.message || "حدث خطأ أثناء إنشاء الحساب");
       }
 
-      // تسجيل دخول تلقائي بعد الإنشاء أو التوجيه لصفحة تأكيد الإيميل
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("parentName", name);
+      localStorage.setItem("accessToken", data.data.accessToken);
+      localStorage.setItem("refreshToken", data.data.refreshToken);
       router.push("/onboarding");
     } catch (err: any) {
       setError(err.message || "تعذر إنشاء الحساب، يرجى المحاولة لاحقاً.");
