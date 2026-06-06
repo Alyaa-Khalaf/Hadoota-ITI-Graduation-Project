@@ -4,7 +4,6 @@ import Step2_ChildInfo from "@/components/onboarding/Step2_ChildInfo";
 import Step3_Interests from "@/components/onboarding/Step3_Interests";
 import Step4_ScreenTime from "@/components/onboarding/Step4_ScreenTime";
 import StepIndicator from "@/components/onboarding/StepIndicator";
-import apiClient from "@/utils/api";
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -22,19 +21,32 @@ export default function OnboardingPage() {
       const interests = JSON.parse(localStorage.getItem("tempChildInterests") || "[]");
       const screenTime = localStorage.getItem("tempScreenTime") || "30";
 
-      await apiClient.post("/api/children", {
-        name: childInfo.name,
-        age: Number(childInfo.age),
-        avatar: childInfo.avatar || "",
-        interests,
-        dailyScreenTime: Number(screenTime),
-      });
+      const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+
+      if (token) {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/children`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: childInfo.name,
+            age: Number(childInfo.age),
+            avatar: childInfo.avatar || "",
+            interests,
+            dailyScreenTime: Number(screenTime),
+          }),
+        });
+
+        if (!res.ok) throw new Error("فشل الحفظ");
+      }
 
       localStorage.removeItem("tempChildInfo");
       localStorage.removeItem("tempChildInterests");
       localStorage.removeItem("tempScreenTime");
 
-      window.location.href = "/dashboard";
+      setCurrentStep(4);
     } catch {
       setError("حدث خطأ أثناء حفظ البيانات. حاول مرة أخرى.");
     } finally {
@@ -69,6 +81,22 @@ export default function OnboardingPage() {
             onPrev={prevStep}
             isSubmitting={isSubmitting}
           />
+        )}
+
+        {currentStep === 4 && (
+          <div className="text-center space-y-6 py-6">
+            <div className="text-6xl">🎉</div>
+            <h3 className="text-2xl font-black text-ink">تم إعداد الملف بنجاح!</h3>
+            <p className="text-sm font-bold text-ink-muted">
+              حساب طفلك جاهز الآن. يمكنك البدء في استكشاف القصص والمغامرات.
+            </p>
+            <button
+              onClick={() => window.location.href = "/dashboard"}
+              className="mt-4 w-full py-4 bg-primary text-white rounded-2xl font-black text-base shadow-lg shadow-primary/20 hover:opacity-90 transition"
+            >
+              الذهاب إلى لوحة التحكم 🚀
+            </button>
+          </div>
         )}
 
         {error && (
