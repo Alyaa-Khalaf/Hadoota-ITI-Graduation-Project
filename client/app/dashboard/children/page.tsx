@@ -4,7 +4,8 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 
 interface Child {
-  id: string;
+  id?: string;
+  _id?: string
   name: string;
   age: number;
   avatar: string;
@@ -18,16 +19,23 @@ export default function ChildrenPage() {
 
   // بيانات الطفل الجديد للفورم
   const [childName, setChildName] = useState("");
-  const [childAge, setChildAge] = useState("");
+  const [childAge, setChildAge] = useState("3");
   const [childAvatar, setChildAvatar] = useState("👦");
 
   // 1️⃣ جلب قائمة الأطفال من السيرفر (API هند)
   const fetchChildren = async () => {
     try {
-      const res = await fetch("ضع_رابط_هند_لجلب_قائمة_الأطفال_هنا");
+      const token = localStorage.getItem("accessToken"); // جلب التوكن من المتصفح
+      const res = await fetch("http://localhost:5000/api/children", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
       if (res.ok) {
-        const data = await res.json();
-        setChildren(data);
+        const result = await res.json();
+        setChildren(result.data || []); // هند ترجع البيانات داخل كائن data
       }
     } catch (err) {
       console.error("خطأ في جلب قائمة الأطفال", err);
@@ -41,19 +49,35 @@ export default function ChildrenPage() {
   // 2️⃣ إضافة طفل جديد وإرساله للسيرفر (API هند)
   const handleAddChild = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!childName || !childAge) return;
+
     try {
-      const res = await fetch("ضع_رابط_هند_لإضافة_طفل_جديد_هنا", {
+      const token = localStorage.getItem("accessToken");
+      
+      // تحديد النوع تلقائياً بناءً على الأفاتار ليتوافق مع السيرفر
+      const determinedGender = childAvatar === "👧" ? "female" : "male";
+
+      const res = await fetch("http://localhost:5000/api/children", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: childName, age: Number(childAge), avatar: childAvatar }),
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          name: childName, 
+          age: Number(childAge), 
+          avatar: childAvatar,
+          gender: determinedGender
+        }),
       });
 
       if (res.ok) {
         setIsAdding(false);
         setChildName("");
-        setChildAge("");
+        setChildAge("3");
+        setChildAvatar("👦");
         fetchChildren(); // تحديث القائمة فوراً
-      }
+      } 
     } catch (err) {
       console.error("خطأ في إضافة الطفل", err);
     }
@@ -62,62 +86,124 @@ export default function ChildrenPage() {
   // 3️⃣ تأكيد حذف الطفل من السيرفر (API هند)
   const confirmDelete = async () => {
     if (!selectedChildId) return;
-    try {
-      const res = await fetch(`ضع_رابط_هند_لحذف_الطفل_هنا/${selectedChildId}`, {
-        method: "DELETE",
-      });
+    
+    console.log("الـ ID الجاري حذفه الآن هو:", selectedChildId); 
 
+    try {
+      const token = localStorage.getItem("accessToken"); 
+      
+      // إرسال الطلب بشكل مباشر للمسار الموحد بعد تنظيف تكرار السيرفر
+      let res = await fetch(`http://localhost:5000/api/children/${selectedChildId}`, {
+        method: "DELETE",
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      
       if (res.ok) {
+        console.log("تم الحذف بنجاح من السيرفر! 🎉");
         setShowDeleteDialog(false);
         setSelectedChildId(null);
-        fetchChildren(); // تحديث القائمة فوراً
+        fetchChildren(); // تحديث القائمة فوراً في الواجهة
+      } else {
+        console.error("فشل الحذف، كود استجابة السيرفر:", res.status);
+        alert(`فشل الحذف، كود حالة السيرفر: ${res.status}`);
       }
+
     } catch (err) {
       console.error("خطأ في حذف الطفل", err);
     }
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6 space-y-6 text-right" dir="rtl">
-      <div className="flex items-center justify-between bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">
-        <div>
-          <h2 className="text-2xl font-black text-gray-800">إدارة الأطفال 👧👦</h2>
-          <p className="text-xs font-bold text-gray-400 mt-1">هنا يمكنك التحكم في حسابات أطفالك وتعديل بياناتهم.</p>
-        </div>
-        <Button variant="primary" className="!py-2 !px-6 text-xs font-black" onClick={() => setIsAdding(true)}>إضافة طفل جديد +</Button>
+    <div className="p-6 max-w-4xl mx-auto space-y-6" dir="rtl">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-black text-secondary">إدارة أطفالك 👦👧</h1>
+        <Button variant="primary" onClick={() => setIsAdding(true)}>إضافة طفل جديد +</Button>
       </div>
 
-      {/* قائمة الأطفال */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {children.map((child) => (
-          <div key={child.id} className="bg-white p-5 rounded-[30px] border border-gray-100 shadow-sm">
-            <div className="text-5xl bg-orange-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">{child.avatar}</div>
-            <h4 className="text-center text-lg font-black text-gray-800">{child.name}</h4>
-            <p className="text-center text-xs text-gray-400 font-bold mt-1">العمر: {child.age} سنوات</p>
-            <div className="flex gap-2 mt-6">
-              <Button variant="sky" className="flex-1 !py-2 text-[11px] font-black text-gray-700">تعديل ✏️</Button>
-              <Button variant="sky" className="!py-2 !px-4 text-[11px] font-black text-red-500 bg-red-50" onClick={() => { setSelectedChildId(child.id); setShowDeleteDialog(true); }}>حذف 🗑️</Button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* مودال إضافة طفل */}
-      {isAdding && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <form onSubmit={handleAddChild} className="bg-white w-full max-w-md rounded-[40px] p-8 shadow-2xl">
-            <h3 className="text-xl font-black text-center mb-6">إضافة مغامر جديد 🚀</h3>
-            <div className="space-y-4">
-              <Input type="text" placeholder="اسم الطفل" value={childName} onChange={(e) => setChildName(e.target.value)} required label="الاسم" />
-              <Input type="number" placeholder="العمر" value={childAge} onChange={(e) => setChildAge(e.target.value)} required label="العمر" />
-              <div>
-                <label className="block text-xs font-black mb-2">اختر الأفاتار</label>
-                <div className="flex gap-3 justify-center text-3xl bg-gray-50 p-3 rounded-2xl">
-                  {["👦", "👧", "👶", "🧚‍♂️"].map((emoji) => (
-                    <span key={emoji} className={`cursor-pointer transition ${childAvatar === emoji ? "scale-125 border-b-2 border-primary" : ""}`} onClick={() => setChildAvatar(emoji)}>{emoji}</span>
-                  ))}
+      {/* عرض كروت الأطفال المجلوبة من السيرفر */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {children.length === 0 ? (
+          <p className="text-sm font-bold text-gray-400 col-span-full text-center py-8">لا يوجد أطفال مضافين حالياً ✨</p>
+        ) : (
+          children.map((child, index) => {
+            // التقاط المعرف المتاح بشكل مضمون وآمن لحل المشكلة الأساسية
+            const childId = child._id || child.id || null;
+            
+            return (
+              <div key={childId || `child-${index}`} className="bg-white p-4 rounded-[20px] shadow-sm border border-gray-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-4xl">{child.avatar}</span>
+                  <div>
+                    <h3 className="font-bold text-lg text-secondary">{child.name}</h3>
+                    <p className="text-sm text-gray-500 font-medium">العمر: {child.age} سنوات</p>
+                  </div>
                 </div>
+                <Button 
+                  variant="sky" 
+                  className="!p-2 !bg-red-50 text-red-500 hover:!bg-red-100 border-none"
+                  onClick={() => {
+                    if (childId) {
+                      setSelectedChildId(childId);
+                      setShowDeleteDialog(true);
+                    }
+                  }}
+                >
+                  🗑️
+                </Button>
               </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* مودال إضافة طفل جديد */}
+      {isAdding && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <form onSubmit={handleAddChild} className="bg-white rounded-[30px] p-6 max-w-md w-full space-y-4 shadow-xl">
+            <h3 className="text-xl font-black text-secondary text-center">إضافة طفل جديد ✨</h3>
+            
+            <div className="space-y-3">
+              <label className="block text-sm font-bold text-gray-700">اسم الطفل</label>
+                <Input 
+                  type="text"
+                  placeholder="أدخل اسم الطفل هنا..."
+                  value={childName}
+                  onChange={(e) => setChildName(e.target.value)}
+                  required
+                  label=""
+                /> 
+
+              <label className="block text-sm font-bold text-gray-700">عمر الطفل</label>
+              <select
+                value={childAge}
+                onChange={(e) => setChildAge(e.target.value)}
+                className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-primary font-bold bg-gray-50 text-secondary"
+                required
+              >
+                <option value="" disabled>اختر عمر الطفل</option>
+                {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
+                  <option key={num} value={num}>
+                    {num} سنوات
+                  </option>
+                ))}
+              </select>
+
+              <label className="block text-sm font-bold text-gray-700 text-center pt-2">اختر الأفاتار</label>
+              <div className="flex justify-center gap-4 text-3xl p-2 bg-gray-50 rounded-xl">
+                {["👦", "👧", "👶", "🧚‍♂️"].map((emoji) => (
+                  <span 
+                    key={emoji} 
+                    className={`cursor-pointer p-1 rounded-lg transition ${childAvatar === emoji ? "scale-125 bg-white shadow-sm ring-2 ring-primary" : "opacity-60"}`} 
+                    onClick={() => setChildAvatar(emoji)}
+                  >
+                    {emoji}
+                  </span>
+                ))}
+              </div>
+
               <div className="flex gap-3 pt-4">
                 <Button type="submit" variant="primary" fullWidth={true} className="!py-3 font-black">حفظ الطفل ✨</Button>
                 <Button type="button" variant="sky" className="!py-3 px-6 font-bold" onClick={() => setIsAdding(false)}>إلغاء</Button>
@@ -136,7 +222,7 @@ export default function ChildrenPage() {
             <p className="text-xs text-gray-500 font-bold">سيتم حذف كافة بيانات الطفل نهائياً.</p>
             <div className="flex gap-2">
               <Button variant="primary" className="flex-1 !bg-red-500 !py-2 font-black" onClick={confirmDelete}>نعم، احذف</Button>
-              <Button variant="sky" className="flex-1 !py-2 font-black" onClick={() => setShowDeleteDialog(false)}>تراجع</Button>
+              <Button variant="sky" className="flex-1 !py-2 font-bold" onClick={() => { setShowDeleteDialog(false); setSelectedChildId(null); }}>إلغاء</Button>
             </div>
           </div>
         </div>

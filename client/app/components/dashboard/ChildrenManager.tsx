@@ -33,7 +33,7 @@ export default function ChildrenManager() {
   useEffect(() => {
     const fetchChildren = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("accessToken");
         const res = await fetch("http://localhost:5000/api/children", {
           method: "GET",
           headers: {
@@ -68,7 +68,7 @@ export default function ChildrenManager() {
     setError("");
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("accessToken");
       const res = await fetch("http://localhost:5000/api/children", {
         method: "POST",
         headers: {
@@ -109,7 +109,7 @@ export default function ChildrenManager() {
     setError("");
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("accessToken");
       const res = await fetch(`http://localhost:5000/api/children/${selectedChildId}`, {
         method: "DELETE",
         headers: {

@@ -32,7 +32,16 @@ export default function LoginForm() {
       }
 
       // حفظ التوكن في الـ LocalStorage
-      localStorage.setItem("token", data.accessToken);
+      // 🌟 استخراج التوكن الحقيقي بشكل ديناميكي أياً كان الهيكل في السيرفر
+      const realToken = data.data?.accessToken;
+
+      if (realToken) {
+        // حفظ التوكن بالاسميّن لضمان التوافق مع كل صفحات المشروع
+        localStorage.setItem("accessToken", realToken);
+        // localStorage.setItem("token", realToken);
+      } else {
+        console.warn("لم يتم العثور على التوكن في الرد القادم من السيرفر:", data);
+      }
       
       // 💡 ملحوظة: لو المشروع بيستخدم كوكيز للحماية، هتحتاجي تسجلي التوكن في الـ document.cookie هنا
 
