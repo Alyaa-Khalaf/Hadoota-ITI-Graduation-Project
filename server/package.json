@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "seed:stories": "node src/scripts/seedStories.js"
   },
   "dependencies": {
     "@langchain/openai": "^0.0.14",

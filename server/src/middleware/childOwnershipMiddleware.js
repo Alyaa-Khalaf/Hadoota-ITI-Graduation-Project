@@ -3,7 +3,7 @@ import { sendError } from "../utils/apiResponse.js";
 
 export const verifyChildOwnership = async (req, res, next) => {
   try {
-    const childId = req.params.childId || req.body.childId;
+    const childId = req.params.childId || req.body.childId || req.query.childId;
 
     if (!childId) {
       return sendError(res, 400, "childId is required");

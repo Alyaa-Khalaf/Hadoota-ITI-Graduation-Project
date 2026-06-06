@@ -12,6 +12,7 @@ import childRoutes from './routes/childRoutes.js'
 import quizRoutes from './routes/quizRoutes.js'
 import gamificationRoutes from './routes/gamificationRoutes.js'
 import analyticsRoutes from './routes/analyticsRoutes.js'
+import storyRoutes from './routes/storyRoutes.js'
 import errorHandler from './middleware/errorHandler.js'
 import notFound from './middleware/notFound.js'
 import { generalLimiter } from './middleware/rateLimiter.js'
@@ -42,6 +43,7 @@ app.use('/api/children', childRoutes)
 app.use('/api/quiz', quizRoutes)
 app.use('/api/gamification', gamificationRoutes)
 app.use('/api/analytics', analyticsRoutes)
+app.use('/api/stories', storyRoutes)
 
 // Health Check
 app.get('/api/health', (req, res) => {
