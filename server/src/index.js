@@ -1,4 +1,5 @@
 import dotenv from 'dotenv'
+dotenv.config();
 import path from 'path'
 // تفعيل الـ Environment Variables بالمسار الصحيح
 dotenv.config();
@@ -14,11 +15,12 @@ import connectDB from './config/db.js'
 // استيراد الـ Routes الكاملة من كل الفروع المدمجة
 import authRoutes from './routes/auth.routes.js'
 import userRoutes from './routes/userRoutes.js'
-import childRoutes from './routes/childRoutes.js'
+import childRoutes from './routes/child.routes.js'
 import quizRoutes from './routes/quizRoutes.js'
 import gamificationRoutes from './routes/gamificationRoutes.js'
 import storyRoutes from './routes/storyRoutes.js'
 import progressRoutes from './routes/progress.routes.js'
+import schoolRoutes from './routes/school.routes.js'
 
 // استيراد الـ Middlewares والـ Models
 import errorHandler from './middleware/errorHandler.js'
@@ -53,7 +55,8 @@ app.use('/api/children', childRoutes)
 app.use('/api/quiz', quizRoutes)
 app.use('/api/gamification', gamificationRoutes)
 app.use('/api/stories', storyRoutes)
-app.use('/api/progress', progressRoutes) // دمج مسار البروجريس الخاص بهند
+app.use('/api/progress', progressRoutes) // دمج مسار progressRoutes  
+app.use('/api/schools', schoolRoutes)
 
 // Health Check API
 app.get('/api/health', (req, res) => {

@@ -1,14 +1,14 @@
 import mongoose from 'mongoose';
 
 const childSchema = new mongoose.Schema({
-  // 1. ربط الطفل بالأهل (اعتمدنا parentId لتتوافق مع الـ Controllers)
+  // 1. ربط الطفل بالأهل 
   parentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: [true, 'معرف الأهل مطلوب']
   },
   
-  // 🏢 2. ربط الطفل بالمدرسة (إضافة استباقية لـ School APIs الخاصة بكِ)
+  // 🏢 2. ربط الطفل بالمدرسة 
   schoolId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'School',
