@@ -10,7 +10,7 @@ import connectDB from './config/db.js'
 // استيراد الـ Routes الكاملة من كل الفروع المدمجة
 import authRoutes from './routes/auth.routes.js'
 import userRoutes from './routes/userRoutes.js'
-import childRoutes from './routes/childRoutes.js'
+import childRoutes from './routes/child.routes.js'
 import quizRoutes from './routes/quizRoutes.js'
 import gamificationRoutes from './routes/gamificationRoutes.js'
 import storyRoutes from './routes/storyRoutes.js'
