@@ -6,20 +6,27 @@ import morgan from 'morgan'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import connectDB from './config/db.js'
+
+// استيراد الـ Routes الكاملة من كل الفروع المدمجة
+import authRoutes from './routes/auth.routes.js'
+import userRoutes from './routes/userRoutes.js'
+import childRoutes from './routes/childRoutes.js'
+import quizRoutes from './routes/quizRoutes.js'
+import gamificationRoutes from './routes/gamificationRoutes.js'
+import storyRoutes from './routes/storyRoutes.js'
+import progressRoutes from './routes/progress.routes.js'
+
+// استيراد الـ Middlewares والـ Models
 import errorHandler from './middleware/errorHandler.js'
 import notFound from './middleware/notFound.js'
 import { generalLimiter } from './middleware/rateLimiter.js'
 import { socketAuthMiddleware } from './middleware/socketAuth.js'
-import authRoutes from './routes/auth.routes.js'
-import userRoutes from './routes/userRoutes.js'
-import childRoutes from './routes/childRoutes.js'
-import storyRoutes from './routes/storyRoutes.js'
-import quizRoutes from './routes/quizRoutes.js'
-import gamificationRoutes from './routes/gamificationRoutes.js'
 import Child from './models/Child.js'
 
 const app = express()
 const httpServer = createServer(app)
+
+// إعداد سيرفر الـ Socket.io
 const io = new Server(httpServer, {
   cors: {
     origin: process.env.CLIENT_URL || 'http://localhost:3000',
@@ -27,7 +34,7 @@ const io = new Server(httpServer, {
   }
 })
 
-// Middleware
+// =============== MIDDLEWARES ===============
 app.use(cors())
 app.use(helmet())
 app.use(morgan('dev'))
@@ -35,7 +42,16 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use('/api', generalLimiter)
 
-// Health Check
+// =============== GLOBAL ROUTES ===============
+app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
+app.use('/api/children', childRoutes)
+app.use('/api/quiz', quizRoutes)
+app.use('/api/gamification', gamificationRoutes)
+app.use('/api/stories', storyRoutes)
+app.use('/api/progress', progressRoutes) // دمج مسار البروجريس الخاص بهند
+
+// Health Check API
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
@@ -46,7 +62,7 @@ app.get('/api/health', (req, res) => {
 })
 
 // ============== SOCKET.IO SETUP ==============
-
+// تطبيق حماية الـ Token على السوكت لضمان أمان الاتصال
 io.use(socketAuthMiddleware)
 
 io.on('connection', (socket) => {
@@ -55,10 +71,10 @@ io.on('connection', (socket) => {
 
   socket.data.rooms = new Set()
 
+  // 👧 غرف متابعة الأطفال الفورية
   socket.on('join:child', async (data) => {
     try {
       const { childId } = data
-
       if (!childId) {
         socket.emit('error', { message: 'childId is required' })
         return
@@ -70,6 +86,7 @@ io.on('connection', (socket) => {
         return
       }
 
+      // التحقق من أن هذا الأب يملك هذا الطفل فعلياً
       if (child.parentId.toString() !== userId.toString()) {
         socket.emit('error', { message: 'Unauthorized: You do not own this child' })
         return
@@ -108,6 +125,7 @@ io.on('connection', (socket) => {
     }
   })
 
+  // 📖 غرف التفاعل مع الحواديت وتحديثاتها المباشرة
   socket.on('story:subscribe', (storyId) => {
     const roomName = `story:${storyId}`
     socket.join(roomName)
@@ -131,21 +149,11 @@ io.on('connection', (socket) => {
   })
 })
 
-// Routes
-app.use('/api/auth', authRoutes)
-app.use('/api/users', userRoutes)
-app.use('/api/children', childRoutes)
-app.use('/api/stories', storyRoutes)
-app.use('/api/quiz', quizRoutes)
-app.use('/api/gamification', gamificationRoutes)
-
-// 404 Handler
+// =============== ERROR HANDLERS ===============
 app.use(notFound)
-
-// Error Handler
 app.use(errorHandler)
 
-// Connect DB + Start Server
+// =============== SERVER INITIALIZATION ===============
 const PORT = process.env.PORT || 5000
 connectDB().then(() => {
   httpServer.listen(PORT, () => {

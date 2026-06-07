@@ -1,17 +1,24 @@
 import mongoose from 'mongoose'
 
 const progressSchema = new mongoose.Schema({
+  // 1. ربط ملف التقدم بالطفل
   childId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Child',
     required: [true, 'معرف الطفل مطلوب'],
     unique: true
   },
+
+  // 2. المؤشرات العامة للألعاب والتقدم
   storiesCompleted: {
     type: Number,
     default: 0
   },
   totalTimeSpent: {
+    type: Number,
+    default: 0
+  },
+  totalPoints: {
     type: Number,
     default: 0
   },
@@ -27,6 +34,8 @@ const progressSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+
+  // 3. الشارات والإنجازات
   badges: [{
     name: String,
     description: String,
@@ -36,6 +45,16 @@ const progressSchema = new mongoose.Schema({
       default: Date.now
     }
   }],
+
+  // 4. تاريخ النقاط اليومي
+  dailyHistory: [
+    {
+      day: { type: String, required: true },
+      points: { type: Number, default: 0 }
+    }
+  ],
+
+  // 5. المواضيع والمجالات التي تعلمها الطفل
   topicsLearned: [{
     topic: String,
     count: {
@@ -43,6 +62,8 @@ const progressSchema = new mongoose.Schema({
       default: 1
     }
   }],
+
+  // 6. الإحصائيات الأسبوعية
   weeklyStats: [{
     week: Date,
     storiesCount: Number,
@@ -50,6 +71,8 @@ const progressSchema = new mongoose.Schema({
     avgQuizScore: Number,
     topicsLearned: [String]
   }],
+
+  // 7. إحصائيات الاختبارات
   quizStats: {
     totalQuizzes: {
       type: Number,
@@ -64,6 +87,8 @@ const progressSchema = new mongoose.Schema({
       default: 0
     }
   },
+
+  // 8. الالتزام اليومي والتفاعل
   streak: {
     current: {
       type: Number,

@@ -1,97 +1,145 @@
-import Child from '../models/Child.js'; // 1. تأكدي من مسار الموديل الصحيح
+import Child from '../models/Child.js';
 
-// 1️⃣ جلب كل أطفال الأب المسجل حالياً فقط
-export const getAllChildren = async (req, res, next) => {
-  try {
-    const parentId = req.user.id; // التوكن فك التشفير وعرّفنا بالأب
-    
-    // البحث في الـ DB عن الأطفال الذين يملكون نفس الـ parent ID
-    const children = await Child.find({ parent: parentId }); 
-    
-    res.status(200).json({
-      success: true,
-      message: "تم جلب الأطفال بنجاح",
-      data: children
-    });
-  } catch (error) { next(error); }
-};
-
-// 2️⃣ إضافة طفل جديد وربطه بالأب تلقائياً
+// 1️⃣ إضافة طفل جديد وربطه بالأب تلقائياً
 export const createChild = async (req, res, next) => {
   try {
-    const parentId = req.user.id;
-    
-    // إنشاء نسخة جديدة من الطفل مع دمج الـ parentId القادم من التوكن
-    const newChild = new Child({
-      ...req.body,       // البيانات القادمة من الـ Frontend (الاسم، العمر، إلخ)
-      parent: parentId   // ربطه بالأب الحالي لأمان البيانات
-    });
+    const { name, age, interests, learningLevel } = req.body;
+    const parentId = req.user?.id || req.user?._id;
 
-    // حفظ في قاعدة البيانات أونلاين
-    const savedChild = await newChild.save();
+    if (!parentId) {
+      return res.status(401).json({
+        success: false,
+        message: 'غير مصرح - لم يتم العثور على معرف المستخدم',
+        data: null,
+        errors: []
+      });
+    }
+
+    const child = await Child.create({
+      parentId,
+      name,
+      age,
+      interests: interests || [],
+      learningLevel: learningLevel || 'beginner',
+      settings: {
+        allowedTopics: [],
+        screenTimeLimit: 30,
+        difficultyLevel: 'easy'
+      }
+    });
 
     res.status(201).json({
       success: true,
-      message: "تم إضافة الطفل بنجاح",
-      data: savedChild
+      message: 'تم إنشاء ملف الطفل بنجاح',
+      data: child,
+      errors: []
     });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 };
 
-// 3️⃣ جلب تفاصيل طفل محدد بواسطة الـ ID الخاص به
-export const getChildById = async (req, res, next) => {
+// 2️⃣ جلب تفاصيل طفل محدد بواسطة الـ ID مع فحص الأمان
+export const getChild = async (req, res, next) => {
   try {
-    const childId = req.params.id;
-    
-    const child = await Child.findById(childId);
-    
+    const { id } = req.params;
+    const userId = req.user?.id || req.user?._id;
+
+    const child = await Child.findById(id);
     if (!child) {
-      return res.status(404).json({ success: false, message: "الطفل غير موجود" });
+      return res.status(404).json({
+        success: false,
+        message: 'الطفل غير موجود',
+        data: null,
+        errors: []
+      });
+    }
+
+    if (child.parentId.toString() !== userId.toString()) {
+      return res.status(401).json({
+        success: false,
+        message: 'غير مصرح للوصول لبيانات هذا الطفل',
+        data: null,
+        errors: []
+      });
     }
 
     res.status(200).json({
       success: true,
-      message: "تم جلب تفاصيل الطفل بنجاح",
-      data: child
+      message: 'تم الحصول على بيانات الطفل',
+      data: child,
+      errors: []
     });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 };
+
+// 3️⃣ جلب كل أطفال الأب المسجل حالياً فقط
+export const getChildren = async (req, res, next) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+
+    const children = await Child.find({ parentId: userId });
+
+    res.status(200).json({
+      success: true,
+      message: 'تم الحصول على أطفال المستخدم بنجاح',
+      data: children,
+      errors: []
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// للتوافق مع childRoutes.js القديم
+export const getAllChildren = getChildren;
 
 // 4️⃣ تعديل بيانات الطفل
 export const updateChild = async (req, res, next) => {
   try {
-    const childId = req.params.id;
+    const { id } = req.params;
+    const userId = req.user?.id || req.user?._id;
 
-    // تحديث البيانات بالـ Body الجديد وإرجاع المستند بعد التعديل { new: true }
-    const updatedChild = await Child.findByIdAndUpdate(childId, req.body, { new: true, runValidators: true });
-
-    if (!updatedChild) {
-      return res.status(404).json({ success: false, message: "الطفل غير موجود" });
+    const child = await Child.findById(id);
+    if (!child || child.parentId.toString() !== userId.toString()) {
+      return res.status(401).json({ success: false, message: 'غير مصرح أو الطفل غير موجود' });
     }
+
+    const updatedChild = await Child.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
 
     res.status(200).json({
       success: true,
-      message: "تم تعديل بيانات الطفل بنجاح",
-      data: updatedChild
+      message: 'تم تعديل بيانات الطفل بنجاح',
+      data: updatedChild,
+      errors: []
     });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 };
 
-// 5️⃣ حذف طفل نهائياً من قاعدة البيانات
+// 5️⃣ حذف طفل نهائياً
 export const deleteChild = async (req, res, next) => {
   try {
-    const childId = req.params.id;
+    const { id } = req.params;
+    const userId = req.user?.id || req.user?._id;
 
-    const deletedChild = await Child.findByIdAndDelete(childId);
-
-    if (!deletedChild) {
-      return res.status(404).json({ success: false, message: "الطفل غير موجود" });
+    const child = await Child.findById(id);
+    if (!child || child.parentId.toString() !== userId.toString()) {
+      return res.status(401).json({ success: false, message: 'غير مصرح أو الطفل غير موجود' });
     }
+
+    await Child.findByIdAndDelete(id);
 
     res.status(200).json({
       success: true,
-      message: "تم حذف الطفل بنجاح",
-      data: null
+      message: 'تم حذف الطفل بنجاح',
+      data: null,
+      errors: []
     });
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 };

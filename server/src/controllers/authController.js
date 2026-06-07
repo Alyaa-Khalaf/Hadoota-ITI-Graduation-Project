@@ -1,14 +1,14 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
 
-// Generate Access Token
+// Generate Access Token (15 Minutes)
 const generateAccessToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: '15m'
   })
 }
 
-// Generate Refresh Token
+// Generate Refresh Token (30 Days)
 const generateRefreshToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET, {
     expiresIn: '30d'
