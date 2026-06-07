@@ -45,7 +45,8 @@ export default function LoginForm() {
       
       // 💡 ملحوظة: لو المشروع بيستخدم كوكيز للحماية، هتحتاجي تسجلي التوكن في الـ document.cookie هنا
 
-      // التوجيه للوحة الأونبوردنج
+      localStorage.setItem("accessToken", data.data.accessToken);
+      localStorage.setItem("refreshToken", data.data.refreshToken);
       router.push("/onboarding");
     } catch (err: any) {
       setError(err.message || "حدث خطأ أثناء تسجيل الدخول، يرجى المحاولة مرة أخرى.");

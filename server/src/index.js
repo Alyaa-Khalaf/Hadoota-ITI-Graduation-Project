@@ -1,7 +1,4 @@
-import dotenv from 'dotenv'
-import path from 'path'
-dotenv.config(); 
-dotenv.config({ path: path.resolve(process.cwd(), './.env.example') });
+import './env.js'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
@@ -9,18 +6,17 @@ import morgan from 'morgan'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import connectDB from './config/db.js'
-import authRoutes from './routes/auth.routes.js'
-import userRoutes from './routes/userRoutes.js'
-import childRoutes from './routes/childRoutes.js'
-import quizRoutes from './routes/quizRoutes.js'
-import gamificationRoutes from './routes/gamificationRoutes.js'
 import errorHandler from './middleware/errorHandler.js'
 import notFound from './middleware/notFound.js'
 import { generalLimiter } from './middleware/rateLimiter.js'
-import errorHandler from './middleware/errorHandler.js'
-
-
-dotenv.config()
+import { socketAuthMiddleware } from './middleware/socketAuth.js'
+import authRoutes from './routes/auth.routes.js'
+import userRoutes from './routes/userRoutes.js'
+import childRoutes from './routes/childRoutes.js'
+import storyRoutes from './routes/storyRoutes.js'
+import quizRoutes from './routes/quizRoutes.js'
+import gamificationRoutes from './routes/gamificationRoutes.js'
+import Child from './models/Child.js'
 
 const app = express()
 const httpServer = createServer(app)
@@ -39,13 +35,6 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use('/api', generalLimiter)
 
-// Routes
-app.use('/api/auth', authRoutes)
-app.use('/api/users', userRoutes)
-app.use('/api/children', childRoutes)
-app.use('/api/quiz', quizRoutes)
-app.use('/api/gamification', gamificationRoutes)
-
 // Health Check
 app.get('/api/health', (req, res) => {
   res.json({
@@ -56,20 +45,101 @@ app.get('/api/health', (req, res) => {
   })
 })
 
-// Socket.io
+// ============== SOCKET.IO SETUP ==============
+
+io.use(socketAuthMiddleware)
+
 io.on('connection', (socket) => {
-  console.log('🔌 Client connected:', socket.id)
+  const userId = socket.data.userId
+  console.log(`🔌 Authenticated client connected: ${socket.id} (User: ${userId})`)
+
+  socket.data.rooms = new Set()
+
+  socket.on('join:child', async (data) => {
+    try {
+      const { childId } = data
+
+      if (!childId) {
+        socket.emit('error', { message: 'childId is required' })
+        return
+      }
+
+      const child = await Child.findById(childId)
+      if (!child) {
+        socket.emit('error', { message: 'Child not found' })
+        return
+      }
+
+      if (child.parentId.toString() !== userId.toString()) {
+        socket.emit('error', { message: 'Unauthorized: You do not own this child' })
+        return
+      }
+
+      const roomName = `child:${childId}`
+      socket.join(roomName)
+      socket.data.rooms.add(roomName)
+      socket.data.currentChildId = childId
+
+      console.log(`👧 ${socket.id} joined room: ${roomName}`)
+      socket.emit('room:joined', { childId, roomName })
+    } catch (error) {
+      console.error('Error joining room:', error)
+      socket.emit('error', { message: error.message })
+    }
+  })
+
+  socket.on('leave:child', (data) => {
+    try {
+      const { childId } = data
+      const roomName = `child:${childId}`
+
+      socket.leave(roomName)
+      socket.data.rooms.delete(roomName)
+
+      if (socket.data.currentChildId === childId) {
+        delete socket.data.currentChildId
+      }
+
+      console.log(`👧 ${socket.id} left room: ${roomName}`)
+      socket.emit('room:left', { childId })
+    } catch (error) {
+      console.error('Error leaving room:', error)
+      socket.emit('error', { message: error.message })
+    }
+  })
+
+  socket.on('story:subscribe', (storyId) => {
+    const roomName = `story:${storyId}`
+    socket.join(roomName)
+    socket.data.rooms.add(roomName)
+    console.log(`📖 ${socket.id} subscribed to story: ${storyId}`)
+  })
+
+  socket.on('story:unsubscribe', (storyId) => {
+    const roomName = `story:${storyId}`
+    socket.leave(roomName)
+    socket.data.rooms.delete(roomName)
+    console.log(`📖 ${socket.id} unsubscribed from story: ${storyId}`)
+  })
+
   socket.on('disconnect', () => {
-    console.log('❌ Client disconnected:', socket.id)
+    console.log(`❌ Client disconnected: ${socket.id}`)
+  })
+
+  socket.on('error', (error) => {
+    console.error(`Socket error for ${socket.id}:`, error)
   })
 })
 
-import authRoutes from './routes/auth.routes.js'
-import childRoutes from './routes/child.routes.js';
-import progressRoutes from './routes/progress.routes.js';
+// Routes
 app.use('/api/auth', authRoutes)
-app.use('/api/children', childRoutes);
-app.use('/api/progress', progressRoutes);
+app.use('/api/users', userRoutes)
+app.use('/api/children', childRoutes)
+app.use('/api/stories', storyRoutes)
+app.use('/api/quiz', quizRoutes)
+app.use('/api/gamification', gamificationRoutes)
+
+// 404 Handler
 app.use(notFound)
 
 // Error Handler
