@@ -21,6 +21,8 @@ import gamificationRoutes from './routes/gamificationRoutes.js'
 import storyRoutes from './routes/storyRoutes.js'
 import progressRoutes from './routes/progress.routes.js'
 import schoolRoutes from './routes/school.routes.js'
+import adminRoutes from './routes/admin.routes.js';
+
 
 // استيراد الـ Middlewares والـ Models
 import errorHandler from './middleware/errorHandler.js'
@@ -57,6 +59,7 @@ app.use('/api/gamification', gamificationRoutes)
 app.use('/api/stories', storyRoutes)
 app.use('/api/progress', progressRoutes) // دمج مسار progressRoutes  
 app.use('/api/schools', schoolRoutes)
+app.use('/api/admin', adminRoutes);
 
 // Health Check API
 app.get('/api/health', (req, res) => {
