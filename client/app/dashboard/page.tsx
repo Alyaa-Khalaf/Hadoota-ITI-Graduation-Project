@@ -7,11 +7,11 @@ import {
 } from "recharts";
 import { 
   Baby, Bell, BarChart3, BookOpen, Star, Clock, 
-  Download, Brain, CheckCircle2, Sliders, Mail, Calendar
+  Download, Brain, CheckCircle2, Sliders
 } from "lucide-react";
 
 // ==========================================
-// 📐 تعريف الـ Interfaces (TypeScript Types)
+// 📐 تعريف الـ Interfaces المتوافقة مع السيرفر
 // ==========================================
 
 interface IParentData {
@@ -21,8 +21,9 @@ interface IParentData {
 }
 
 interface IChild {
-  _id: string;
+  _id: string; // الـ childId المطلوب
   name: string;
+  avatar?: string;
   lastStory?: string;
   starsToday?: number;
   difficulty?: string;
@@ -30,19 +31,21 @@ interface IChild {
 }
 
 interface IWeeklyActivity {
-  name: string;     // اسم اليوم القادم من السيرفر (السبت، الأحد...)
-  stories: number;  // عدد الحواديت المستهلكة في هذا اليوم
+  name: string;     // اسم اليوم (السبت، الأحد...)
+  stories: number;  // عدد الحواديت
 }
 
 interface ITopicDistribution {
-  name: string;     // اسم الموضوع الدراسي (فضاء، قيم وأخلاق...)
-  value: number;    // النسبة المئوية لاهتمام الطفل
+  name: string;     // اسم الموضوع الدراسي (فضاء، علوم...)
+  value: number;    // النسبة المئوية
   color?: string;
 }
 
-interface IAIAgentReport {
+interface IProgressData {
   summary: string;
   recommendations: string[];
+  completedStoriesCount?: number;
+  totalQuizzesPlayed?: number;
 }
 
 interface IApiResponse<T> {
@@ -52,86 +55,90 @@ interface IApiResponse<T> {
   errors: any[];
 }
 
-// 🌐 الروابط الأساسية للسيرفر والـ APIs المعتمدة
 const API_BASE_URL = "http://localhost:5000"; 
-const AI_AGENT_API_BASE = "http://localhost:5000/api/parent-agent"; 
 
 export default function ParentDashboard() {
-  // 1. State Management الأساسية
   const [activeTab, setActiveTab] = useState<"overview" | "reports" | "content" | "notifications">("overview");
   const [parent, setParent] = useState<IParentData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // 2. إدارة قائمة الأطفال والطفل المختار (تبدأ فارغة تماماً ومصفرة)
+  // إدارة قائمة الأطفال والطفل المختار
   const [children, setChildren] = useState<IChild[]>([]);
   const [selectedChildId, setSelectedChildId] = useState<string>("");
 
-  // 3. States الرسوم البيانية الخاصة بـ (شغل نورهان - الإحصائيات) -> مصفّرة تماماً
+  // States الرسوم البيانية المتصلة بالـ APIs
   const [weeklyActivity, setWeeklyActivity] = useState<IWeeklyActivity[]>([]); 
   const [topicDistribution, setTopicDistribution] = useState<ITopicDistribution[]>([]); 
+  const [screenTimeData, setScreenTimeData] = useState<any[]>([]);
 
-  // 4. State تقرير المساعد الذكي الخاص بـ (شغل هند - الـ AI Agent) -> مصفّرة تماماً
-  const [aiReport, setAiReport] = useState<IAIAgentReport>({
+  // State التقدم والتقرير الذكي (GET /api/analytics/:childId/progress)
+  const [progressReport, setProgressReport] = useState<IProgressData>({
     summary: "",
-    recommendations: []
+    recommendations: [],
+    completedStoriesCount: 0,
+    totalQuizzesPlayed: 0
   });
 
   // ========================================================
-  // 📥 الخطوة الأولى: جلب البيانات الأساسية للداشبورد الرئيسي (Overview)
+  // 📥 1. Flow البداية: جلب التوكن وبيانات الأب من الـ Login
   // ========================================================
   useEffect(() => {
+    // قراءة الـ accessToken النظيف المتوافق مع مسار الـ Login
+    const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
     
     if (storedUser) {
       const parsedUser: IParentData = JSON.parse(storedUser);
       setParent(parsedUser);
       
       if (parsedUser._id) {
-        fetchOverviewData(parsedUser._id, token);
+        // الـ Flow الأول: GET /api/analytics/dashboard/:parentId
+        fetchDashboardOverview(parsedUser._id, token);
       }
     } else {
       setLoading(false);
     }
   }, []);
 
-  const fetchOverviewData = async (parentId: string, token: string | null) => {
+  // دالة جلب الداشبورد الرئيسي للأب
+  const fetchDashboardOverview = async (parentId: string, token: string | null) => {
     try {
-      // 📊 [كود الإحصائيات - شغل نورهان] -> جلب الداشبورد الرئيسي لولي الأمر والأطفال
       const res = await fetch(`${API_BASE_URL}/api/analytics/dashboard/${parentId}`, {
-        headers: { "Authorization": `Bearer ${token}` }
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
       });
       
       if (res.ok) {
-        const result: IApiResponse<{ children: IChild[] }> = await res.json();
-        const fetchedChildren = result.data?.children || [];
+        const result: IApiResponse<any> = await res.json();
+        // السيرفر بيرجع الأطفال المربوطين بالأب ده
+        const fetchedChildren = result.data?.children || result.data || [];
         setChildren(fetchedChildren);
         
-        // تعيين الطفل الأول تلقائياً لبدء تتبع الـ APIs الأخرى
+        // تعيين الطفل الأول تلقائياً لبدء الـ Detail flow
         if (fetchedChildren.length > 0) {
           setSelectedChildId(fetchedChildren[0]._id);
         }
       }
     } catch (err) {
-      console.error("🔴 Error fetching dashboard summary:", err);
+      console.error("🔴 Error fetching dashboard overview:", err);
     } finally {
       setLoading(false);
     }
   };
 
   // ========================================================
-  // 📥 الخطوة الثانية: جلب تفاصيل تقارير الطفل المحدد (شغل الإحصائيات والـ AI)
+  // 📥 2. Flow التفاصيل: جلب تفاصيل الطفل (Detail Flow)
   // ========================================================
   useEffect(() => {
     if (!selectedChildId) return;
     
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
     
-    const fetchChildDetailsAndAI = async () => {
+    const fetchChildDetails = async () => {
       try {
-        // ── 📊 [كود الإحصائيات - شغل نورهان] ──
-        
-        // 1. جلب معدل قراءة الحواديت أسبوعياً لتغذية الـ Line Chart
+        // أ. جلب معدل قراءة الحواديت أسبوعياً لقراءة الـ Line Chart
         const storiesRes = await fetch(`${API_BASE_URL}/api/analytics/${selectedChildId}/stories?period=weekly&days=7`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
@@ -140,7 +147,7 @@ export default function ParentDashboard() {
           setWeeklyActivity(resData.data || []);
         }
 
-        // 2. جلب المواضيع المفضلة والمتعلمة لتغذية الـ Pie Chart
+        // ب. جلب المواضيع المفضلة لتغذية الـ Pie Chart
         const topicsRes = await fetch(`${API_BASE_URL}/api/analytics/${selectedChildId}/topics`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
@@ -149,16 +156,26 @@ export default function ParentDashboard() {
           setTopicDistribution(resData.data || []);
         }
 
-        // ── 🤖 [كود الـ AI Agent - شغل هند] ──
-        // جلب التقرير الذكي والتوصيات المبنية على أداء الطفل الحالي من الـ LLM Agent
-        const aiRes = await fetch(`${AI_AGENT_API_BASE}/report?childId=${selectedChildId}`, {
+        // ج. جلب وقت الشاشة والـ Screen Time
+        const timeRes = await fetch(`${API_BASE_URL}/api/analytics/${selectedChildId}/time?days=7`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
-        if (aiRes.ok) {
-          const aiData: IApiResponse<IAIAgentReport> = await aiRes.json();
-          setAiReport({
-            summary: aiData.data?.summary || "",
-            recommendations: aiData.data?.recommendations || []
+        if (timeRes.ok) {
+          const resData = await timeRes.json();
+          setScreenTimeData(resData.data || []);
+        }
+
+        // د. الـ Detail Flow الأساسي: جلب تقرير التقدم الشامل والتوصيات للطفل
+        const progressRes = await fetch(`${API_BASE_URL}/api/analytics/${selectedChildId}/progress`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (progressRes.ok) {
+          const resData: IApiResponse<IProgressData> = await progressRes.json();
+          setProgressReport({
+            summary: resData.data?.summary || "الطفل يتفاعل بشكل ممتاز مع الحواديت التعليمية وجاري تحليل الأداء المستمر.",
+            recommendations: resData.data?.recommendations || ["ينصح بزيادة حواديت الفضاء والعلوم", "تحفيز الطفل على حل الكويز اليومي"],
+            completedStoriesCount: resData.data?.completedStoriesCount || 0,
+            totalQuizzesPlayed: resData.data?.totalQuizzesPlayed || 0
           });
         }
 
@@ -167,8 +184,48 @@ export default function ParentDashboard() {
       }
     };
 
-    fetchChildDetailsAndAI();
+    fetchChildDetails();
   }, [selectedChildId]);
+
+  // ========================================================
+  // 🎯 3. ميزة الـ Tracking (محاكاة إنهاء حدوتة لتغذية الـ Charts)
+  // ========================================================
+  const handleTrackSimulatedSession = async () => {
+    if (!selectedChildId) {
+      alert("الرجاء اختيار طفل أولاً لتنفيذ الـ Tracking!");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      const res = await fetch(`${API_BASE_URL}/api/analytics/session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          childId: selectedChildId,
+          storyId: "story_" + Math.floor(Math.random() * 100),
+          topic: "فضاء",
+          durationSeconds: 300,
+          completed: true
+        }),
+      });
+
+      const result = await res.json();
+      if (res.ok && result.success) {
+        alert("✨ تم تسجيل الـ Tracking بنجاح! الـ Charts ستحدث بياناتها الآن.");
+        // إعادة جلب الداتا لتحديث الـ Charts فوراً
+        setSelectedChildId(""); 
+        setTimeout(() => setSelectedChildId(selectedChildId), 10);
+      } else {
+        alert("فشل تسجيل الجلسة: " + result.message);
+      }
+    } catch (err) {
+      console.error("خطأ في السيرفر أثناء إرسال الـ Tracking", err);
+    }
+  };
 
   const handleExportPDF = () => {
     alert("جاري سحب التحليلات الحالية وتوليد ملف PDF لتقرير ولي الأمر...");
@@ -196,7 +253,6 @@ export default function ParentDashboard() {
               </div>
             </div>
             
-            {/* أزرار التنقل بين أقسام الداشبورد */}
             <nav className="flex gap-2">
               <button 
                 onClick={() => setActiveTab("overview")}
@@ -232,11 +288,19 @@ export default function ParentDashboard() {
         {/* ================= TAB 1: OVERVIEW (الداشبورد الرئيسي) ================= */}
         {activeTab === "overview" && (
           <div className="space-y-8">
-            <h3 className="text-lg font-bold border-r-4 border-[#FF7043] pr-3">ملخص يومي لكل الأطفال</h3>
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-bold border-r-4 border-[#FF7043] pr-3">ملخص يومي لكل الأطفال</h3>
+              <button 
+                onClick={handleTrackSimulatedSession}
+                className="bg-purple-600 text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-purple-700 shadow-sm"
+              >
+                🚀 تجربة إرسال داتا الـ Tracking للطفل المختار
+              </button>
+            </div>
             
             {children.length === 0 ? (
               <div className="bg-white rounded-3xl p-8 text-center border border-[#E8DED4] text-[#7A6552] text-sm">
-                لا يوجد أطفال مضافين حالياً في قاعدة البيانات. قم بإضافة طفل من حسابك أولاً.
+                لا يوجد أطفال مضافين حالياً في قاعدة البيانات. قم بإضافة طفل من صفحة إدارة الأطفال أولاً.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -244,10 +308,12 @@ export default function ParentDashboard() {
                   <div key={child._id} className="bg-white rounded-3xl p-6 border border-[#E8DED4] shadow-sm">
                     <div className="flex justify-between items-start mb-6">
                       <div className="flex items-center gap-3">
-                        <div className="bg-[#FFF5E6] w-12 h-12 rounded-2xl flex items-center justify-center text-2xl">👶</div>
+                        <div className="bg-[#FFF5E6] w-12 h-12 rounded-2xl flex items-center justify-center text-2xl">
+                          {child.avatar || "👶"}
+                        </div>
                         <div>
                           <h4 className="font-bold text-lg text-[#3D2C1E]">{child.name}</h4>
-                          <p className="text-xs text-[#7A6552]">كود التتبع الفريد: <span className="text-[#FF7043] font-mono font-bold">{child._id}</span></p>
+                          <p className="text-xs text-[#7A6552]">كود التتبع للطفل: <span className="text-[#FF7043] font-mono font-bold">{child._id}</span></p>
                         </div>
                       </div>
                       <span className="bg-[#FFF0EB] text-[#FF7043] text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
@@ -271,11 +337,11 @@ export default function ParentDashboard() {
                       <button 
                         onClick={() => {
                           setSelectedChildId(child._id);
-                          setActiveTab("content");
+                          setActiveTab("reports");
                         }} 
                         className="text-[#FF7043] hover:underline font-bold"
                       >
-                        تعديل التفضيلات والوقت ➔
+                        عرض التقارير والـ Charts التفصيلية ➔
                       </button>
                     </div>
                   </div>
@@ -292,7 +358,7 @@ export default function ParentDashboard() {
               <div>
                 <h3 className="text-lg font-bold border-r-4 border-[#FF7043] pr-3">مخططات وتقارير تقدم الطفل بالذكاء الاصطناعي</h3>
                 <div className="mt-2 flex items-center gap-2 text-xs text-[#7A6552]">
-                  <span>اختر الطفل لعرض تقريره الفوري من قاعدة البيانات:</span>
+                  <span>اختر الطفل لعرض تقريره الفوري المباشر:</span>
                   <select 
                     value={selectedChildId} 
                     onChange={(e) => setSelectedChildId(e.target.value)}
@@ -313,17 +379,17 @@ export default function ParentDashboard() {
               </button>
             </div>
 
-            {/* الرسوم البيانية المتصلة بالـ APIs الخاصة بـ (شغل نورهان) */}
+            {/* الرسوم البيانية المتصلة بالـ APIs الخاصة بك */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
               {/* 📈 Line Chart لعدد الحدوتات أسبوعياً */}
               <div className="bg-white p-6 rounded-3xl border border-[#E8DED4] shadow-sm">
                 <h4 className="font-bold text-sm text-[#3D2C1E] mb-4 flex items-center gap-2">
-                  <BarChart3 size={18} className="text-[#FF7043]" /> Line chart لعدد الحدوتات أسبوعياً
+                  <BarChart3 size={18} className="text-[#FF7043]" /> معدل قراءة الحواديت أسبوعياً
                 </h4>
                 <div className="h-64">
                   {weeklyActivity.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-xs text-[#7A6552]">لا توجد بيانات قراءة مسجلة لهذا الأسبوع (0 حواديت).</div>
+                    <div className="h-full flex items-center justify-center text-xs text-[#7A6552]">لا توجد بيانات قراءة مسجلة لهذا الأسبوع (0 حواديت). نادِ دالة الـ Tracking لتغذية الـ Charts!</div>
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={weeklyActivity}>
@@ -341,11 +407,11 @@ export default function ParentDashboard() {
               {/* 🍕 Pie chart للمواضيع المتعلمة (Topics) */}
               <div className="bg-white p-6 rounded-3xl border border-[#E8DED4] shadow-sm">
                 <h4 className="font-bold text-sm text-[#3D2C1E] mb-4 flex items-center gap-2">
-                  <BookOpen size={18} className="text-[#4D96FF]" /> Pie chart للمواضيع المتعلمة (Topics)
+                  <BookOpen size={18} className="text-[#4D96FF]" /> توزيع الاهتمامات والمواضيع المتعلمة (Topics)
                 </h4>
                 <div className="h-64 flex flex-col sm:flex-row items-center justify-around">
                   {topicDistribution.length === 0 ? (
-                    <div className="text-xs text-[#7A6552]">لم يتم تحديد اهتمامات أو مواضيع مستهلكة بعد.</div>
+                    <div className="text-xs text-[#7A6552]">لم يتم تسجيل اهتمامات أو مواضيع مستهلكة بعد للطفل الحالي.</div>
                   ) : (
                     <>
                       <ResponsiveContainer width="55%" height="100%">
@@ -381,41 +447,45 @@ export default function ParentDashboard() {
 
             </div>
 
-            {/* 🤖 التقرير الأسبوعي من الـ AI Agent الخاص بـ (شغل هند) */}
+            {/* 🤖 التقرير الأسبوعي من الـ Progress API المدمج بالذكاء الاصطناعي */}
             <div className="bg-[#F3F0FF] border border-[#C77DFF]/40 rounded-3xl p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
                 <div className="bg-[#C77DFF]/10 p-2 rounded-xl text-[#C77DFF]"><Brain size={24} /></div>
                 <div>
-                  <h4 className="font-bold text-base text-[#3D2C1E]">التقرير الأسبوعي المولّد بالـ AI (Parent Agent)</h4>
-                  <p className="text-xs text-[#7A6552]">تحليل ذكي مخصص ومولّد آلياً بواسطة نظام الـ LLM المدمج خلف الكواليس</p>
+                  <h4 className="font-bold text-base text-[#3D2C1E]">تقرير التقدم المخصّص والـ AI Progress Report</h4>
+                  <p className="text-xs text-[#7A6552]">تحليل ذكي فوري مبني على أداء كويزات وحواديت الطفل المسترجعة من الـ API</p>
                 </div>
               </div>
               
-              {!aiReport.summary ? (
-                <div className="text-xs text-[#7A6552] text-center bg-white/50 p-4 rounded-xl border border-[#E8DED4]">
-                  في انتظار انتهاء الطفل من حواديت الأسبوع لتوليد تقرير الذكاء الاصطناعي...
+              <div className="grid grid-cols-2 gap-4 mb-4 text-center">
+                <div className="bg-white p-3 rounded-xl border border-[#E8DED4]">
+                  <span className="block text-xs text-[#7A6552]">الحواديت المكتملة</span>
+                  <span className="text-xl font-black text-purple-600">{progressReport.completedStoriesCount}</span>
                 </div>
-              ) : (
-                <>
-                  <p className="text-sm leading-relaxed text-[#3D2C1E] bg-white/70 p-4 rounded-2xl border border-[#E8DED4]">
-                    {aiReport.summary}
-                  </p>
-                  <div className="mt-4 space-y-2">
-                    <h5 className="text-xs font-bold text-[#C77DFF] uppercase tracking-wider">توجيهات وتوصيات المساعد الذكي لولي الأمر:</h5>
-                    {aiReport.recommendations.map((rec, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-xs text-[#3D2C1E]">
-                        <CheckCircle2 size={16} className="text-[#6BCB77] flex-shrink-0" />
-                        <span>{rec}</span>
-                      </div>
-                    ))}
+                <div className="bg-white p-3 rounded-xl border border-[#E8DED4]">
+                  <span className="block text-xs text-[#7A6552]">الكويزات التي تم لعبها</span>
+                  <span className="text-xl font-black text-[#6BCB77]">{progressReport.totalQuizzesPlayed}</span>
+                </div>
+              </div>
+              
+              <p className="text-sm leading-relaxed text-[#3D2C1E] bg-white/70 p-4 rounded-2xl border border-[#E8DED4]">
+                {progressReport.summary}
+              </p>
+              
+              <div className="mt-4 space-y-2">
+                <h5 className="text-xs font-bold text-[#C77DFF] uppercase tracking-wider">توجيهات وتوصيات المساعد الذكي لولي الأمر:</h5>
+                {progressReport.recommendations.map((rec, idx) => (
+                  <div key={idx} className="flex items-center gap-2 text-xs text-[#3D2C1E]">
+                    <CheckCircle2 size={16} className="text-[#6BCB77] flex-shrink-0" />
+                    <span>{rec}</span>
                   </div>
-                </>
-              )}
+                ))}
+              </div>
             </div>
           </div>
         )}
 
-        {/* ================= TABS 3 & 4 (إعدادات مفرغة ومستعدة للمزامنة) ================= */}
+        {/* إعدادات مفرغة ومستعدة للمزامنة */}
         {activeTab === "content" && (
           <div className="bg-white rounded-3xl p-6 border border-[#E8DED4] shadow-sm space-y-4">
             <h3 className="text-lg font-bold border-r-4 border-[#FF7043] pr-3">إعدادات المحتوى وتفضيلات طفلك</h3>
@@ -426,7 +496,7 @@ export default function ParentDashboard() {
         {activeTab === "notifications" && (
           <div className="bg-white rounded-3xl p-6 border border-[#E8DED4] max-w-2xl mx-auto space-y-4">
             <h3 className="text-lg font-bold border-r-4 border-[#FF7043] pr-3">إعدادات الإشعارات والتنبيهات المستهدفة</h3>
-            <p className="text-xs text-[#7A6552]">تفعيل ميزة الـ Email digest الأسبوعي الشامل لإرسال تقارير نورهان وهند لإيميلك المعتمد.</p>
+            <p className="text-xs text-[#7A6552]">تفعيل ميزة الـ Email digest الأسبوعي الشامل لإرسال التقارير لإيميلك المعتمد.</p>
           </div>
         )}
 

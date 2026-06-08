@@ -22,10 +22,25 @@ export default function ChildrenPage() {
   const [childAge, setChildAge] = useState("3");
   const [childAvatar, setChildAvatar] = useState("👦");
 
-  // 1️⃣ جلب قائمة الأطفال من السيرفر (API هند)
+  // 1️⃣ جلب قائمة الأطفال من السيرفر (نسخة مطورة لالتقاط التوكن)
   const fetchChildren = async () => {
     try {
-      const token = localStorage.getItem("accessToken"); // جلب التوكن من المتصفح
+      // محاولة جلب التوكن بكل الأسماء المحتملة لضمان التوافق
+      let token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      
+      if (!token) {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key) {
+            const value = localStorage.getItem(key);
+            if (value && value.startsWith("eyJ")) {
+              token = value;
+              break;
+            }
+          }
+        }
+      }
+
       const res = await fetch("http://localhost:5000/api/children", {
         method: "GET",
         headers: {
@@ -35,26 +50,36 @@ export default function ChildrenPage() {
 
       if (res.ok) {
         const result = await res.json();
-        setChildren(result.data || []); // هند ترجع البيانات داخل كائن data
+        setChildren(result.data || []); 
+      } else {
+        console.error("السيرفر رفض جلب الأطفال كود:", res.status);
       }
     } catch (err) {
       console.error("خطأ في جلب قائمة الأطفال", err);
     }
   };
 
-  useEffect(() => {
-    fetchChildren();
-  }, []);
-
-  // 2️⃣ إضافة طفل جديد وإرساله للسيرفر (API هند)
+  // 2️⃣ إضافة طفل جديد وإرساله للسيرفر (نسخة مطورة لالتقاط التوكن)
   const handleAddChild = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!childName || !childAge) return;
 
     try {
-      const token = localStorage.getItem("accessToken");
+      let token = localStorage.getItem("accessToken") || localStorage.getItem("token");
       
-      // تحديد النوع تلقائياً بناءً على الأفاتار ليتوافق مع السيرفر
+      if (!token) {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key) {
+            const value = localStorage.getItem(key);
+            if (value && value.startsWith("eyJ")) {
+              token = value;
+              break;
+            }
+          }
+        }
+      }
+      
       const determinedGender = childAvatar === "👧" ? "female" : "male";
 
       const res = await fetch("http://localhost:5000/api/children", {
@@ -67,7 +92,6 @@ export default function ChildrenPage() {
           name: childName, 
           age: Number(childAge), 
           avatar: childAvatar,
-          gender: determinedGender
         }),
       });
 
@@ -76,23 +100,35 @@ export default function ChildrenPage() {
         setChildName("");
         setChildAge("3");
         setChildAvatar("👦");
-        fetchChildren(); // تحديث القائمة فوراً
-      } 
+        fetchChildren(); 
+      } else {
+        console.error("فشلت إضافة الطفل، كود الاستجابة:", res.status);
+      }
     } catch (err) {
       console.error("خطأ في إضافة الطفل", err);
     }
   };
 
-  // 3️⃣ تأكيد حذف الطفل من السيرفر (API هند)
+  // 3️⃣ تأكيد حذف الطفل من السيرفر (نسخة مطورة لالتقاط التوكن)
   const confirmDelete = async () => {
     if (!selectedChildId) return;
-    
-    console.log("الـ ID الجاري حذفه الآن هو:", selectedChildId); 
 
     try {
-      const token = localStorage.getItem("accessToken"); 
+      let token = localStorage.getItem("accessToken") || localStorage.getItem("token");
       
-      // إرسال الطلب بشكل مباشر للمسار الموحد بعد تنظيف تكرار السيرفر
+      if (!token) {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key) {
+            const value = localStorage.getItem(key);
+            if (value && value.startsWith("eyJ")) {
+              token = value;
+              break;
+            }
+          }
+        }
+      }
+      
       let res = await fetch(`http://localhost:5000/api/children/${selectedChildId}`, {
         method: "DELETE",
         headers: { 
@@ -102,19 +138,17 @@ export default function ChildrenPage() {
       });
       
       if (res.ok) {
-        console.log("تم الحذف بنجاح من السيرفر! 🎉");
         setShowDeleteDialog(false);
         setSelectedChildId(null);
-        fetchChildren(); // تحديث القائمة فوراً في الواجهة
+        fetchChildren(); 
       } else {
-        console.error("فشل الحذف، كود استجابة السيرفر:", res.status);
         alert(`فشل الحذف، كود حالة السيرفر: ${res.status}`);
       }
-
     } catch (err) {
       console.error("خطأ في حذف الطفل", err);
     }
   };
+
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6" dir="rtl">
@@ -145,8 +179,9 @@ export default function ChildrenPage() {
                   variant="sky" 
                   className="!p-2 !bg-red-50 text-red-500 hover:!bg-red-100 border-none"
                   onClick={() => {
-                    if (childId) {
-                      setSelectedChildId(childId);
+                    const currentId = child._id || child.id || null;
+                    if (currentId) {
+                      setSelectedChildId(currentId);
                       setShowDeleteDialog(true);
                     }
                   }}

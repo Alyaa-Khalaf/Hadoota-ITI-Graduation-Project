@@ -12,49 +12,65 @@ export default function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("كلمتا المرور غير متطابقتين!");
-      return;
-    }
+  if (formData.password !== formData.confirmPassword) {
+    setError("كلمتا المرور غير متطابقتين!");
+    return;
+  }
 
-    if (formData.password.length < 8) {
-      setError("يجب أن تكون كلمة المرور 8 أحرف أو أكثر!");
-      return;
-    }
+  if (formData.password.length < 8) {
+    setError("يجب أن تكون كلمة المرور 8 أحرف أو أكثر!");
+    return;
+  }
 
-    setIsLoading(true);
+  setIsLoading(true);
 
-    try {
-      // الـ Endpoint الخاص بعلياء لإنشاء الحساب
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/auth/register`, {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/auth/register`,
+      {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
           password: formData.password,
         }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "حدث خطأ أثناء إنشاء الحساب");
       }
+    );
 
-      localStorage.setItem("accessToken", data.data.accessToken);
-      localStorage.setItem("refreshToken", data.data.refreshToken);
-      router.push("/onboarding");
-    } catch (err: any) {
-      setError(err.message || "تعذر إنشاء الحساب، يرجى المحاولة لاحقاً.");
-    } finally {
-      setIsLoading(false);
+    const data = await res.json();
+
+    console.log("REGISTER RESPONSE:", data);
+
+    if (!res.ok) {
+      throw new Error(data.message || "حدث خطأ أثناء إنشاء الحساب");
     }
-  };
 
+    const token = data?.data?.accessToken;
+
+    if (!token) {
+      throw new Error("لم يتم استلام التوكن من السيرفر");
+    }
+
+    localStorage.setItem("token", token);
+    localStorage.setItem("parentName", formData.name);
+
+    console.log("SAVED TOKEN:", localStorage.getItem("token"));
+
+    router.push("/onboarding");
+  } catch (err: any) {
+    setError(
+      err.message || "تعذر إنشاء الحساب، يرجى المحاولة لاحقاً."
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
   return (
     <form onSubmit={handleSubmit} className="space-y-4 font-sans text-right" dir="rtl">
       {error && (

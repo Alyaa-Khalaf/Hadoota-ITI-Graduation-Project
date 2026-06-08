@@ -33,7 +33,7 @@ export default function ChildrenManager() {
   useEffect(() => {
     const fetchChildren = async () => {
       try {
-        const token = localStorage.getItem("accessToken");
+        const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
         const res = await fetch("http://localhost:5000/api/children", {
           method: "GET",
           headers: {
@@ -42,6 +42,7 @@ export default function ChildrenManager() {
         });
 
         const result = await res.json();
+        console.log("البيانات القادمة من السيرفر:", result);
 
         if (res.ok && result.success) {
           // نورهان ترجع البيانات داخل result.data
@@ -50,6 +51,7 @@ export default function ChildrenManager() {
           setError(result.message || "فشل في تحميل قائمة الأطفال.");
         }
       } catch (err) {
+        console.error("خطأ في جلب الأطفال:", err);
         setError("حدث خطأ أثناء الاتصال بالسيرفر لجلب الأطفال.");
       } finally {
         setIsFetching(false);
@@ -68,7 +70,7 @@ export default function ChildrenManager() {
     setError("");
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
       const res = await fetch("http://localhost:5000/api/children", {
         method: "POST",
         headers: {
@@ -103,42 +105,57 @@ export default function ChildrenManager() {
     }
   };
 
-  // 3️⃣ تأكيد حذف الطفل من السيرفر وقاعدة البيانات
   const confirmDelete = async () => {
-    if (!selectedChildId) return;
-    setError("");
+    if (!selectedChildId) {
+      alert("لم يتم تحديد طفل لحذفه!");
+      return;
+    }
 
     try {
-      const token = localStorage.getItem("accessToken");
-      const res = await fetch(`http://localhost:5000/api/children/${selectedChildId}`, {
+      let token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      
+      if (!token) {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key) {
+            const value = localStorage.getItem(key);
+            if (value && value.startsWith("eyJ")) {
+              token = value;
+              break;
+            }
+          }
+        }
+      }
+
+      // تحويل الـ ID لـ String نضيف للتأكد من عدم وجود مسافات أو undefined
+      const cleanId = String(selectedChildId).trim();
+      
+      // السطر ده هيطبعلك في الـ Inspect الرابط الحقيقي المبعوث بالظبط
+      console.log("جاري إرسال طلب حذف للرابط:", `http://localhost:5000/api/children/${cleanId}`);
+      
+      const res = await fetch(`http://localhost:5000/api/children/${cleanId}`, {
         method: "DELETE",
-        headers: {
+        headers: { 
           "Authorization": `Bearer ${token}`,
-        },
+          "Content-Type": "application/json"
+        }
       });
-
-      const result = await res.json();
-
-      if (res.ok && result.success) {
-        // فلترة وحذف الطفل من القائمة المعروضة أمام المستخدم
-        setChildren(children.filter((child) => (child._id || child.id) !== selectedChildId));
+      
+      if (res.ok) {
         setShowDeleteDialog(false);
+        setChildren((prevChildren) => 
+          prevChildren.filter((child) => (child._id || child.id) !== selectedChildId)
+        );
+
         setSelectedChildId(null);
       } else {
-        setChildren(children.filter((child) => (child._id || child.id) !== selectedChildId));
-        setShowDeleteDialog(false);
-        setSelectedChildId(null);
+        console.error("فشل السيرفر في الحذف. الكود:", res.status);
+        alert(`فشل الحذف، كود حالة السيرفر: ${res.status}`);
       }
     } catch (err) {
-      setChildren(children.filter((child) => (child._id || child.id) !== selectedChildId));
-      setShowDeleteDialog(false);
-      setSelectedChildId(null);
+      console.error("خطأ في دالة حذف الطفل بالفرونت:", err);
     }
   };
-
-  if (isFetching) {
-    return <div className="text-center py-12 font-bold text-gray-500" dir="rtl">جاري تحميل ملفات الأبطال الصغار... ⏳</div>;
-  }
 
   return (
     <div className="space-y-6 text-right" dir="rtl">
