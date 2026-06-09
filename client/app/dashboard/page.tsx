@@ -99,6 +99,7 @@ export default function ParentDashboard() {
       setLoading(false);
     }
   }, []);
+  
 
   // دالة جلب الداشبورد الرئيسي للأب
   const fetchDashboardOverview = async (parentId: string, token: string | null) => {
@@ -237,7 +238,37 @@ export default function ParentDashboard() {
         <div className="text-xl font-bold text-[#FF7043] animate-pulse">جاري سحب بيانات الداشبورد والتحليلات الحية...</div>
       </div>
     );
+  };
+
+  const handleGenerateNewReport = async () => {
+  if (!selectedChildId) return;
+  
+  setLoading(true); // تشغيل الـ Loading State أثناء التوليد
+  try {
+    const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+    // إرسال طلب POST لسيرفر هند لإجبار الـ AI على توليد تقرير جديد فوراً
+    const res = await fetch(`http://localhost:5000/api/parent-agent/generate`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ childId: selectedChildId })
+    });
+    
+    const result = await res.json();
+    if (res.ok && result.success) {
+      // بعد التوليد الناجح، نعيد جلب التقرير المحدث ليعرض في الـ UI
+      fetchAIReport(selectedChildId); 
+    } else {
+      alert("فشل الـ AI في توليد التقرير حالياً.");
+    }
+  } catch (err) {
+    console.error("خطأ أثناء توليد تقرير الـ AI:", err);
+  } finally {
+    setLoading(false); // إغلاق الـ Loading State
   }
+};
 
   return (
     <div className="min-h-screen bg-[#FFFBF0] font-sans text-[#3D2C1E]" dir="rtl">
@@ -481,6 +512,20 @@ export default function ParentDashboard() {
                   </div>
                 ))}
               </div>
+
+              <div className="flex justify-between items-center border-b pb-3 mb-4">
+                <h4 className="text-md font-black text-secondary flex items-center gap-2">
+                  <span>🤖</span> تقرير الـ AI الأسبوعي المطور
+                </h4>
+                {/* زرار ولّد تقرير جديد بضغطة زر */}
+                <button 
+                  onClick={handleGenerateNewReport}
+                  disabled={loading}
+                  className="text-xs bg-primary text-white font-bold px-4 py-1.5 rounded-xl hover:bg-primary/90 transition disabled:opacity-50"
+                >
+                  {loading ? "جاري التوليد... ⏳" : "ولّد تقرير جديد 🔄"}
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -503,4 +548,8 @@ export default function ParentDashboard() {
       </div>
     </div>
   );
+}
+
+function fetchAIReport(selectedChildId: string) {
+  throw new Error("Function not implemented.");
 }

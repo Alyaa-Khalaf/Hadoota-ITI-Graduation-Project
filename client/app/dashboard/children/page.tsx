@@ -22,25 +22,9 @@ export default function ChildrenPage() {
   const [childAge, setChildAge] = useState("3");
   const [childAvatar, setChildAvatar] = useState("👦");
 
-  // 1️⃣ جلب قائمة الأطفال من السيرفر (نسخة مطورة لالتقاط التوكن)
   const fetchChildren = async () => {
     try {
-      // محاولة جلب التوكن بكل الأسماء المحتملة لضمان التوافق
       let token = localStorage.getItem("accessToken") || localStorage.getItem("token");
-      
-      if (!token) {
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key) {
-            const value = localStorage.getItem(key);
-            if (value && value.startsWith("eyJ")) {
-              token = value;
-              break;
-            }
-          }
-        }
-      }
-
       const res = await fetch("http://localhost:5000/api/children", {
         method: "GET",
         headers: {
@@ -50,7 +34,9 @@ export default function ChildrenPage() {
 
       if (res.ok) {
         const result = await res.json();
-        setChildren(result.data || []); 
+        // ضمان التقاط البيانات بالشكل الصحيح من السيرفر
+        const fetchedList = result.data?.children || result.data || [];
+        setChildren(fetchedList); 
       } else {
         console.error("السيرفر رفض جلب الأطفال كود:", res.status);
       }
@@ -58,6 +44,7 @@ export default function ChildrenPage() {
       console.error("خطأ في جلب قائمة الأطفال", err);
     }
   };
+
 
   // 2️⃣ إضافة طفل جديد وإرساله للسيرفر (نسخة مطورة لالتقاط التوكن)
   const handleAddChild = async (e: React.FormEvent) => {
@@ -109,27 +96,15 @@ export default function ChildrenPage() {
     }
   };
 
-  // 3️⃣ تأكيد حذف الطفل من السيرفر (نسخة مطورة لالتقاط التوكن)
+
   const confirmDelete = async () => {
     if (!selectedChildId) return;
 
     try {
       let token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      const cleanId = String(selectedChildId).trim();
       
-      if (!token) {
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key) {
-            const value = localStorage.getItem(key);
-            if (value && value.startsWith("eyJ")) {
-              token = value;
-              break;
-            }
-          }
-        }
-      }
-      
-      let res = await fetch(`http://localhost:5000/api/children/${selectedChildId}`, {
+      let res = await fetch(`http://localhost:5000/api/children/${cleanId}`, {
         method: "DELETE",
         headers: { 
           "Authorization": `Bearer ${token}`,
@@ -137,10 +112,14 @@ export default function ChildrenPage() {
         }
       });
       
-      if (res.ok) {
+      const result = await res.json();
+      
+      if (res.ok && result.success) {
         setShowDeleteDialog(false);
+        setChildren((prevChildren) => 
+          prevChildren.filter((child) => String(child._id || child.id) !== cleanId)
+        );
         setSelectedChildId(null);
-        fetchChildren(); 
       } else {
         alert(`فشل الحذف، كود حالة السيرفر: ${res.status}`);
       }

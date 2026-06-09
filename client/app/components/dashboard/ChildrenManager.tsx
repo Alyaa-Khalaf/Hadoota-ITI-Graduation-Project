@@ -45,13 +45,13 @@ export default function ChildrenManager() {
         console.log("البيانات القادمة من السيرفر:", result);
 
         if (res.ok && result.success) {
-          // نورهان ترجع البيانات داخل result.data
-          setChildren(result.data || []);
+          // الحل هنا: قراءة المصفوفة سواء رجعت مباشرة أو مغلفة داخل كبسولة children
+          const fetchedList = result.data?.children || result.data || [];
+          setChildren(fetchedList);
         } else {
           setError(result.message || "فشل في تحميل قائمة الأطفال.");
         }
       } catch (err) {
-        console.error("خطأ في جلب الأطفال:", err);
         setError("حدث خطأ أثناء الاتصال بالسيرفر لجلب الأطفال.");
       } finally {
         setIsFetching(false);
@@ -60,6 +60,7 @@ export default function ChildrenManager() {
 
     fetchChildren();
   }, []);
+
 
   // 2️⃣ إضافة طفل جديد وإرساله للسيرفر (POST)
   const handleAddChildSubmit = async (e: React.FormEvent) => {
@@ -113,25 +114,7 @@ export default function ChildrenManager() {
 
     try {
       let token = localStorage.getItem("accessToken") || localStorage.getItem("token");
-      
-      if (!token) {
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key) {
-            const value = localStorage.getItem(key);
-            if (value && value.startsWith("eyJ")) {
-              token = value;
-              break;
-            }
-          }
-        }
-      }
-
-      // تحويل الـ ID لـ String نضيف للتأكد من عدم وجود مسافات أو undefined
       const cleanId = String(selectedChildId).trim();
-      
-      // السطر ده هيطبعلك في الـ Inspect الرابط الحقيقي المبعوث بالظبط
-      console.log("جاري إرسال طلب حذف للرابط:", `http://localhost:5000/api/children/${cleanId}`);
       
       const res = await fetch(`http://localhost:5000/api/children/${cleanId}`, {
         method: "DELETE",
@@ -141,21 +124,24 @@ export default function ChildrenManager() {
         }
       });
       
-      if (res.ok) {
-        setShowDeleteDialog(false);
-        setChildren((prevChildren) => 
-          prevChildren.filter((child) => (child._id || child.id) !== selectedChildId)
-        );
+      const result = await res.json();
 
+      if (res.ok && result.success) {
+        setShowDeleteDialog(false);
+        // تحديث آمن للشاشة بحذف الطفل دون اللجوء لعمل ريفريش كامل
+        setChildren((prevChildren) => 
+          prevChildren.filter((child) => String(child._id || child.id) !== cleanId)
+        );
         setSelectedChildId(null);
       } else {
-        console.error("فشل السيرفر في الحذف. الكود:", res.status);
         alert(`فشل الحذف، كود حالة السيرفر: ${res.status}`);
       }
     } catch (err) {
       console.error("خطأ في دالة حذف الطفل بالفرونت:", err);
     }
   };
+
+  
 
   return (
     <div className="space-y-6 text-right" dir="rtl">
