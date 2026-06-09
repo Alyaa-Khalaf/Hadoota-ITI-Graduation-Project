@@ -1,13 +1,22 @@
-import type { Config } from 'tailwindcss'
-
-const config: Config = {
+/** @type {import('tailwindcss').Config} */
+module.exports = {
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
   ],
 
+
   theme: {
     extend: {
+       keyframes: {
+    wiggle: {
+      '0%, 100%': { transform: 'rotate(-6deg)' },
+      '50%': { transform: 'rotate(6deg)' },
+    },
+  },
+  animation: {
+    wiggle: 'wiggle 3s ease-in-out infinite',
+  },
       colors: {
         // Backgrounds
         'story-bg':    '#FFFBF0',
@@ -40,7 +49,9 @@ const config: Config = {
         ink:           '#3D2C1E',
         'ink-muted':   '#7A6552',
         'border-warm': '#E8DED4',
+        'header':'#511D43'
       },
+
 
       fontFamily: {
         sans: ['Cairo', 'sans-serif'],
@@ -58,10 +69,14 @@ const config: Config = {
         '2xl': '1.5rem',
         '3xl': '2rem',
       },
+
+      
+
+    
     },
   },
+
 
   plugins: [],
 }
 
-export default config
