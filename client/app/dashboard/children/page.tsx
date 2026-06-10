@@ -4,9 +4,6 @@ import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 
-// ==========================================
-// 📐 الأنواع والـ Interfaces المتوافقة مع سكيما هند الحقيقية
-// ==========================================
 
 /* تعليق: هيكل بيانات الطفل المطابق تماماً للـ Response القادم من قاعدة البيانات */
 interface Child {

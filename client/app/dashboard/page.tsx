@@ -67,7 +67,7 @@ interface INotification {
   createdAt: string;
 }
 
-/* تعليق: يمثل هيكل إعدادات وتفضيلات قنوات الإشعارات الخاصة بـ نورهان */
+/* تعليق: يمثل هيكل إعدادات وتفضيلات قنوات الإشعارات الخاصة */
 interface INotificationSettings {
   weeklyReport: { email: boolean; webPush: boolean };
   screenTime: { email: boolean; webPush: boolean };
