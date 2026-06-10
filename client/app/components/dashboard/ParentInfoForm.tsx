@@ -49,7 +49,12 @@ export default function ParentInfoForm() {
         if (res.ok && result.success) {
           setName(result.data.name || "");
           setEmail(result.data.email || "");
-          setAvatar(result.data.avatar || "👩");
+          const serverAvatar = result.data.avatar;
+          if (!serverAvatar || serverAvatar === "default-avatar.png") {
+            setAvatar("👩"); // الأفاتار الافتراضي للحسابات الجديدة
+          } else {
+            setAvatar(serverAvatar);
+          }
           setError(""); // مسح الأخطاء عند النجاح
         } else {
           setError(result.message || "فشل في جلب بيانات الحساب.");

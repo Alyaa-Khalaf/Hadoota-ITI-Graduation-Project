@@ -6,22 +6,25 @@ import {
   PieChart, Pie, Cell 
 } from "recharts";
 import { 
-  Baby, Bell, BarChart3, BookOpen, Star, Clock, 
-  Download, Brain, CheckCircle2, Sliders
+  Baby, Bell, BarChart3, BookOpen, Clock, 
+  Brain, CheckCircle2, Sliders, Sparkles, Lightbulb, Heart,
+  Check, Trash2, ShieldAlert, Trophy, Mail, Globe
 } from "lucide-react";
 
 // ==========================================
-// 📐 تعريف الـ Interfaces المتوافقة مع السيرفر
+// Interfaces 
 // ==========================================
 
+/* تعليق: هذا الـ Interface يمثل هيكل بيانات حساب الأب القادم من السيرفر */
 interface IParentData {
   _id: string;
   name: string;
   email: string;
 }
 
+/* تعليق: هذا الـ Interface يمثل هيكل بيانات الطفل الشخصية المسجلة في قاعدة البيانات */
 interface IChild {
-  _id: string; // الـ childId المطلوب
+  _id: string; 
   name: string;
   avatar?: string;
   lastStory?: string;
@@ -30,24 +33,49 @@ interface IChild {
   screenTime?: string;
 }
 
+/* تعليق: يمثل نقاط النشاط الأسبوعي للطفل لرسم المنحنى البياني */
 interface IWeeklyActivity {
-  name: string;     // اسم اليوم (السبت، الأحد...)
-  stories: number;  // عدد الحواديت
+  name: string;     
+  stories: number;  
 }
 
+/* تعليق: يمثل توزيع اهتمامات الطفل والمواضيع التي قرأها لرسم البياني الدائري */
 interface ITopicDistribution {
-  name: string;     // اسم الموضوع الدراسي (فضاء، علوم...)
-  value: number;    // النسبة المئوية
+  name: string;     
+  value: number;    
   color?: string;
 }
 
+/* تعليق: يمثل هيكل بيانات التقرير الأسبوعي الذكي المسترجع بالكامل من الـ API الخاصة بهند */
 interface IProgressData {
   summary: string;
   recommendations: string[];
   completedStoriesCount?: number;
   totalQuizzesPlayed?: number;
+  aiInsights?: string;              
+  nextWeekTopics?: string[];         
+  encouragementMessage?: string;    
 }
 
+/* تعليق: يمثل هيكل الإشعار الواحد القادم ديناميكياً من السيرفر */
+interface INotification {
+  id: string;
+  title: string;
+  body: string;
+  type: "weekly_report" | "screen_time" | "achievement" | "daily_reminder";
+  isRead: boolean;
+  createdAt: string;
+}
+
+/* تعليق: يمثل هيكل إعدادات وتفضيلات قنوات الإشعارات الخاصة بـ نورهان */
+interface INotificationSettings {
+  weeklyReport: { email: boolean; webPush: boolean };
+  screenTime: { email: boolean; webPush: boolean };
+  achievement: { email: boolean; webPush: boolean };
+  dailyReminder: { email: boolean; webPush: boolean };
+}
+
+/* تعليق: الهيكل القياسي الموحد لاستقبال ردود كل الـ APIs من السيرفر */
 interface IApiResponse<T> {
   success: boolean;
   message: string;
@@ -55,35 +83,42 @@ interface IApiResponse<T> {
   errors: any[];
 }
 
+// الرابط الأساسي لـ السيرفر المحلي (الباك إيند)
 const API_BASE_URL = "http://localhost:5000"; 
 
 export default function ParentDashboard() {
-  const [activeTab, setActiveTab] = useState<"overview" | "reports" | "content" | "notifications">("overview");
+  /* تعليق: الـ State المسؤولة عن تبديل الصفحات الداخلية (التبويبات) في لوحة التحكم */
+  const [activeTab, setActiveTab] = useState<"overview" | "reports" | "content" | "notifications" | "settings">("overview");
+  
+  /* تعليق: الـ States الخاصة ببيانات الأب، حالة التحميل العامة، وحالة تحميل توليد الـ AI */
   const [parent, setParent] = useState<IParentData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadingAI, setLoadingAI] = useState<boolean>(false); 
 
-  // إدارة قائمة الأطفال والطفل المختار
+  /* تعليق: الـ States الخاصة بإدارة الأطفال والطفل النشط المحدد حالياً */
   const [children, setChildren] = useState<IChild[]>([]);
   const [selectedChildId, setSelectedChildId] = useState<string>("");
 
-  // States الرسوم البيانية المتصلة بالـ APIs
+  /* تعليق: الـ States الخاصة ببيانات الرسوم البيانية للطفل المسترجعة من الـ API */
   const [weeklyActivity, setWeeklyActivity] = useState<IWeeklyActivity[]>([]); 
   const [topicDistribution, setTopicDistribution] = useState<ITopicDistribution[]>([]); 
-  const [screenTimeData, setScreenTimeData] = useState<any[]>([]);
 
-  // State التقدم والتقرير الذكي (GET /api/analytics/:childId/progress)
-  const [progressReport, setProgressReport] = useState<IProgressData>({
-    summary: "",
-    recommendations: [],
-    completedStoriesCount: 0,
-    totalQuizzesPlayed: 0
-  });
+  /* تعليق: الـ State المسؤولة عن حفظ داتا التقرير الأسبوعي الحقيقي المستلم من الـ API بدون داتا فيك */
+  const [progressReport, setProgressReport] = useState<IProgressData | null>(null);
+
+  /* تعليق: الـ States الخاصة بقائمة الإشعارات، وإظهار القائمة المنسدلة للجرس، وفلترة الإشعارات */
+  const [notifications, setNotifications] = useState<INotification[]>([]);
+  const [showBellDropdown, setShowBellDropdown] = useState<boolean>(false);
+  const [notificationFilter, setNotificationFilter] = useState<"all" | "unread" | "read">("all");
+
+  /* تعليق: الـ State المسؤولة عن حفظ تفضيلات وتوجيهات الإشعارات (تاسك نورهان) */
+  const [notificationSettings, setNotificationSettings] = useState<INotificationSettings | null>(null);
 
   // ========================================================
-  // 📥 1. Flow البداية: جلب التوكن وبيانات الأب من الـ Login
+  // 📥 1. خطاف البداية (useEffect) لجلب بيانات المستخدم والتهيئات
   // ========================================================
   useEffect(() => {
-    // قراءة الـ accessToken النظيف المتوافق مع مسار الـ Login
+    /* تعليق: هذا الكود يعمل فور فتح الصفحة لجلب التوكن الحقيقي وبيانات الأب المسجل من الـ LocalStorage وثم استدعاء الـ APIs */
     const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
     
@@ -92,16 +127,24 @@ export default function ParentDashboard() {
       setParent(parsedUser);
       
       if (parsedUser._id) {
-        // الـ Flow الأول: GET /api/analytics/dashboard/:parentId
         fetchDashboardOverview(parsedUser._id, token);
+        fetchInitialNotifications(token);
+        fetchNotificationSettings(token);
       }
     } else {
       setLoading(false);
     }
+
+    /* تعليق: هنا يتم إعداد السوكيت (Socket.io) للاستماع الفوري للإشعارات الحية في الوقت الحقيقي بمجرد تشغيله بالسيرفر */
+    /*
+    const socket = io(API_BASE_URL, { auth: { token } });
+    socket.on("newNotification", (newNotif: INotification) => {
+       setNotifications(prev => [newNotif, ...prev]);
+    });
+    return () => { socket.disconnect(); };
+    */
   }, []);
   
-
-  // دالة جلب الداشبورد الرئيسي للأب
   const fetchDashboardOverview = async (parentId: string, token: string | null) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/analytics/dashboard/${parentId}`, {
@@ -111,16 +154,22 @@ export default function ParentDashboard() {
         }
       });
       
+
       if (res.ok) {
         const result: IApiResponse<any> = await res.json();
-        // السيرفر بيرجع الأطفال المربوطين بالأب ده
-        const fetchedChildren = result.data?.children || result.data || [];
-        setChildren(fetchedChildren);
+        console.log("Response:", result.data);
         
-        // تعيين الطفل الأول تلقائياً لبدء الـ Detail flow
-        if (fetchedChildren.length > 0) {
+        const fetchedChildren = Array.isArray(result.data) 
+          ? result.data 
+          : (result.data?.children || result.data || []);
+
+        setChildren(fetchedChildren);
+
+        if (fetchedChildren.length > 0 && fetchedChildren[0]._id) {
           setSelectedChildId(fetchedChildren[0]._id);
         }
+      } else {
+        console.error("🔴 السيرفر رفض الاستجابة بلوحة التحكم الحية، كود الحالة:", res.status);
       }
     } catch (err) {
       console.error("🔴 Error fetching dashboard overview:", err);
@@ -129,17 +178,69 @@ export default function ParentDashboard() {
     }
   };
 
+  /* تعليق: دالة حقيقية لجلب التقرير الأسبوعي ومقترحات الـ AI للطفل المحدد من الـ Endpoint الخاصة بهند */
+  const fetchAIReport = async (childId: string) => {
+    try {
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      const progressRes = await fetch(`${API_BASE_URL}/api/analytics/${childId}/progress`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (progressRes.ok) {
+        const resData: IApiResponse<IProgressData> = await progressRes.json();
+        if (resData.success && resData.data) {
+          setProgressReport(resData.data);
+        } else {
+          setProgressReport(null);
+        }
+      } else {
+        setProgressReport(null);
+      }
+    } catch (err) {
+      console.error("خطأ جلب تقرير الـ AI من السيرفر:", err);
+      setProgressReport(null);
+    }
+  };
+
+  /*/ تعليق: دالة لجلب صندوق الإشعارات الحقيقي بالكامل من الـ API الخاصة بنورهان */
+  const fetchInitialNotifications = async (token: string | null) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const result = await res.json();
+        if (result.success && result.data) setNotifications(result.data);
+      }
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+    }
+  };
+
+  /* تعlyق: دالة لجلب قيم الـ Toggles الحقيقية لإعدادات الإشعارات من الـ API الخاصة بنورهان */
+  const fetchNotificationSettings = async (token: string | null) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/notifications/settings`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const result = await res.json();
+        if (result.success && result.data) setNotificationSettings(result.data);
+      }
+    } catch (err) {
+      console.error("Error fetching notification settings:", err);
+    }
+  };
+
   // ========================================================
-  // 📥 2. Flow التفاصيل: جلب تفاصيل الطفل (Detail Flow)
+  // 📥 2. خطاف مراقبة تغيير الطفل (useEffect) لتحديث الداتا تفاعلياً
   // ========================================================
   useEffect(() => {
+    /* تعليق: هذا الكود يتم تنفيذه تلقائياً كلما قام ولي الأمر باختيار طفل آخر من القائمة المنسدلة لجلب بياناته المحدثة */
     if (!selectedChildId) return;
-    
     const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
     
     const fetchChildDetails = async () => {
       try {
-        // أ. جلب معدل قراءة الحواديت أسبوعياً لقراءة الـ Line Chart
         const storiesRes = await fetch(`${API_BASE_URL}/api/analytics/${selectedChildId}/stories?period=weekly&days=7`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
@@ -148,7 +249,6 @@ export default function ParentDashboard() {
           setWeeklyActivity(resData.data || []);
         }
 
-        // ب. جلب المواضيع المفضلة لتغذية الـ Pie Chart
         const topicsRes = await fetch(`${API_BASE_URL}/api/analytics/${selectedChildId}/topics`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
@@ -157,157 +257,216 @@ export default function ParentDashboard() {
           setTopicDistribution(resData.data || []);
         }
 
-        // ج. جلب وقت الشاشة والـ Screen Time
-        const timeRes = await fetch(`${API_BASE_URL}/api/analytics/${selectedChildId}/time?days=7`, {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
-        if (timeRes.ok) {
-          const resData = await timeRes.json();
-          setScreenTimeData(resData.data || []);
-        }
-
-        // د. الـ Detail Flow الأساسي: جلب تقرير التقدم الشامل والتوصيات للطفل
-        const progressRes = await fetch(`${API_BASE_URL}/api/analytics/${selectedChildId}/progress`, {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
-        if (progressRes.ok) {
-          const resData: IApiResponse<IProgressData> = await progressRes.json();
-          setProgressReport({
-            summary: resData.data?.summary || "الطفل يتفاعل بشكل ممتاز مع الحواديت التعليمية وجاري تحليل الأداء المستمر.",
-            recommendations: resData.data?.recommendations || ["ينصح بزيادة حواديت الفضاء والعلوم", "تحفيز الطفل على حل الكويز اليومي"],
-            completedStoriesCount: resData.data?.completedStoriesCount || 0,
-            totalQuizzesPlayed: resData.data?.totalQuizzesPlayed || 0
-          });
-        }
-
+        fetchAIReport(selectedChildId);
       } catch (err) {
-        console.error("🔴 Error pulling child details from APIs:", err);
+        console.error("🔴 Error pulling child details:", err);
       }
     };
-
     fetchChildDetails();
   }, [selectedChildId]);
 
   // ========================================================
-  // 🎯 3. ميزة الـ Tracking (محاكاة إنهاء حدوتة لتغذية الـ Charts)
+  // ⚙️ 3. الأوامر والعمليات المرسلة إلى الـ APIs (POST, PATCH, DELETE)
   // ========================================================
-  const handleTrackSimulatedSession = async () => {
-    if (!selectedChildId) {
-      alert("الرجاء اختيار طفل أولاً لتنفيذ الـ Tracking!");
-      return;
+
+  /* تعليق: دالة زر "ولّد تقرير جديد" تقوم بعمل طلب سرفر لإجبار الـ Agent الخاص بهند على تشغيل الـ Prompt والتوليد الفوري للملف */
+  const handleGenerateNewReport = async () => {
+    if (!selectedChildId) return;
+    setLoadingAI(true); 
+    try {
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      const res = await fetch(`${API_BASE_URL}/api/parent-agent/generate`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ childId: selectedChildId })
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        await fetchAIReport(selectedChildId); 
+        alert("✨ تم توليد تحديثات التقرير الأسبوعي بنجاح بالذكاء الاصطناعي!");
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingAI(false); 
     }
+  };
+
+  /* تعليق: دالة تحديث حالة الإشعار الفردي إلى "مقروء" وتحديثها بالسيرفر */
+  const handleMarkAsRead = async (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    try {
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
+        method: "PATCH",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  /* تعليق: دالة لتحديث كامل الإشعارات دفعة واحدة لتصبح مقروءة */
+  const handleMarkAllAsRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    try {
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
+        method: "PATCH",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  /* تعليق: دالة مسؤولة عن حذف إشعار محدد نهائياً من قائمة الأب وقاعدة البيانات */
+  const handleDeleteNotification = async (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    try {
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      await fetch(`${API_BASE_URL}/api/notifications/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  /* تعليق: دالة لحفظ وتحديث قيمة تفضيلات الإشعارات (Toggles) وإرسال البنية المحدثة إلى الـ API الخاص بنورهان */
+  const handleToggleSetting = async (type: keyof INotificationSettings, channel: "email" | "webPush") => {
+    if (!notificationSettings) return;
+
+    const updatedSettings = {
+      ...notificationSettings,
+      [type]: {
+        ...notificationSettings[type],
+        [channel]: !notificationSettings[type][channel]
+      }
+    };
+    setNotificationSettings(updatedSettings);
 
     try {
       const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
-      const res = await fetch(`${API_BASE_URL}/api/analytics/session`, {
-        method: "POST",
+      await fetch(`${API_BASE_URL}/api/notifications/settings`, {
+        method: "PUT",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          childId: selectedChildId,
-          storyId: "story_" + Math.floor(Math.random() * 100),
-          topic: "فضاء",
-          durationSeconds: 300,
-          completed: true
-        }),
+        body: JSON.stringify(updatedSettings)
       });
-
-      const result = await res.json();
-      if (res.ok && result.success) {
-        alert("✨ تم تسجيل الـ Tracking بنجاح! الـ Charts ستحدث بياناتها الآن.");
-        // إعادة جلب الداتا لتحديث الـ Charts فوراً
-        setSelectedChildId(""); 
-        setTimeout(() => setSelectedChildId(selectedChildId), 10);
-      } else {
-        alert("فشل تسجيل الجلسة: " + result.message);
-      }
     } catch (err) {
-      console.error("خطأ في السيرفر أثناء إرسال الـ Tracking", err);
+      console.error("خطأ أثناء حفظ الإعدادات:", err);
     }
   };
 
-  const handleExportPDF = () => {
-    alert("جاري سحب التحليلات الحالية وتوليد ملف PDF لتقرير ولي الأمر...");
-  };
+  /* تعليق: عمليات فلترة الإشعارات وحساب العدادات الديناميكية لـ جرس التنبيهات */
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const filteredNotifications = notifications.filter(n => {
+    if (notificationFilter === "unread") return !n.isRead;
+    if (notificationFilter === "read") return n.isRead;
+    return true;
+  });
 
+  /* تعليق: واجهة الانتظار وحالة التحميل أثناء إرسال واستقبال الطلبات الرئيسية من الخادم */
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#FFFBF0]">
         <div className="text-xl font-bold text-[#FF7043] animate-pulse">جاري سحب بيانات الداشبورد والتحليلات الحية...</div>
       </div>
     );
-  };
-
-  const handleGenerateNewReport = async () => {
-  if (!selectedChildId) return;
-  
-  setLoading(true); // تشغيل الـ Loading State أثناء التوليد
-  try {
-    const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
-    // إرسال طلب POST لسيرفر هند لإجبار الـ AI على توليد تقرير جديد فوراً
-    const res = await fetch(`http://localhost:5000/api/parent-agent/generate`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ childId: selectedChildId })
-    });
-    
-    const result = await res.json();
-    if (res.ok && result.success) {
-      // بعد التوليد الناجح، نعيد جلب التقرير المحدث ليعرض في الـ UI
-      fetchAIReport(selectedChildId); 
-    } else {
-      alert("فشل الـ AI في توليد التقرير حالياً.");
-    }
-  } catch (err) {
-    console.error("خطأ أثناء توليد تقرير الـ AI:", err);
-  } finally {
-    setLoading(false); // إغلاق الـ Loading State
   }
-};
 
   return (
     <div className="min-h-screen bg-[#FFFBF0] font-sans text-[#3D2C1E]" dir="rtl">
-      {/* البار العلوي وهيدر الصفحة */}
-      <div className="bg-white border-b border-[#E8DED4] shadow-sm sticky top-0 z-10">
+      
+      {/* ========================================================
+          🔔 البار العلوي (Navbar) وقائمة الجرس المنسدلة
+          ======================================================== */}
+      <div className="bg-white border-b border-[#E8DED4] shadow-sm sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-20 items-center">
             <div className="flex items-center gap-3">
               <span className="text-3xl">✨</span>
               <div>
                 <h1 className="text-xl font-bold text-[#3D2C1E]">لوحة تحكم ولي الأمر</h1>
-                <p className="text-xs text-[#7A6552]">مرحباً بك، {parent?.name || "مربي حدوتة المتميز"}</p>
+                <p className="text-xs text-[#7A6552]">مرحباً بك، {parent?.name || "مربي حدوتة"}</p>
               </div>
             </div>
             
-            <nav className="flex gap-2">
+            <nav className="flex gap-2 items-center">
               <button 
                 onClick={() => setActiveTab("overview")}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === "overview" ? "bg-[#FF7043] text-white" : "text-[#7A6552] hover:bg-[#FFF5E6]"}`}
               >
-                <Baby size={18} /> الداشبورد الرئيسي
+                <Baby size={18} /> الداشبورد
               </button>
               <button 
                 onClick={() => setActiveTab("reports")}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === "reports" ? "bg-[#FF7043] text-white" : "text-[#7A6552] hover:bg-[#FFF5E6]"}`}
               >
-                <BarChart3 size={18} /> صفحة التقارير والـ AI
+                <BarChart3 size={18} /> صفحة الـ AI
               </button>
+              
+              {/* أيقونة جرس الإشعارات مع تعداد التنبيهات الحية غير المقروءة */}
+              <div className="relative">
+                <button 
+                  onClick={() => setShowBellDropdown(!showBellDropdown)}
+                  className="p-2 text-[#7A6552] hover:bg-[#FFF5E6] rounded-xl relative transition"
+                >
+                  <Bell size={22} />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 bg-red-500 text-white font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* القائمة المنسدلة لعرض آخر 5 إشعارات مستلمة من التنبيهات */}
+                {showBellDropdown && (
+                  <div className="absolute left-0 mt-3 w-80 bg-white rounded-2xl border border-[#E8DED4] shadow-xl z-50 overflow-hidden text-right">
+                    <div className="p-4 border-b border-[#E8DED4] flex justify-between items-center bg-gray-50">
+                      <span className="font-black text-sm text-[#3D2C1E]">آخر الإشعارات</span>
+                      {unreadCount > 0 && (
+                        <button onClick={handleMarkAllAsRead} className="text-xs text-[#FF7043] font-bold hover:underline">
+                          تحديد الكل كمقروء
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-64 overflow-y-auto divide-y divide-gray-100">
+                      {notifications.length === 0 ? (
+                        <div className="p-4 text-center text-xs text-gray-400">لا توجد إشعارات غير مقروءة حالياً</div>
+                      ) : (
+                        notifications.slice(0, 5).map((notif) => (
+                          <div 
+                            key={notif.id} 
+                            onClick={() => { handleMarkAsRead(notif.id); }}
+                            className={`p-3 transition cursor-pointer text-right hover:bg-orange-50/40 ${!notif.isRead ? "bg-amber-50/50 border-r-4 border-[#FF7043]" : ""}`}
+                          >
+                            <h6 className="font-bold text-xs text-gray-800">{notif.title}</h6>
+                            <p className="text-[11px] text-gray-500 line-clamp-1 mt-0.5">{notif.body}</p>
+                            <span className="text-[9px] text-gray-400 block mt-1">{notif.createdAt}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <button 
+                      onClick={() => { setShowBellDropdown(false); setActiveTab("notifications"); }}
+                      className="w-full text-center py-2.5 bg-[#FFF5E6] text-[#FF7043] font-bold text-xs hover:bg-[#FFEBD6] transition"
+                    >
+                      عرض الكل الإشعارات الكاملة
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <button 
-                onClick={() => setActiveTab("content")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === "content" ? "bg-[#FF7043] text-white" : "text-[#7A6552] hover:bg-[#FFF5E6]"}`}
+                onClick={() => setActiveTab("settings")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === "settings" ? "bg-[#FF7043] text-white" : "text-[#7A6552] hover:bg-[#FFF5E6]"}`}
               >
-                <Sliders size={18} /> إعدادات المحتوى
-              </button>
-              <button 
-                onClick={() => setActiveTab("notifications")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === "notifications" ? "bg-[#FF7043] text-white" : "text-[#7A6552] hover:bg-[#FFF5E6]"}`}
-              >
-                <Bell size={18} /> الإشعارات
+                ⚙️ إعدادات التنبيهات
               </button>
             </nav>
           </div>
@@ -316,64 +475,22 @@ export default function ParentDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* ================= TAB 1: OVERVIEW (الداشبورد الرئيسي) ================= */}
+        {/* ================= TAB 1: OVERVIEW ================= */}
         {activeTab === "overview" && (
           <div className="space-y-8">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-bold border-r-4 border-[#FF7043] pr-3">ملخص يومي لكل الأطفال</h3>
-              <button 
-                onClick={handleTrackSimulatedSession}
-                className="bg-purple-600 text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-purple-700 shadow-sm"
-              >
-                🚀 تجربة إرسال داتا الـ Tracking للطفل المختار
-              </button>
-            </div>
-            
+            <h3 className="text-lg font-bold border-r-4 border-[#FF7043] pr-3">قائمة الأطفال المسجلين</h3>
             {children.length === 0 ? (
-              <div className="bg-white rounded-3xl p-8 text-center border border-[#E8DED4] text-[#7A6552] text-sm">
-                لا يوجد أطفال مضافين حالياً في قاعدة البيانات. قم بإضافة طفل من صفحة إدارة الأطفال أولاً.
-              </div>
+              <div className="bg-white rounded-3xl p-8 text-center border border-[#E8DED4] text-[#7A6552] text-sm">لا يوجد أطفال مضافين في قاعدة البيانات حالياً.</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {children.map((child) => (
                   <div key={child._id} className="bg-white rounded-3xl p-6 border border-[#E8DED4] shadow-sm">
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-[#FFF5E6] w-12 h-12 rounded-2xl flex items-center justify-center text-2xl">
-                          {child.avatar || "👶"}
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-lg text-[#3D2C1E]">{child.name}</h4>
-                          <p className="text-xs text-[#7A6552]">كود التتبع للطفل: <span className="text-[#FF7043] font-mono font-bold">{child._id}</span></p>
-                        </div>
+                    <div className="flex items-center gap-3">
+                      <div className="bg-[#FFF5E6] w-12 h-12 rounded-2xl flex items-center justify-center text-2xl">{child.avatar || "👶"}</div>
+                      <div>
+                        <h4 className="font-bold text-lg text-[#3D2C1E]">{child.name}</h4>
+                        <p className="text-xs text-[#7A6552]">كود تتبع الطفل: <span className="text-[#FF7043] font-mono font-bold">{child._id}</span></p>
                       </div>
-                      <span className="bg-[#FFF0EB] text-[#FF7043] text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
-                        <Clock size={12} /> {child.screenTime || "0 دقيقة اليوم"}
-                      </span>
-                    </div>
-
-                    <div className="space-y-3 bg-[#FFFBF0] p-4 rounded-2xl border border-[#E8DED4]/60">
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-[#7A6552] flex items-center gap-1"><BookOpen size={16} /> آخر حدوتة:</span>
-                        <span className="font-bold text-[#3D2C1E]">{child.lastStory || "لا توجد حواديت مقروءة بعد"}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-[#7A6552] flex items-center gap-1"><Star size={16} className="text-[#FFD93D] fill-[#FFD93D]" /> عدد النجوم اليوم:</span>
-                        <span className="font-bold text-[#FF7043]">{child.starsToday || 0} نجوم</span>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-2 border-t border-[#E8DED4]/40 flex justify-between items-center text-xs">
-                      <span className="text-[#7A6552]">التحكم السريع في حساب {child.name}</span>
-                      <button 
-                        onClick={() => {
-                          setSelectedChildId(child._id);
-                          setActiveTab("reports");
-                        }} 
-                        className="text-[#FF7043] hover:underline font-bold"
-                      >
-                        عرض التقارير والـ Charts التفصيلية ➔
-                      </button>
                     </div>
                   </div>
                 ))}
@@ -382,174 +499,241 @@ export default function ParentDashboard() {
           </div>
         )}
 
-        {/* ================= TAB 2: REPORTS (صفحة التقارير والـ AI) ================= */}
+        {/* ================= TAB 2: REPORTS (التقرير الأسبوعي الحقيقي الخالي من الفيك داتا) ================= */}
         {activeTab === "reports" && (
           <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-              <div>
-                <h3 className="text-lg font-bold border-r-4 border-[#FF7043] pr-3">مخططات وتقارير تقدم الطفل بالذكاء الاصطناعي</h3>
-                <div className="mt-2 flex items-center gap-2 text-xs text-[#7A6552]">
-                  <span>اختر الطفل لعرض تقريره الفوري المباشر:</span>
-                  <select 
-                    value={selectedChildId} 
-                    onChange={(e) => setSelectedChildId(e.target.value)}
-                    className="p-1.5 bg-white border border-[#E8DED4] rounded-lg text-[#3D2C1E] focus:outline-none focus:border-[#FF7043]"
-                  >
-                    {children.map((c) => (
-                      <option key={c._id} value={c._id}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              
-              <button 
-                onClick={handleExportPDF}
-                className="flex items-center justify-center gap-2 bg-[#6BCB77] text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm"
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-bold border-r-4 border-[#FF7043] pr-3">تحليلات الـ AI للأسبوع الجاري</h3>
+              <select 
+                value={selectedChildId} 
+                onChange={(e) => setSelectedChildId(e.target.value)}
+                className="p-2 bg-white border border-[#E8DED4] rounded-xl text-xs font-bold"
               >
-                <Download size={16} /> Export كـ PDF
-              </button>
+                {children.map((c) => (<option key={c._id} value={c._id}>{c.name}</option>))}
+              </select>
             </div>
 
-            {/* الرسوم البيانية المتصلة بالـ APIs الخاصة بك */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              
-              {/* 📈 Line Chart لعدد الحدوتات أسبوعياً */}
-              <div className="bg-white p-6 rounded-3xl border border-[#E8DED4] shadow-sm">
-                <h4 className="font-bold text-sm text-[#3D2C1E] mb-4 flex items-center gap-2">
-                  <BarChart3 size={18} className="text-[#FF7043]" /> معدل قراءة الحواديت أسبوعياً
-                </h4>
-                <div className="h-64">
-                  {weeklyActivity.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-xs text-[#7A6552]">لا توجد بيانات قراءة مسجلة لهذا الأسبوع (0 حواديت). نادِ دالة الـ Tracking لتغذية الـ Charts!</div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={weeklyActivity}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#E8DED4" />
-                        <XAxis dataKey="name" stroke="#7A6552" style={{ fontSize: 11 }} />
-                        <YAxis stroke="#7A6552" style={{ fontSize: 11 }} />
-                        <Tooltip />
-                        <Line type="monotone" dataKey="stories" stroke="#FF7043" strokeWidth={3} dot={{ r: 4 }} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  )}
+            {/* كارد تصميم وعرض الـ AI Weekly Report الحقيقي كاملاً */}
+            <div className="bg-gradient-to-br from-[#F6F2FF] to-[#FAF8FF] border-2 border-[#C77DFF]/30 rounded-[35px] p-8 shadow-md">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#C77DFF]/20 pb-6 mb-6">
+                <div className="flex items-center gap-3.5">
+                  <div className="bg-[#C77DFF] text-white p-3 rounded-2xl shadow-sm"><Sparkles size={24} /></div>
+                  <div>
+                    <h4 className="font-black text-xl text-[#2A1B4E]">التقرير الأسبوعي المولّد بالـ AI</h4>
+                    <p className="text-xs text-[#7A6552] font-semibold mt-0.5">تحليل نشاط الطفل وتحديد اهتماماته وسلوكه البرمي</p>
+                  </div>
                 </div>
+                <button 
+                  onClick={handleGenerateNewReport}
+                  disabled={loadingAI}
+                  className="bg-[#FF7043] text-white font-black text-xs px-6 py-3 rounded-2xl hover:bg-[#E65F33] transition disabled:opacity-60"
+                >
+                  {loadingAI ? "جاري التوليد عبر الـ Agent... ⏳" : "ولّد تقرير جديد 🔄"}
+                </button>
               </div>
 
-              {/* 🍕 Pie chart للمواضيع المتعلمة (Topics) */}
-              <div className="bg-white p-6 rounded-3xl border border-[#E8DED4] shadow-sm">
-                <h4 className="font-bold text-sm text-[#3D2C1E] mb-4 flex items-center gap-2">
-                  <BookOpen size={18} className="text-[#4D96FF]" /> توزيع الاهتمامات والمواضيع المتعلمة (Topics)
-                </h4>
-                <div className="h-64 flex flex-col sm:flex-row items-center justify-around">
-                  {topicDistribution.length === 0 ? (
-                    <div className="text-xs text-[#7A6552]">لم يتم تسجيل اهتمامات أو مواضيع مستهلكة بعد للطفل الحالي.</div>
-                  ) : (
-                    <>
-                      <ResponsiveContainer width="55%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={topicDistribution}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={55}
-                            outerRadius={75}
-                            paddingAngle={4}
-                            dataKey="value"
-                          >
-                            {topicDistribution.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color || ["#4D96FF", "#FF7043", "#C77DFF", "#6BCB77"][index % 4]} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div className="space-y-1.5 text-xs font-semibold">
-                        {topicDistribution.map((topic, i) => (
-                          <div key={i} className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: topic.color || "#FF7043" }} />
-                            <span className="text-[#3D2C1E]">{topic.name} ({topic.value}%)</span>
+              {/* إذا كانت الداتا لم تصل بعد من السيرفر، تعرض حالة فارغة حقيقية بدون تزييف */}
+              {!progressReport ? (
+                <div className="text-center py-12 bg-white/60 rounded-2xl border border-dashed text-sm font-bold text-[#7A6552]">
+                  لا توجد داتا تقارير متوفرة حالياً لهذا الطفل في السيرفر. اضغطي على زر التوليد بالأعلى لتشغيل الـ Agent 🚀
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* ملخص الأسبوع */}
+                  <div className="bg-white/95 p-5 rounded-2xl border border-[#E8DED4] shadow-sm">
+                    <h5 className="font-black text-sm text-[#3D2C1E] mb-2 flex items-center gap-2 border-r-4 border-purple-500 pr-2">📝 ملخص الأسبوع:</h5>
+                    <p className="text-sm leading-relaxed text-[#4A3B32] font-medium">{progressReport.summary}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* الـ Insights الذكية لشغف الطفل */}
+                    {progressReport.aiInsights && (
+                      <div className="bg-white/95 p-5 rounded-2xl border border-[#E8DED4] shadow-sm">
+                        <h5 className="font-black text-sm text-[#3D2C1E] mb-3 flex items-center gap-2 text-amber-600"><Lightbulb size={18} /> المواضيع المفضلة (Insights):</h5>
+                        <p className="text-xs font-semibold leading-relaxed text-[#5C4D42]">{progressReport.aiInsights}</p>
+                      </div>
+                    )}
+
+                    {/* اقتراحات مواضيع للأسبوع الجاي */}
+                    {progressReport.nextWeekTopics && progressReport.nextWeekTopics.length > 0 && (
+                      <div className="bg-white/95 p-5 rounded-2xl border border-[#E8DED4] shadow-sm">
+                        <h5 className="font-black text-sm text-[#3D2C1E] mb-3 flex items-center gap-2 text-blue-600"><Sliders size={18} /> اقتراحات للأسبوع القادم:</h5>
+                        <div className="flex flex-wrap gap-2">
+                          {progressReport.nextWeekTopics.map((topic, i) => (
+                            <span key={i} className="bg-blue-50 text-blue-700 font-bold text-[11px] px-3 py-1.5 rounded-xl border border-blue-100">✨ {topic}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* التوصيات المسترجعة */}
+                  {progressReport.recommendations && progressReport.recommendations.length > 0 && (
+                    <div className="bg-white/95 p-5 rounded-2xl border border-[#E8DED4] shadow-sm">
+                      <h5 className="font-black text-xs text-purple-600 uppercase mb-3">التوصيات الموجهة من المساعد الذكي:</h5>
+                      <div className="space-y-2">
+                        {progressReport.recommendations.map((rec, idx) => (
+                          <div key={idx} className="flex items-start gap-2 text-xs font-bold text-[#3D2C1E]">
+                            <CheckCircle2 size={16} className="text-[#6BCB77] mt-0.5" />
+                            <span>{rec}</span>
                           </div>
                         ))}
                       </div>
-                    </>
+                    </div>
+                  )}
+
+                  {/* الرسالة التشجيعية الموجهة للأهل من الـ AI */}
+                  {progressReport.encouragementMessage && (
+                    <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-2xl border border-orange-200/60 flex items-start gap-3">
+                      <div className="text-orange-500 mt-0.5"><Heart size={20} className="fill-orange-500" /></div>
+                      <div>
+                        <h6 className="font-black text-xs text-orange-700">رسالة تشجيعية للأهل من الـ AI:</h6>
+                        <p className="text-xs text-orange-950 font-bold mt-1 leading-relaxed italic">{progressReport.encouragementMessage}</p>
+                      </div>
+                    </div>
                   )}
                 </div>
-              </div>
-
-            </div>
-
-            {/* 🤖 التقرير الأسبوعي من الـ Progress API المدمج بالذكاء الاصطناعي */}
-            <div className="bg-[#F3F0FF] border border-[#C77DFF]/40 rounded-3xl p-6 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="bg-[#C77DFF]/10 p-2 rounded-xl text-[#C77DFF]"><Brain size={24} /></div>
-                <div>
-                  <h4 className="font-bold text-base text-[#3D2C1E]">تقرير التقدم المخصّص والـ AI Progress Report</h4>
-                  <p className="text-xs text-[#7A6552]">تحليل ذكي فوري مبني على أداء كويزات وحواديت الطفل المسترجعة من الـ API</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 mb-4 text-center">
-                <div className="bg-white p-3 rounded-xl border border-[#E8DED4]">
-                  <span className="block text-xs text-[#7A6552]">الحواديت المكتملة</span>
-                  <span className="text-xl font-black text-purple-600">{progressReport.completedStoriesCount}</span>
-                </div>
-                <div className="bg-white p-3 rounded-xl border border-[#E8DED4]">
-                  <span className="block text-xs text-[#7A6552]">الكويزات التي تم لعبها</span>
-                  <span className="text-xl font-black text-[#6BCB77]">{progressReport.totalQuizzesPlayed}</span>
-                </div>
-              </div>
-              
-              <p className="text-sm leading-relaxed text-[#3D2C1E] bg-white/70 p-4 rounded-2xl border border-[#E8DED4]">
-                {progressReport.summary}
-              </p>
-              
-              <div className="mt-4 space-y-2">
-                <h5 className="text-xs font-bold text-[#C77DFF] uppercase tracking-wider">توجيهات وتوصيات المساعد الذكي لولي الأمر:</h5>
-                {progressReport.recommendations.map((rec, idx) => (
-                  <div key={idx} className="flex items-center gap-2 text-xs text-[#3D2C1E]">
-                    <CheckCircle2 size={16} className="text-[#6BCB77] flex-shrink-0" />
-                    <span>{rec}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex justify-between items-center border-b pb-3 mb-4">
-                <h4 className="text-md font-black text-secondary flex items-center gap-2">
-                  <span>🤖</span> تقرير الـ AI الأسبوعي المطور
-                </h4>
-                {/* زرار ولّد تقرير جديد بضغطة زر */}
-                <button 
-                  onClick={handleGenerateNewReport}
-                  disabled={loading}
-                  className="text-xs bg-primary text-white font-bold px-4 py-1.5 rounded-xl hover:bg-primary/90 transition disabled:opacity-50"
-                >
-                  {loading ? "جاري التوليد... ⏳" : "ولّد تقرير جديد 🔄"}
-                </button>
-              </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* إعدادات مفرغة ومستعدة للمزامنة */}
-        {activeTab === "content" && (
-          <div className="bg-white rounded-3xl p-6 border border-[#E8DED4] shadow-sm space-y-4">
-            <h3 className="text-lg font-bold border-r-4 border-[#FF7043] pr-3">إعدادات المحتوى وتفضيلات طفلك</h3>
-            <p className="text-xs text-[#7A6552]">تحكم في التوبيكات المسموح بها، ومستويات الصعوبة وحظر الكلمات الممررة للـ LLM.</p>
-          </div>
-        )}
-
+        {/* ========================================================
+            📬 TAB 3: صفحة صندوق الإشعارات الكاملة
+            ======================================================== */}
         {activeTab === "notifications" && (
-          <div className="bg-white rounded-3xl p-6 border border-[#E8DED4] max-w-2xl mx-auto space-y-4">
-            <h3 className="text-lg font-bold border-r-4 border-[#FF7043] pr-3">إعدادات الإشعارات والتنبيهات المستهدفة</h3>
-            <p className="text-xs text-[#7A6552]">تفعيل ميزة الـ Email digest الأسبوعي الشامل لإرسال التقارير لإيميلك المعتمد.</p>
+          <div className="bg-white rounded-3xl p-6 border border-[#E8DED4] shadow-sm max-w-4xl mx-auto">
+            <div className="flex justify-between items-center border-b border-gray-100 pb-4 mb-4">
+              <div>
+                <h3 className="text-lg font-black text-gray-800">صندوق الإشعارات الشامل 📬</h3>
+                <p className="text-xs text-gray-400 font-bold">كل الإشعارات والتنبيهات المزامنة من قاعدة البيانات</p>
+              </div>
+              <button onClick={handleMarkAllAsRead} className="text-xs text-[#FF7043] bg-orange-50 font-bold px-3 py-2 rounded-xl">
+                تحديد الكل كمقروء
+              </button>
+            </div>
+
+            {/* الفلاتر (كل / غير مقروء / مقروء) */}
+            <div className="flex gap-2 mb-4 bg-gray-50 p-1.5 rounded-xl border border-gray-100 w-fit">
+              {["all", "unread", "read"].map((f) => (
+                <button 
+                  key={f}
+                  onClick={() => setNotificationFilter(f as any)}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-black capitalize ${notificationFilter === f ? "bg-[#FF7043] text-white shadow-sm" : "text-gray-500"}`}
+                >
+                  {f === "all" ? "الكل" : f === "unread" ? `غير مقروء (${unreadCount})` : "مقروء"}
+                </button>
+              ))}
+            </div>
+
+            {/* عرض الإشعارات أو إظهار رسالة فارغة حقيقية */}
+            <div className="space-y-3">
+              {filteredNotifications.length === 0 ? (
+                <div className="text-center py-12 text-sm text-gray-400 font-bold bg-gray-50/50 rounded-2xl border border-dashed">
+                  صندوق الإشعارات فارغ تماماً حالياً.
+                </div>
+              ) : (
+                filteredNotifications.map((notif) => (
+                  <div key={notif.id} className={`p-4 rounded-2xl border border-gray-100 flex items-start justify-between gap-4 ${!notif.isRead ? "bg-orange-50/20 border-r-4 border-[#FF7043]" : "bg-white"}`}>
+                    <div className="flex items-start gap-3" onClick={() => handleMarkAsRead(notif.id)}>
+                      <div className="p-2 bg-gray-100 rounded-xl text-gray-600"><Bell size={16} /></div>
+                      <div>
+                        <h5 className="text-sm font-black text-gray-900">{notif.title}</h5>
+                        <p className="text-xs text-gray-500 mt-1">{notif.body}</p>
+                        <span className="text-[10px] text-gray-400 block mt-2">{notif.createdAt}</span>
+                      </div>
+                    </div>
+                    <button onClick={() => handleDeleteNotification(notif.id)} className="text-gray-400 hover:text-red-500 transition">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+            ⚙️ TAB 4: إعدادات وتفضيلات قنوات الإشعارات (تاسك نورهان)
+            ======================================================== */}
+        {activeTab === "settings" && (
+          <div className="bg-white rounded-3xl p-6 border border-[#E8DED4] shadow-sm max-w-xl mx-auto">
+            <div className="border-b border-gray-100 pb-3 mb-6">
+              <h4 className="text-base font-black text-gray-800">تفضيلات وقنوات الإشعارات ⚙️</h4>
+              <p className="text-xs text-gray-400 font-bold">التحكم الحقيقي في الربط والإرسال لـ APIs نورهان</p>
+            </div>
+
+            {!notificationSettings ? (
+              <div className="text-center py-8 text-xs font-bold text-gray-400 animate-pulse">
+                جاري سحب إعدادات قنوات التنبيه الحية من خوادم السيرفر...
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* مفتاح: التقرير الأسبوعي */}
+                <div className="space-y-2">
+                  <span className="text-xs font-black text-gray-700 block">✅ التقرير الأسبوعي الذكي</span>
+                  <div className="flex gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100 justify-around">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600 cursor-pointer">
+                      <input type="checkbox" checked={notificationSettings.weeklyReport.email} onChange={() => handleToggleSetting("weeklyReport", "email")} className="rounded text-[#FF7043] focus:ring-[#FF7043]" />
+                      <Mail size={14} /> Email
+                    </label>
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600 cursor-pointer">
+                      <input type="checkbox" checked={notificationSettings.weeklyReport.webPush} onChange={() => handleToggleSetting("weeklyReport", "webPush")} className="rounded text-[#FF7043] focus:ring-[#FF7043]" />
+                      <Globe size={14} /> Web Push
+                    </label>
+                  </div>
+                </div>
+
+                {/* مفتاح: انتهاء وقت الشاشة */}
+                <div className="space-y-2">
+                  <span className="text-xs font-black text-gray-700 block">✅ انتهاء وقت الشاشة للطفل</span>
+                  <div className="flex gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100 justify-around">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600 cursor-pointer">
+                      <input type="checkbox" checked={notificationSettings.screenTime.email} onChange={() => handleToggleSetting("screenTime", "email")} className="rounded text-[#FF7043] focus:ring-[#FF7043]" />
+                      <Mail size={14} /> Email
+                    </label>
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600 cursor-pointer">
+                      <input type="checkbox" checked={notificationSettings.screenTime.webPush} onChange={() => handleToggleSetting("screenTime", "webPush")} className="rounded text-[#FF7043] focus:ring-[#FF7043]" />
+                      <Globe size={14} /> Web Push
+                    </label>
+                  </div>
+                </div>
+
+                {/* مفتاح: إنجازات الطفل */}
+                <div className="space-y-2">
+                  <span className="text-xs font-black text-gray-700 block">✅ إنجازات الطفل وجوائزه</span>
+                  <div className="flex gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100 justify-around">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600 cursor-pointer">
+                      <input type="checkbox" checked={notificationSettings.achievement.email} onChange={() => handleToggleSetting("achievement", "email")} className="rounded text-[#FF7043] focus:ring-[#FF7043]" />
+                      <Mail size={14} /> Email
+                    </label>
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600 cursor-pointer">
+                      <input type="checkbox" checked={notificationSettings.achievement.webPush} onChange={() => handleToggleSetting("achievement", "webPush")} className="rounded text-[#FF7043] focus:ring-[#FF7043]" />
+                      <Globe size={14} /> Web Push
+                    </label>
+                  </div>
+                </div>
+
+                {/* مفتاح: تذكير القراءة اليومية */}
+                <div className="space-y-2">
+                  <span className="text-xs font-black text-gray-700 block">✅ تذكير الحدوتة اليومية</span>
+                  <div className="flex gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100 justify-around">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600 cursor-pointer">
+                      <input type="checkbox" checked={notificationSettings.dailyReminder.email} onChange={() => handleToggleSetting("dailyReminder", "email")} className="rounded text-[#FF7043] focus:ring-[#FF7043]" />
+                      <Mail size={14} /> Email
+                    </label>
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600 cursor-pointer">
+                      <input type="checkbox" checked={notificationSettings.dailyReminder.webPush} onChange={() => handleToggleSetting("dailyReminder", "webPush")} className="rounded text-[#FF7043] focus:ring-[#FF7043]" />
+                      <Globe size={14} /> Web Push
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
       </div>
     </div>
   );
-}
-
-function fetchAIReport(selectedChildId: string) {
-  throw new Error("Function not implemented.");
 }
