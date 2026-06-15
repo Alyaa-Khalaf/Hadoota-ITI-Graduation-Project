@@ -10,6 +10,7 @@ import {
   Brain, CheckCircle2, Sliders, Sparkles, Lightbulb, Heart,
   Check, Trash2, ShieldAlert, Trophy, Mail, Globe
 } from "lucide-react";
+import { io } from "socket.io-client";
 
 // ==========================================
 // Interfaces 
@@ -135,14 +136,13 @@ export default function ParentDashboard() {
       setLoading(false);
     }
 
-    /* تعليق: هنا يتم إعداد السوكيت (Socket.io) للاستماع الفوري للإشعارات الحية في الوقت الحقيقي بمجرد تشغيله بالسيرفر */
-    /*
+    // Socket 
     const socket = io(API_BASE_URL, { auth: { token } });
     socket.on("newNotification", (newNotif: INotification) => {
        setNotifications(prev => [newNotif, ...prev]);
     });
     return () => { socket.disconnect(); };
-    */
+    
   }, []);
   
   const fetchDashboardOverview = async (parentId: string, token: string | null) => {
@@ -201,7 +201,6 @@ export default function ParentDashboard() {
     }
   };
 
-  /*/ تعليق: دالة لجلب صندوق الإشعارات الحقيقي بالكامل من الـ API الخاصة بنورهان */
   const fetchInitialNotifications = async (token: string | null) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/notifications`, {
@@ -216,7 +215,6 @@ export default function ParentDashboard() {
     }
   };
 
-  /* تعlyق: دالة لجلب قيم الـ Toggles الحقيقية لإعدادات الإشعارات من الـ API الخاصة بنورهان */
   const fetchNotificationSettings = async (token: string | null) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/notifications/settings`, {
@@ -235,7 +233,6 @@ export default function ParentDashboard() {
   // 📥 2. خطاف مراقبة تغيير الطفل (useEffect) لتحديث الداتا تفاعلياً
   // ========================================================
   useEffect(() => {
-    /* تعليق: هذا الكود يتم تنفيذه تلقائياً كلما قام ولي الأمر باختيار طفل آخر من القائمة المنسدلة لجلب بياناته المحدثة */
     if (!selectedChildId) return;
     const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
     
@@ -499,7 +496,7 @@ export default function ParentDashboard() {
           </div>
         )}
 
-        {/* ================= TAB 2: REPORTS (التقرير الأسبوعي الحقيقي الخالي من الفيك داتا) ================= */}
+        {/* ================= TAB 2: REPORTS (التقرير الأسبوعي) ================= */}
         {activeTab === "reports" && (
           <div className="space-y-8">
             <div className="flex justify-between items-center">
@@ -654,13 +651,12 @@ export default function ParentDashboard() {
         )}
 
         {/* ========================================================
-            ⚙️ TAB 4: إعدادات وتفضيلات قنوات الإشعارات (تاسك نورهان)
+            ⚙️ TAB 4: إعدادات وتفضيلات قنوات الإشعارات 
             ======================================================== */}
         {activeTab === "settings" && (
           <div className="bg-white rounded-3xl p-6 border border-[#E8DED4] shadow-sm max-w-xl mx-auto">
             <div className="border-b border-gray-100 pb-3 mb-6">
               <h4 className="text-base font-black text-gray-800">تفضيلات وقنوات الإشعارات ⚙️</h4>
-              <p className="text-xs text-gray-400 font-bold">التحكم الحقيقي في الربط والإرسال لـ APIs نورهان</p>
             </div>
 
             {!notificationSettings ? (

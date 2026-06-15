@@ -13,7 +13,6 @@ export default function ParentInfoForm() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // 1️⃣ جلب بيانات البروفايل (GET) باستخدام accessToken
   
   // 1️⃣ جلب بيانات البروفايل (GET) - نسخة مطورة لالتقاط التوكن تلقائياً
   useEffect(() => {
