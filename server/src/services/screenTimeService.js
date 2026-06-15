@@ -1,6 +1,7 @@
 import Child from '../models/Child.js'
 import { io } from '../index.js'
 import { screenTimeAlertTemplate } from './notifications/templates/screenTimeAlert.js'
+import { sendEmail } from './emailService.js'
 
 const getMidnight = () => {
   const midnight = new Date()
@@ -52,11 +53,10 @@ const notifyParentIfNeeded = async (child, parent) => {
       })
     }
 
-    // Log email template (SendGrid not wired yet — ready to swap in)
+    // Send email alert to parent
     if (parent) {
       const template = screenTimeAlertTemplate(parent.name, child.name, today, limit)
-      console.log(`📧 Screen time alert email ready for: ${parent.email} — subject: ${template.subject}`)
-      // TODO: sendEmail(parent.email, template) when SendGrid is configured
+      await sendEmail(parent.email, template)
     }
   }
 

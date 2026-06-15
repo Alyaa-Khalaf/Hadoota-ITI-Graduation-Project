@@ -1,5 +1,8 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
+import { sendEmail } from '../services/emailService.js'
+import { resetPasswordTemplate } from '../services/notifications/templates/resetPassword.js'
+import { welcomeTemplate } from '../services/notifications/templates/welcome.js'
 
 // Generate Access Token (15 Minutes)
 const generateAccessToken = (userId) => {
@@ -43,6 +46,9 @@ export const register = async (req, res, next) => {
     // Save refresh token
     user.refreshToken = refreshToken
     await user.save({ validateBeforeSave: false })
+
+    // Send welcome email
+    await sendEmail(user.email, welcomeTemplate(user.name))
 
     res.status(201).json({
       success: true,
@@ -221,6 +227,7 @@ export const forgotPassword = async (req, res, next) => {
     await user.save({ validateBeforeSave: false })
 
     // TODO: Send email with reset token (SendGrid)
+    await sendEmail(user.email, resetPasswordTemplate(resetToken))
 
     res.status(200).json({
       success: true,
