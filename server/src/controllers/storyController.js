@@ -1,5 +1,6 @@
 import Story from '../models/Story.js'
 import Child from '../models/Child.js'
+import Progress from '../models/Progress.js'
 import { orchestrateStoryGeneration } from '../services/ai/orchestrator.js'
 import { io } from '../index.js'
 
@@ -89,6 +90,13 @@ export const generateStory = async (req, res, next) => {
           storyDoc.completedAt = new Date()
           storyDoc.save().then(savedStory => {
             console.log(`✅ Story saved: ${savedStory._id}`)
+
+            // Increment storiesCompleted in Progress
+            Progress.findOneAndUpdate(
+              { childId },
+              { $inc: { storiesCompleted: 1 } }
+            ).catch(err => console.error('Failed to update storiesCompleted:', err))
+
             if (socketId && io) {
               io.to(socketId).emit('story:completed', {
                 storyId: savedStory._id,

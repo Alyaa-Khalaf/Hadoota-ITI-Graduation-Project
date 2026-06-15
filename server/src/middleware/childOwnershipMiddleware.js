@@ -1,4 +1,4 @@
-import Child from "../models/childModel.js";
+import Child from "../models/Child.js";
 import { sendError } from "../utils/apiResponse.js";
 
 export const verifyChildOwnership = async (req, res, next) => {
