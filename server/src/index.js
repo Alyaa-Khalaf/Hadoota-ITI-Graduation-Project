@@ -17,6 +17,7 @@ import storyRoutes from './routes/storyRoutes.js'
 import progressRoutes from './routes/progress.routes.js'
 import parentAgentRoutes from './routes/parentAgent.routes.js'
 import screenTimeRoutes from './routes/screenTime.routes.js'
+import paymentRoutes from './routes/payment.routes.js'
 
 // استيراد الـ Middlewares والـ Models
 import errorHandler from './middleware/errorHandler.js'
@@ -54,6 +55,7 @@ app.use('/api/stories', storyRoutes)
 app.use('/api/progress', progressRoutes) // دمج مسار البروجريس الخاص بهند
 app.use('/api/parent-agent', parentAgentRoutes)
 app.use('/api/screentime', screenTimeRoutes)
+app.use('/api/payments', paymentRoutes)
 
 // Health Check API
 app.get('/api/health', (req, res) => {
