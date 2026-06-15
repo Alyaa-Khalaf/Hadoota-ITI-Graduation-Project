@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Button from "../ui/Button";
+import Link from "next/dist/client/link";
 
 type WelcomeHeroProps = {
   name: string;
@@ -15,7 +16,7 @@ export default function WelcomeHero({ name }: WelcomeHeroProps) {
     relative overflow-hidden text-center
     rounded-b-[28px]
     border-x-[3px] border-b-[3px] border-primary
-   p-20
+    p-20
     mt-20
   "
 >
@@ -54,7 +55,7 @@ export default function WelcomeHero({ name }: WelcomeHeroProps) {
     whileTap={{ y: 3 }}
     className="inline-block"
   >
-    <Button
+    <Link href="/characters"
       className="
         inline-flex items-center gap-2
         text-white text-xl bg-primary
@@ -64,7 +65,7 @@ export default function WelcomeHero({ name }: WelcomeHeroProps) {
       "
     >
       🚀 ابدأ المغامرة
-    </Button>
+    </Link>
   </motion.div>
 
   

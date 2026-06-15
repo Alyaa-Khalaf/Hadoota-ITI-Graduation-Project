@@ -42,10 +42,10 @@ export default function StoryTitles() {
          transition={{
           duration: 0.6,
         }}>
-        <h1 className="text-4xl font-bold text-center text-ink">
+        <h1 className="text-4xl font-bold text-center text-primary-wash">
           مواضيع سحرية 
         </h1>
-        <p className="text-center text-ink-muted mt-2 mb-8">
+        <p className="text-center text-primary-wash mt-2 mb-8">
           اختر موضوع الحدوتة
         </p>
       </motion.div>
