@@ -13,9 +13,11 @@ import quizRoutes from './routes/quizRoutes.js'
 import gamificationRoutes from './routes/gamificationRoutes.js'
 import analyticsRoutes from './routes/analyticsRoutes.js'
 import storyRoutes from './routes/storyRoutes.js'
+import notificationRoutes from './routes/notificationRoutes.js'
 import errorHandler from './middleware/errorHandler.js'
 import notFound from './middleware/notFound.js'
 import { generalLimiter } from './middleware/rateLimiter.js'
+import { startNotificationJobs } from './services/notifications/jobs/notificationJobs.js'
 
 dotenv.config()
 
@@ -44,6 +46,7 @@ app.use('/api/quiz', quizRoutes)
 app.use('/api/gamification', gamificationRoutes)
 app.use('/api/analytics', analyticsRoutes)
 app.use('/api/stories', storyRoutes)
+app.use('/api/notifications', notificationRoutes)
 
 // Health Check
 app.get('/api/health', (req, res) => {
@@ -72,6 +75,7 @@ app.use(errorHandler)
 // Connect DB + Start Server
 const PORT = process.env.PORT || 5000
 connectDB().then(() => {
+  startNotificationJobs()
   httpServer.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`)
   })

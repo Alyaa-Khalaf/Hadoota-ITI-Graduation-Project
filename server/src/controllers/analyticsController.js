@@ -1,6 +1,7 @@
 import StorySession from "../models/storySessionModel.js";
 import { sendSuccess, sendError } from "../utils/apiResponse.js";
 import { invalidateAnalyticsCache } from "../services/cacheService.js";
+import { checkAndNotifyScreenTime } from "../services/notifications/notificationService.js";
 import {
   getStoryAnalytics,
   getTopicAnalytics,
@@ -35,6 +36,10 @@ export const trackStorySession = async (req, res) => {
     });
 
     await invalidateAnalyticsCache(childId, req.user._id.toString());
+
+    checkAndNotifyScreenTime(childId, req.user._id.toString()).catch((err) =>
+      console.error("Screen time notification failed:", err.message)
+    );
 
     return sendSuccess(res, 201, "Story session tracked successfully", session);
   } catch (error) {

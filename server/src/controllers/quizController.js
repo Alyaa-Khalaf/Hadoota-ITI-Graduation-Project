@@ -3,6 +3,7 @@ import Child from "../models/childModel.js";
 import { getOrCreateGamification } from "../utils/gamificationHelper.js";
 import { sendSuccess, sendError } from "../utils/apiResponse.js";
 import { invalidateAnalyticsCache } from "../services/cacheService.js";
+import { notifyBadgeEarned } from "../services/notifications/notificationService.js";
 
 const PASS_THRESHOLD = 60;
 
@@ -19,6 +20,7 @@ const calculateScore = (answers) => {
 const awardQuizStars = async (childId, score) => {
   const starsEarned = Math.max(1, Math.floor(score / 20));
   const gamification = await getOrCreateGamification(childId);
+  let newBadge = null;
 
   gamification.stars += starsEarned;
   gamification.rewardHistory.push({
@@ -34,9 +36,16 @@ const awardQuizStars = async (childId, score) => {
       badgeName: "quiz_passed",
       reason: "Passed a quiz",
     });
+    newBadge = "quiz_passed";
   }
 
   await gamification.save();
+
+  if (newBadge) {
+    notifyBadgeEarned(childId, newBadge).catch((err) =>
+      console.error("Badge notification failed:", err.message)
+    );
+  }
 
   return { starsEarned, gamification };
 };

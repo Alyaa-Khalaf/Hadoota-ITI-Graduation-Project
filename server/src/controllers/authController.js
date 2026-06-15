@@ -1,5 +1,9 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
+import {
+  sendWelcomeEmail,
+  sendResetPasswordEmail,
+} from '../services/notifications/notificationService.js'
 
 // Generate Access Token
 const generateAccessToken = (userId) => {
@@ -39,6 +43,10 @@ export const register = async (req, res, next) => {
 
     user.refreshToken = refreshToken
     await user.save({ validateBeforeSave: false })
+
+    sendWelcomeEmail(user).catch((err) =>
+      console.error('Welcome email failed:', err.message)
+    )
 
     res.status(201).json({
       success: true,
@@ -205,6 +213,10 @@ export const forgotPassword = async (req, res, next) => {
     user.resetPasswordToken = resetToken
     user.resetPasswordExpires = Date.now() + 3600000
     await user.save({ validateBeforeSave: false })
+
+    sendResetPasswordEmail(user, resetToken).catch((err) =>
+      console.error('Reset password email failed:', err.message)
+    )
 
     res.status(200).json({
       success: true,

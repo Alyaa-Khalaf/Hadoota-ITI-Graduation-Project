@@ -5,10 +5,12 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "seed:stories": "node src/scripts/seedStories.js"
+    "seed:stories": "node src/scripts/seedStories.js",
+    "generate:vapid": "node src/scripts/generateVapidKeys.js"
   },
   "dependencies": {
     "@langchain/openai": "^0.0.14",
+    "@sendgrid/mail": "^8.1.6",
     "aws-sdk": "^2.1550.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.6",
@@ -23,9 +25,11 @@
     "mongoose": "^8.24.0",
     "morgan": "^1.10.1",
     "multer": "^1.4.4-lts.1",
+    "node-cron": "^4.2.1",
     "openai": "^4.104.0",
     "socket.io": "^4.8.3",
-    "stripe": "^14.25.0"
+    "stripe": "^14.25.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
