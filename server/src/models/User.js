@@ -27,8 +27,26 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['parent', 'admin'],
+    enum: ['parent', 'admin','teacher', 'student'],
     default: 'parent'
+  },
+  schoolId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'School',
+    default: null
+  },
+  parentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', 
+    default: null
+  },
+  schoolCode: {
+    type: String,
+    default: null
+  },
+  isPending: {
+    type: Boolean,
+    default: false
   },
   subscription: {
     plan: {

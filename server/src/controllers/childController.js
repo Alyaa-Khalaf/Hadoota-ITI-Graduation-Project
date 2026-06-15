@@ -1,11 +1,10 @@
 import Child from '../models/Child.js';
 
 // 1️⃣ جلب كل أطفال الأب المسجل حالياً فقط
-export const getAllChildren = async (req, res, next) => {
+export const getChildren = async (req, res, next) => {
   try {
     const userId = req.user?.id || req.user?._id;
 
-    // البحث باستخدام parentId المتوافق مع الموديل
     const children = await Child.find({ parentId: userId });
 
     res.status(200).json({
@@ -59,19 +58,30 @@ export const createChild = async (req, res, next) => {
   }
 };
 
-// 3️⃣ جلب تفاصيل طفل محدد بواسطة الـ ID
-export const getChildById = async (req, res, next) => {
+// 3️⃣ جلب تفاصيل طفل محدد بواسطة الـ ID مع فحص الأمان
+export const getChild = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id || req.user?._id;
 
     const child = await Child.findById(id);
     if (!child) {
-      return res.status(404).json({ success: false, message: 'الطفل غير موجود' });
+      return res.status(404).json({
+        success: false,
+        message: 'الطفل غير موجود',
+        data: null,
+        errors: []
+      });
     }
 
+    // شرط الأمان لمنع اختراق بيانات الأطفال
     if (child.parentId.toString() !== userId.toString()) {
-      return res.status(401).json({ success: false, message: 'غير مصرح للوصول لبيانات هذا الطفل' });
+      return res.status(401).json({
+        success: false,
+        message: 'غير مصرح للوصول لبيانات هذا الطفل',
+        data: null,
+        errors: []
+      });
     }
 
     res.status(200).json({
@@ -85,12 +95,13 @@ export const getChildById = async (req, res, next) => {
   }
 };
 
-// 4️⃣ تعديل بيانات الطفل
+// 4️⃣ تعديل بيانات الطفل 
 export const updateChild = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id || req.user?._id;
 
+    // تأمين الحماية: التأكد أن الأب هو من يملك الطفل قبل التعديل
     const child = await Child.findById(id);
     if (!child || child.parentId.toString() !== userId.toString()) {
       return res.status(401).json({ success: false, message: 'غير مصرح أو الطفل غير موجود' });
@@ -109,12 +120,13 @@ export const updateChild = async (req, res, next) => {
   }
 };
 
-// 5️⃣ حذف طفل نهائياً
+// 5️⃣ حذف طفل نهائياً 
 export const deleteChild = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id || req.user?._id;
 
+    // تأمين الحماية: التأكد أن الأب هو من يملك الطفل قبل الحذف
     const child = await Child.findById(id);
     if (!child || child.parentId.toString() !== userId.toString()) {
       return res.status(401).json({ success: false, message: 'غير مصرح أو الطفل غير موجود' });
