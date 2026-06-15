@@ -16,6 +16,7 @@ import gamificationRoutes from './routes/gamificationRoutes.js'
 import storyRoutes from './routes/storyRoutes.js'
 import progressRoutes from './routes/progress.routes.js'
 import parentAgentRoutes from './routes/parentAgent.routes.js'
+import screenTimeRoutes from './routes/screenTime.routes.js'
 
 // استيراد الـ Middlewares والـ Models
 import errorHandler from './middleware/errorHandler.js'
@@ -52,6 +53,7 @@ app.use('/api/gamification', gamificationRoutes)
 app.use('/api/stories', storyRoutes)
 app.use('/api/progress', progressRoutes) // دمج مسار البروجريس الخاص بهند
 app.use('/api/parent-agent', parentAgentRoutes)
+app.use('/api/screentime', screenTimeRoutes)
 
 // Health Check API
 app.get('/api/health', (req, res) => {

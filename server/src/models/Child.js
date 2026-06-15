@@ -80,6 +80,14 @@ const childSchema = new mongoose.Schema({
     lastReset: {
       type: Date,
       default: Date.now
+    },
+    sessionStart: {
+      type: Date,
+      default: null
+    },
+    warningNotified: {
+      type: Boolean,
+      default: false
     }
   }
 }, { timestamps: true })
