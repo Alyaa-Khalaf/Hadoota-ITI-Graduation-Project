@@ -89,8 +89,33 @@ const childSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     }
-  }
-}, { timestamps: true })
+  },
+
+  // 🏆 7. موديول التلعيب ونظام النقاط (Gamification Module)
+  xp: {
+    type: Number,
+    default: 0
+  },
+  level: {
+    type: Number,
+    default: 1
+  },
+  badges: [{
+    title: {
+      type: String,
+      required: true
+    },
+    icon: {
+      type: String,
+      default: 'default-badge.png'
+    },
+    unlockedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }]
+
+}, { timestamps: true });
 
 const Child = mongoose.model('Child', childSchema)
 export default Child

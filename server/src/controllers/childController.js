@@ -23,7 +23,7 @@ export const getAllChildren = getChildren;
 // 2️⃣ إضافة طفل جديد وربطه بالأب تلقائياً
 export const createChild = async (req, res, next) => {
   try {
-    const { name, age, interests, learningLevel, avatar } = req.body;
+    const { name, age, gender, interests, learningLevel, avatar } = req.body;
     const parentId = req.user?.id || req.user?._id;
 
     if (!parentId) {
@@ -39,6 +39,7 @@ export const createChild = async (req, res, next) => {
       parentId,
       name,
       age,
+      gender,
       avatar: avatar || 'default-child.png',
       interests: interests || [],
       learningLevel: learningLevel || 'beginner',
