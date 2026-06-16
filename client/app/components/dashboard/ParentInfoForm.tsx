@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // "use client";
 // import { useState } from "react";
 // import Button from "../ui/Button";
@@ -75,6 +76,8 @@
 //   );
 // }
 
+=======
+>>>>>>> 5331b85d6eda8fe92ab4e1780e50b8b369c4bfa6
 "use client";
 import { useState, useEffect } from "react";
 import Button from "../ui/Button";
@@ -90,7 +93,10 @@ export default function ParentInfoForm() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+<<<<<<< HEAD
   // 1️⃣ جلب بيانات البروفايل (GET) باستخدام accessToken
+=======
+>>>>>>> 5331b85d6eda8fe92ab4e1780e50b8b369c4bfa6
   
   // 1️⃣ جلب بيانات البروفايل (GET) - نسخة مطورة لالتقاط التوكن تلقائياً
   useEffect(() => {
@@ -126,7 +132,16 @@ export default function ParentInfoForm() {
         if (res.ok && result.success) {
           setName(result.data.name || "");
           setEmail(result.data.email || "");
+<<<<<<< HEAD
           setAvatar(result.data.avatar || "👩");
+=======
+          const serverAvatar = result.data.avatar;
+          if (!serverAvatar || serverAvatar === "default-avatar.png") {
+            setAvatar("👩"); // الأفاتار الافتراضي للحسابات الجديدة
+          } else {
+            setAvatar(serverAvatar);
+          }
+>>>>>>> 5331b85d6eda8fe92ab4e1780e50b8b369c4bfa6
           setError(""); // مسح الأخطاء عند النجاح
         } else {
           setError(result.message || "فشل في جلب بيانات الحساب.");

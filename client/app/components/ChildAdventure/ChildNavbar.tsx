@@ -8,10 +8,10 @@ function ChildNavbar() {
     const [isOpen, setIsOpen] = useState(false);
 
     const navItems = [
-        { label: "الرئيسية", icon: "🏠", href: "#" },
+        { label: "الرئيسية", icon: "🏠", href: "landing" },
         { label: "المغامرات", icon: "🗺️", href: "#" },
         { label: "الألعاب", icon: "🏆", href: "/games/GamesHub" },
-        { label: "الإعدادات", icon: "⚙️", href: "#" },
+        { label: "الإعدادات", icon: "⚙️", href: "/dashboard" },
     ];
 
     return (

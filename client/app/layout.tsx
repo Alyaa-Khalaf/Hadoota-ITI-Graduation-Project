@@ -3,10 +3,12 @@ import type { ReactNode } from "react";
 import "./globals.css";
 import { AuthProvider } from "./context/AuthContext";
 
+
 export const metadata = {
   title: "Hadoota",
   description: "Hadoota Graduation Project",
 };
+
 
 export default function RootLayout(
     { 
@@ -25,5 +27,6 @@ export default function RootLayout(
         </body>
     </html>
   );
+  
 }
 

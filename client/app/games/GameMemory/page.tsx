@@ -1,7 +1,7 @@
 import MemoryGame from '@/components/ChildGames/Games/MemoryGame'
 import React from 'react'
 
-function page() {
+function MemoryGames() {
   return (
     <div>
       <MemoryGame/>
@@ -9,4 +9,4 @@ function page() {
   )
 }
 
-export default page
+export default MemoryGames

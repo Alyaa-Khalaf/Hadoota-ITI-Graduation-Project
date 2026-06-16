@@ -12,6 +12,7 @@
     "concurrently": "^8.2.0"
   },
   "dependencies": {
-    "cookie-parser": "^1.4.7"
+    "cookie-parser": "^1.4.7",
+    "lucide-react": "^1.18.0"
   }
 }

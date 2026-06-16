@@ -55,7 +55,15 @@ export default function Hero() {
             <Button variant="sky" fullWidth className="text-lg !py-4 !px-10">
               ابدأ رحلة طفلك السحرية الآن ✨
             </Button>
-          </Link>
+              </Link>
+            {/* المدرسى */}
+          <Link href="/auth/register/school" className="w-full sm:w-auto">
+
+            <Button variant="sky" fullWidth className="text-lg !py-4 !px-10">
+             المدرسة✨
+            </Button>
+              </Link>
+        
 
           {/* زرار آراء الأهالي واخد ستايل الـ outline الشفاف المحترف */}
           <Link href="#testimonials" className="w-full sm:w-auto">

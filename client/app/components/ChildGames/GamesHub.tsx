@@ -12,7 +12,7 @@ const games = [
     color: "bg-[#FAC775]",
     textColor: "text-[#633806]",
     subColor: "text-[#854F0B]",
-    href: "/games/MemoryGame",
+    href: "/games/GameMemory",
   },
   {
     id: "quiz",
