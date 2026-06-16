@@ -4,12 +4,13 @@ import { motion } from "framer-motion"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Characters } from "@/types/childStory"
+import { useChild } from "@/hooks/useChild"
 import Lottie from "lottie-react"
 import lion from "@/animation/Lion.json"
 import princess from "@/animation/Creative Women.json"
 import knight from "@/animation/Shield of wings.json"
 
-/* تعليق: استخدمنا فقط الشخصيات المسموحة في enum الباك إند (أسد، أميرة، رحالة) */
+/* الشخصيات المسموحة */
 const characters: (Characters & { value: string })[] = [
   { id: 1, name: "أسد", animation: lion, value: "أسد" },
   { id: 2, name: "أميرة", animation: princess, value: "أميرة" },
@@ -18,19 +19,27 @@ const characters: (Characters & { value: string })[] = [
 
 export default function ChildCharactres() {
   const router = useRouter()
-  const [selected, setSelected] = useState<(Characters & { value: string }) | null>(null)
+  const { child } = useChild()
 
-  const handleStart = () => {
-    if (!selected) return
-    router.push(`/childTopics?character=${encodeURIComponent(selected.value)}`)
-  }
+  const [selected, setSelected] =
+    useState<(Characters & { value: string }) | null>(null)
+
+ const handleStart = () => {
+  if (!selected) return;
+
+  router.push(
+    `/childTopics?character=${encodeURIComponent(selected.value)}`
+  );
+};
 
   return (
     <div
       className="story-background min-h-screen p-6"
-      style={{
-        "--bg-image": 'url("/assets/story night.jpg")',
-      } as React.CSSProperties}
+      style={
+        {
+          "--bg-image": 'url("/assets/story night.jpg")',
+        } as React.CSSProperties
+      }
     >
       <h1 className="text-4xl text-center font-bold text-page-warm">
         اختر شخصيتك
@@ -62,7 +71,11 @@ export default function ChildCharactres() {
                 p-4 rounded-3xl 
                 flex flex-col items-center gap-4
                 shadow-card backdrop-blur-sm
-                ${active ? "border-primary bg-primary" : "border-border-warm bg-page-sky"}
+                ${
+                  active
+                    ? "border-primary bg-primary"
+                    : "border-border-warm bg-page-sky"
+                }
               `}
             >
               <motion.div
@@ -73,7 +86,9 @@ export default function ChildCharactres() {
                 <Lottie animationData={c.animation} loop />
               </motion.div>
 
-              <span className="font-bold text-base text-ink">{c.name}</span>
+              <span className="font-bold text-base text-ink">
+                {c.name}
+              </span>
             </motion.button>
           )
         })}
@@ -85,7 +100,9 @@ export default function ChildCharactres() {
           animate={{ opacity: 1, y: 0 }}
           className="mt-8 max-w-2xl mx-auto bg-page-sky p-5 rounded-3xl text-center shadow-story"
         >
-          <p className="text-ink-muted text-2xl font-bold">اخترت:</p>
+          <p className="text-ink-muted text-2xl font-bold">
+            اخترت:
+          </p>
 
           <div className="text-xl font-bold text-ink text-center">
             {selected.name}
@@ -97,15 +114,20 @@ export default function ChildCharactres() {
 
           <motion.div
             animate={{ y: [0, -8, 0], scale: [1, 1.08, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
             className="m-auto mt-4"
           >
             <button
-              onClick={handleStart}
-              className="bg-primary text-white px-6 py-3 rounded-2xl shadow-button font-bold inline-block"
-            >
-              ابدأ ✨
-            </button>
+  onClick={handleStart}
+  disabled={!selected}
+  className="bg-primary text-white px-8 py-4 rounded-2xl shadow-button text-lg font-bold disabled:opacity-50"
+>
+  ابدأ الحدوتة
+</button>
           </motion.div>
         </motion.div>
       )}

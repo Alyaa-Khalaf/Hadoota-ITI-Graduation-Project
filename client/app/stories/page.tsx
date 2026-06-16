@@ -1,31 +1,60 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
-import StoryPlayer from "@/components/story-player/StoryPlayer"
+import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useStorySocket } from "@/hooks/useStorySocket";
+import StoryPlayer from "@/components/story-player/StoryPlayer";
+import { useStoryInput } from "@/hooks/useStoryInput";
 
-export default function Page() {
-  const searchParams = useSearchParams()
-  const [childId, setChildId] = useState<string>("")
+export default function StoriesPage() {
+  const { accessToken } = useAuth();
+  const { childId, childName, childAge, character, topic } = useStoryInput();
 
-  const character = searchParams.get("character") || ""
-  const topic = searchParams.get("topic") || ""
+  const {
+    generateStory,
+    isGenerating,
+    scenes,
+    storyTitle,
+    error,
+  } = useStorySocket();
 
-  useEffect(() => {
-    const fromQuery = searchParams.get("childId")
-    const fromStorage = localStorage.getItem("activeChildId")
-    setChildId(fromQuery || fromStorage || "")
-  }, [searchParams])
+  const [started, setStarted] = useState(false);
 
-  if (!childId || !character || !topic) {
+  const handleStart = async () => {
+    setStarted(true);
+
+    await generateStory(
+      childId,
+      character,
+      topic
+    );
+  };
+
+  if (!started) {
     return (
-      <div className="max-w-4xl mx-auto p-6 text-center">
-        <p className="text-red-500 font-bold">
-          بيانات الحدوتة غير مكتملة. لازم تحدد الطفل، الشخصية، والموضوع أولاً.
-        </p>
+      <div className="text-center p-10">
+        <button
+          onClick={handleStart}
+          className="bg-blue-600 text-white px-6 py-3 rounded"
+        >
+          ابدأ الحدوتة
+        </button>
+
+        {error && <p className="text-red-500 mt-4">{error}</p>}
       </div>
-    )
+    );
   }
 
-  return <StoryPlayer childId={childId} character={character} topic={topic} />
+  if (isGenerating || !scenes) {
+    return (
+      <div className="text-center p-10">
+        ✨ جاري توليد الحدوتة...
+        {error && <p className="text-red-500 mt-4">{error}</p>}
+      </div>
+    );
+  }
+
+  return (
+    <StoryPlayer scenes={scenes} title={storyTitle} />
+  );
 }

@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useChild } from "@/hooks/useChild";
@@ -8,10 +9,10 @@ function ChildNavbar() {
     const [isOpen, setIsOpen] = useState(false);
 
     const navItems = [
-        { label: "الرئيسية", icon: "🏠", href: "#" },
+        { label: "الرئيسية", icon: "🏠", href: "/landing" },
         { label: "المغامرات", icon: "🗺️", href: "#" },
         { label: "الألعاب", icon: "🏆", href: "/games/GamesHub" },
-        { label: "الإعدادات", icon: "⚙️", href: "#" },
+        { label: "الإعدادات", icon: "⚙️", href: "/dashboard" },
     ];
 
     return (
@@ -23,8 +24,8 @@ function ChildNavbar() {
 
                 <div className="flex items-center justify-between">
                     {/* Logo */}
-                    <a
-                        href="#"
+                    <Link 
+                        href="/childAdventure"
                         className="flex items-center gap-2 no-underline shrink-0"
                     >
                         <span
@@ -38,7 +39,7 @@ function ChildNavbar() {
                         >
                             بطل
                         </span>
-                    </a>
+                    </Link>
 
                     {/* Desktop Nav */}
                     <nav className="hidden md:flex items-center gap-2">

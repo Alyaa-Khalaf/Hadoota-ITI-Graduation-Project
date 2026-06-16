@@ -6,13 +6,11 @@ import Input from "../ui/Input";
 import Button from "../ui/Button";
 import SocialLogin from "./SocialLogin";
 import Link from "next/link";
-// 1. استيراد الـ Hook الخاص بالـ Context
-import { useAuth } from "@/context/AuthContext"; 
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginForm() {
   const router = useRouter();
-  // 2. سحب دالة تخزين التوكن من الـ Context
-  const { setAccessToken } = useAuth(); 
+  const { setAccessToken } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -33,31 +31,39 @@ export default function LoginForm() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include", // 👈 زودي السطر ده هنا كمان عشان الكوكي تتخزن أول ما تعملي لوجن
-    body: JSON.stringify(formData),
+          credentials: "include",
+          body: JSON.stringify(formData),
         }
       );
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "تأكد من صحة البيانات المدخلة");
+        throw new Error(data.message || "تأكد من البيانات");
       }
 
       const token = data?.data?.accessToken;
       const refresh = data?.data?.refreshToken;
 
       if (!token) {
-        throw new Error("Token not found in response");
+        throw new Error("Token not found");
       }
 
+      // ✔️ المصدر الأساسي للتوكن
       setAccessToken(token);
-      if (refresh) localStorage.setItem('refreshToken', refresh);
+
+      // ✔️ نخزن refresh فقط (لأن هو اللي بيتجدد منه)
+      if (refresh) {
+        localStorage.setItem("refreshToken", refresh);
+      }
+
+      // ✔️ optional: عشان refresh بعد reload
+      localStorage.setItem("accessToken", token);
 
       router.push("/childAdventure");
     } catch (err: any) {
       setError(
-        err.message || "حدث خطأ أثناء تسجيل الدخول، يرجى المحاولة مرة أخرى."
+        err.message || "حدث خطأ أثناء تسجيل الدخول"
       );
     } finally {
       setIsLoading(false);
@@ -77,9 +83,10 @@ export default function LoginForm() {
       )}
 
       <div>
-        <label className="block text-sm font-black text-ink mb-2">
-          البريد الإلكتروني للوالدين
+        <label className="block text-sm font-black mb-2">
+          البريد الإلكتروني
         </label>
+
         <Input
           type="email"
           placeholder="example@mail.com"
@@ -94,15 +101,9 @@ export default function LoginForm() {
       </div>
 
       <div>
-        <div className="flex justify-between items-center mb-2">
-          <label className="text-sm font-black text-ink">كلمة المرور</label>
-          <Link
-            href="/auth/forgot-password"
-            className="text-xs font-bold text-magic hover:underline"
-          >
-            نسيت كلمة المرور؟
-          </Link>
-        </div>
+        <label className="block text-sm font-black mb-2">
+          كلمة المرور
+        </label>
 
         <Input
           type="password"
@@ -115,19 +116,23 @@ export default function LoginForm() {
           }
           label=""
         />
+
+        <div className="flex justify-between mt-2">
+          <Link href="/auth/forgot-password" className="text-xs">
+            نسيت كلمة المرور؟
+          </Link>
+        </div>
       </div>
 
-      <div className="pt-2">
-        <Button
-          type="submit"
-          variant="primary"
-          fullWidth={true}
-          disabled={isLoading}
-          className="!py-3.5 font-black"
-        >
-          {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
-        </Button>
-      </div>
+      <Button
+        type="submit"
+        variant="primary"
+        fullWidth
+        disabled={isLoading}
+        className="!py-3.5 font-black"
+      >
+        {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+      </Button>
 
       <SocialLogin isLoading={isLoading} />
     </form>

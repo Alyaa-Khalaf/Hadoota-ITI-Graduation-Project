@@ -1,84 +1,56 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useStorySocket } from "@/hooks/useStorySocket"
+import { useState } from "react";
 
-import StoryImage from "./StoryImage"
-import StoryText from "./StoryText"
-import StoryControls from "./StoryControls"
-import StoryProgress from "./StoryProgress"
-
-interface StoryPlayerProps {
-  childId: string
-  character: string // "أسد" | "أميرة" | "رحالة"
-  topic: string
+interface Scene {
+  id: number;
+  image: string;
+  text: string;
 }
 
-export default function StoryPlayer({ childId, character, topic }: StoryPlayerProps) {
-  const [currentScene, setCurrentScene] = useState(0)
-  const { generateStory, isGenerating, scenes, storyTitle, error } = useStorySocket()
+export default function StoryPlayer({
+  scenes,
+  title,
+}: {
+  scenes: Scene[];
+  title?: string;
+}) {
+  const [current, setCurrent] = useState(0);
 
-  // عند فتح الصفحة، نطلب توليد الحدوتة فعلياً من السيرفر
-  useEffect(() => {
-    if (childId && character && topic) {
-      generateStory(childId, character, topic)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childId, character, topic])
-
-  if (isGenerating) {
-    return (
-      <div className="max-w-4xl mx-auto p-6 text-center">
-        <p className="text-lg font-bold text-orange-500 animate-pulse">
-          جاري توليد الحدوتة... ✨
-        </p>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-4xl mx-auto p-6 text-center">
-        <p className="text-red-500 font-bold">{error}</p>
-      </div>
-    )
-  }
-
-  if (!scenes || scenes.length === 0) {
-    return (
-      <div className="max-w-4xl mx-auto p-6 text-center">
-        <p className="text-gray-400 font-bold">لا توجد حدوتة لعرضها حالياً.</p>
-      </div>
-    )
-  }
-
-  const scene = scenes[currentScene]
-
-  const nextScene = () => {
-    if (currentScene < scenes.length - 1) {
-      setCurrentScene(currentScene + 1)
-    }
-  }
-
-  const prevScene = () => {
-    if (currentScene > 0) {
-      setCurrentScene(currentScene - 1)
-    }
-  }
+  const scene = scenes[current];
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {storyTitle && (
-        <h2 className="text-xl font-black text-center mb-4">{storyTitle}</h2>
-      )}
+    <div className="max-w-3xl mx-auto p-6 text-center">
+      {title && <h1 className="text-2xl font-bold mb-6">{title}</h1>}
 
-      <StoryProgress current={currentScene + 1} total={scenes.length} />
+      <div className="bg-white p-5 rounded-xl shadow">
+        <img
+          src={scene.image}
+          className="w-full h-64 object-cover rounded-lg mb-4"
+        />
 
-      <StoryImage image={scene.image} />
+        <p className="text-lg">{scene.text}</p>
+      </div>
 
-      <StoryText text={scene.text} />
+      <div className="flex justify-between mt-6">
+        <button
+          onClick={() => setCurrent((p) => p - 1)}
+          disabled={current === 0}
+        >
+          السابق
+        </button>
 
-      <StoryControls next={nextScene} prev={prevScene} />
+        <span>
+          {current + 1} / {scenes.length}
+        </span>
+
+        <button
+          onClick={() => setCurrent((p) => p + 1)}
+          disabled={current === scenes.length - 1}
+        >
+          التالي
+        </button>
+      </div>
     </div>
-  )
+  );
 }

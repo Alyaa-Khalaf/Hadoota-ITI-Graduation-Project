@@ -34,7 +34,7 @@ export default function QuickActions() {
       title: "ألغاز",
       icon: "🧠",
       color: "bg-cat-animals",
-      route: "/games",
+      route: "/games/GamesHub",
     },
   ];
 

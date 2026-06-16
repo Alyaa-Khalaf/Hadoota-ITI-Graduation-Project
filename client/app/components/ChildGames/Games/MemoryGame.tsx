@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useOnboardingStore } from "@/store/onboardingStore";
 import { useChild } from "@/hooks/useChild";
+import { useAuth } from "@/context/AuthContext";
 
 type Card = {
   id: number;
@@ -21,7 +22,7 @@ const IMAGES = [
 
 export default function MemoryGame() {
   const {child} = useChild();
-
+    const { accessToken } = useAuth();
   const [cards, setCards] = useState<Card[]>([]);
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matched, setMatched] = useState<number[]>([]);
@@ -30,24 +31,28 @@ export default function MemoryGame() {
 
   // ⭐ SCORE جاهز للـ gamification
   const [score, setScore] = useState(0);
+// منع إرسال المكافأة أكثر من مرة
+const [rewardSent, setRewardSent] = useState(false);
 
   const createGame = () => {
-    const duplicated = [...IMAGES, ...IMAGES];
+  const duplicated = [...IMAGES, ...IMAGES];
 
-    const shuffled = duplicated
-      .sort(() => Math.random() - 0.5)
-      .map((image, index) => ({
-        id: index,
-        image,
-      }));
+  const shuffled = duplicated
+    .sort(() => Math.random() - 0.5)
+    .map((image, index) => ({
+      id: index,
+      image,
+    }));
 
-    setCards(shuffled);
-    setFlipped([]);
-    setMatched([]);
-    setMoves(0);
-    setScore(0);
-  };
+  setCards(shuffled);
+  setFlipped([]);
+  setMatched([]);
+  setMoves(0);
+  setScore(0);
 
+  // reset reward flag
+  setRewardSent(false);
+};
   useEffect(() => {
     createGame();
   }, []);
@@ -89,38 +94,42 @@ export default function MemoryGame() {
   const isWinner = cards.length > 0 && matched.length === cards.length;
 
   // ⭐ إرسال المكافأة للـ backend
-  const sendReward = async () => {
-    try {
-      const childId = child?._id; // من store مش localStorage
+ const sendReward = async () => {
+  try {
+    const childId = child?._id;
 
-      if (!childId) return;
+    if (!childId) return;
 
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/gamification/reward`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include", // مهم جداً مع httpOnly cookies
-          body: JSON.stringify({
-            childId,
-            type: "star",
-            amount: Math.floor(score / 10),
-            reason: "Memory Game Completed",
-          }),
-        }
-      );
-    } catch (err) {
-      console.log("Reward error:", err);
-    }
-  };
+    const res = await fetch(
+      "http://localhost:5000/api/gamification/reward",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          childId,
+          type: "star",
+          amount: score,
+          reason: "Memory Game",
+        }),
+      }
+    );
 
+    const data = await res.json();
+
+    console.log("REWARD RESPONSE:", data);
+  } catch (err) {
+    console.log("Reward error:", err);
+  }
+};
   useEffect(() => {
-    if (isWinner) {
-      sendReward();
-    }
-  }, [isWinner]);
+  if (isWinner && !rewardSent) {
+    sendReward();
+    setRewardSent(true);
+  }
+}, [isWinner, rewardSent]);
 
   return (
     <div className="max-w-2xl mx-auto p-6">

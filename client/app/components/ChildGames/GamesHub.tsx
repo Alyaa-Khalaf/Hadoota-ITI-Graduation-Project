@@ -12,7 +12,7 @@ const games = [
     color: "bg-[#FAC775]",
     textColor: "text-[#633806]",
     subColor: "text-[#854F0B]",
-    href: "/games/MemoryGame",
+    href: "/games/GameMemory",
   },
   {
     id: "quiz",
@@ -22,7 +22,7 @@ const games = [
     color: "bg-[#85B7EB]",
     textColor: "text-[#0C447C]",
     subColor: "text-[#185FA5]",
-    href: "/games/quiz",
+    href: "/games/ChildQuizGame",
   },
   {
     id: "puzzle",
@@ -42,7 +42,7 @@ const games = [
     color: "bg-[#AFA9EC]",
     textColor: "text-[#3C3489]",
     subColor: "text-[#534AB7]",
-    href: "/games/speed",
+    href: "/games/SpeedReactionGame",
   },
 ];
 

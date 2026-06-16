@@ -4,6 +4,7 @@ import { StoryTopics } from "@/types/childStory"
 import { motion } from "framer-motion"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
+import { useChild } from "@/hooks/useChild"
 
 const topics: StoryTopics[] = [
   { id: 1, title: "الفضاء", emoji: "🚀", color: "bg-sky", shadowColor: "0  15px 4px rgba(38, 127, 253, 0.8)" },
@@ -19,25 +20,32 @@ const topics: StoryTopics[] = [
 export default function StoryTitles() {
   const router = useRouter()
   const searchParams = useSearchParams()
+
+  const { child } = useChild() // ✅ الجديد
+  const childId = child?._id
+
   const character = searchParams.get("character") || ""
 
   const [selectedTopic, setSelectedTopics] = useState<StoryTopics | null>(null)
 
-  const handleStart = () => {
-    if (!selectedTopic || !character) return
+const handleStart = () => {
+  if (!child?._id || !selectedTopic || !character) return;
 
-    const childId = localStorage.getItem("activeChildId") || ""
-
-    const url = `/stories?childId=${encodeURIComponent(childId)}&character=${encodeURIComponent(character)}&topic=${encodeURIComponent(selectedTopic.title)}`
-    router.push(url)
-  }
-
+  router.push(
+    `/stories?childId=${child._id}&character=${encodeURIComponent(character)}&topic=${encodeURIComponent(selectedTopic.title)}`
+  );
+};
+console.log("child:", child)
+console.log("selectedTopic:", selectedTopic)
+console.log("character:", character)
   return (
     <div
       className="story-background min-h-screen p-6"
-      style={{
-        "--bg-image": 'url("/assets/kidsStory.jpg")',
-      } as React.CSSProperties}
+      style={
+        {
+          "--bg-image": 'url("/assets/kidsStory.jpg")',
+        } as React.CSSProperties
+      }
     >
       {!character && (
         <p className="text-center text-red-500 font-bold mb-4">
@@ -76,9 +84,16 @@ export default function StoryTitles() {
               whileHover={{ scale: 1.08, y: -12, rotate: [-1, 1, -1] }}
               whileTap={{ scale: 0.92 }}
               transition={{ duration: 0.5, type: "spring", stiffness: 180 }}
-              style={{ boxShadow: topic.shadowColor, borderColor: topic.shadowColor }}
+              style={{
+                boxShadow: topic.shadowColor,
+                borderColor: topic.shadowColor,
+              }}
               className={`p-6 rounded-3xl flex flex-col items-center gap-4 relative overflow-hidden
-                ${selected ? "bg-primary-light border-primary text-white" : "bg-white border-border-warm text-ink"}`}
+                ${
+                  selected
+                    ? "bg-primary-light border-primary text-white"
+                    : "bg-white border-border-warm text-ink"
+                }`}
             >
               <motion.div
                 animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
@@ -111,7 +126,10 @@ export default function StoryTitles() {
           initial={{ opacity: 0, y: 40, scale: 0.8 }}
           animate={{ opacity: 1, y: 0, scale: [0.95, 1.03, 1] }}
           transition={{ duration: 0.5 }}
-          style={{ borderColor: selectedTopic.color, boxShadow: selectedTopic.shadowColor }}
+          style={{
+            borderColor: selectedTopic.color,
+            boxShadow: selectedTopic.shadowColor,
+          }}
           className="mt-24 max-w-xl mx-auto bg-white rounded-3xl p-8 text-center"
         >
           <motion.div
@@ -122,7 +140,9 @@ export default function StoryTitles() {
             {selectedTopic.emoji}
           </motion.div>
 
-          <p className="text-sm text-ink-muted mt-4">الموضوع المختار</p>
+          <p className="text-sm text-ink-muted mt-4">
+            الموضوع المختار
+          </p>
 
           <motion.h2
             animate={{ scale: [1, 1.05, 1] }}
@@ -137,13 +157,13 @@ export default function StoryTitles() {
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
             className="mt-10"
           >
-            <button
-              onClick={handleStart}
-              disabled={!character}
-              className="bg-primary text-white px-8 py-4 rounded-2xl shadow-button shadow-[0_0_30px_rgba(255,112,67,0.45)] font-bold inline-block text-lg hover:bg-primary-light hover:text-ink disabled:opacity-50"
-            >
-              ابدأ الحدوتة
-            </button>
+             <button
+            onClick={handleStart}
+         disabled={!selectedTopic || !character || !child?._id}
+            className="bg-primary text-white px-8 py-4 rounded-2xl font-bold disabled:opacity-50"
+          >
+            ابدأ الحدوتة
+          </button>
           </motion.div>
         </motion.div>
       )}

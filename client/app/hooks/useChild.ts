@@ -7,6 +7,7 @@ type Child = {
   _id: string;
   name: string;
   age: number;
+  gender:number,
   avatar: string;
 };
 
@@ -54,6 +55,7 @@ export function useChild() {
     };
 
     fetchChild(); 
+    
 
     // ⚠️ 4. لازم نراقب الـ authLoading والـ accessToken سوا عشان لما الـ context يخلص، الـ hook يلقطه فوراً
   }, [accessToken, authLoading]); 
