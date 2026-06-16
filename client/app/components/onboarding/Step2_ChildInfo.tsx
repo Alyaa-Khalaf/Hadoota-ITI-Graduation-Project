@@ -15,7 +15,7 @@ export default function Step2_ChildInfo({ onNext, onPrev }: Step2Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!child.name || !child.age) return;
+    if (!child.name || !child.age || !child.gender) return;
     onNext();
   };
 
@@ -42,6 +42,16 @@ export default function Step2_ChildInfo({ onNext, onPrev }: Step2Props) {
         {[3,4,5,6,7,8,9,10,11,12].map(n => (
           <option key={n} value={n}>{n}</option>
         ))}
+      </select>
+
+      <select
+        value={child.gender || ""}
+        onChange={(e) => setChild({ gender: e.target.value })}
+        className="w-full p-3 rounded-xl border"
+      >
+        <option value="" disabled>اختر نوع الطفل</option>
+        <option value="male">ذكر 👦</option>
+        <option value="female">أنثى 👧</option>
       </select>
 
       <div className="flex gap-3 pt-4">

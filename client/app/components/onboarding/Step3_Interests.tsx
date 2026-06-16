@@ -4,7 +4,7 @@ import Button from "../ui/Button";
 import { useOnboardingStore } from "@/store/onboardingStore";
 import { useRouter } from "next/navigation";
 // 1. استيراد الـ useAuth عشان نسحب التوكن
-import { useAuth } from "@/context/AuthContext"; 
+import { useAuth } from "@/context/AuthContext";
 
 const INTERESTS = [
   { id: "adventures", label: "مغامرات", icon: "🚀" },
@@ -21,9 +21,9 @@ interface Props {
 
 export default function Step3_Interests({ onPrev }: Props) {
   const router = useRouter();
-  
+
   // 2. سحب الـ accessToken من الـ Context
-  const { accessToken } = useAuth(); 
+  const { accessToken } = useAuth();
 
   const child = useOnboardingStore((s) => s.child);
   const setChild = useOnboardingStore((s) => s.setChild);
@@ -68,6 +68,7 @@ export default function Step3_Interests({ onPrev }: Props) {
       const payload = {
         name: child.name,
         age: Number(child.age),
+        gender: child.gender,
         avatar: child.avatar || "lion",
         interests: child.interests,
       };
@@ -79,20 +80,18 @@ export default function Step3_Interests({ onPrev }: Props) {
           headers: {
             "Content-Type": "application/json",
             // 4. نمرر التوكن الآمن هنا
-            Authorization: `Bearer ${accessToken}`, 
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       const data = await res.json();
-      
+
       console.log("CREATE CHILD RESPONSE:", data);
 
       if (!res.ok) {
-        throw new Error(
-          data.message || "حدث خطأ أثناء إنشاء ملف الطفل"
-        );
+        throw new Error(data.message || "حدث خطأ أثناء إنشاء ملف الطفل");
       }
 
       reset();
@@ -101,24 +100,16 @@ export default function Step3_Interests({ onPrev }: Props) {
     } catch (error) {
       console.error(error);
 
-      alert(
-        error instanceof Error
-          ? error.message
-          : "حدث خطأ غير متوقع"
-      );
+      alert(error instanceof Error ? error.message : "حدث خطأ غير متوقع");
     }
   };
 
   return (
     <div className="space-y-6 text-right">
       <div>
-        <h3 className="text-xl font-black mb-2">
-          اختر اهتمامات طفلك ✨
-        </h3>
+        <h3 className="text-xl font-black mb-2">اختر اهتمامات طفلك ✨</h3>
 
-        <p className="text-sm text-gray-500">
-          اختر اهتماماً واحداً أو أكثر.
-        </p>
+        <p className="text-sm text-gray-500">اختر اهتماماً واحداً أو أكثر.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -131,7 +122,7 @@ export default function Step3_Interests({ onPrev }: Props) {
               child.interests.includes(item.id)
                 ? "border-primary bg-primary/10"
                 : "border-gray-200"
-              }`}
+            }`}
           >
             {item.icon} {item.label}
           </button>
@@ -139,19 +130,11 @@ export default function Step3_Interests({ onPrev }: Props) {
       </div>
 
       <div className="flex gap-3 pt-4">
-        <Button
-          onClick={handleFinish}
-          fullWidth
-          variant="primary"
-        >
+        <Button onClick={handleFinish} fullWidth variant="primary">
           إنهاء وإنشاء الحساب 🚀
         </Button>
 
-        <Button
-          type="button"
-          variant="sky"
-          onClick={onPrev}
-        >
+        <Button type="button" variant="sky" onClick={onPrev}>
           رجوع
         </Button>
       </div>

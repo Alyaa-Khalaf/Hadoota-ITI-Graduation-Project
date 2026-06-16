@@ -46,7 +46,7 @@ const childSchema = new mongoose.Schema({
   // 4. التخصيص والاهتمامات
   interests: [{
     type: String,
-    enum: ['فضاء', 'حيوانات', 'مغامرات', 'تاريخ', 'علوم', 'دين', 'طبيعة', 'رياضة']
+    enum: ['adventures', 'animals', 'science', 'morals', 'history', 'mysteries', 'space', 'religion', 'nature', 'sports']
   }],
   learningLevel: {
     type: String,
@@ -58,7 +58,7 @@ const childSchema = new mongoose.Schema({
   settings: {
     allowedTopics: [{
       type: String,
-      enum: ['دين', 'علوم', 'لغة عربية', 'تاريخ', 'طبيعة', 'مغامرات', 'فضاء']
+      enum: ['religion', 'science', 'arabic', 'history', 'nature', 'adventures', 'space']
     }],
     screenTimeLimit: {
       type: Number,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 
@@ -44,6 +45,8 @@ interface ApiResponse<T> {
 }
 
 export default function ChildrenManager() {
+  const router = useRouter();
+
   /* تعليق: الـ States الخاصة بالتحكم في مصفوفة وعمليات الحذف والتعديل */
   const [children, setChildren] = useState<Child[]>([]);
   const [isAdding, setIsAdding] = useState(false);
@@ -99,6 +102,13 @@ export default function ChildrenManager() {
     fetchChildren();
   }, []);
 
+  // ========================================================
+  // 🚀 الدخول لعالم الطفل (التطبيق الخاص بتجربة الطفل)
+  // ========================================================
+  const enterChildWorld = (childId: string) => {
+    localStorage.setItem("activeChildId", childId);
+    router.push("/childAdventure");
+  };
 
   // ========================================================
   // 🎛️ دالة مساعدة لإدارة مصفوفة الاهتمامات المختارة ديناميكياً
@@ -115,7 +125,6 @@ export default function ChildrenManager() {
   // 2️⃣ إضافة طفل جديد وإرساله للسيرفر (POST Request)
   // ========================================================
   const handleAddChildSubmit = async (e: React.FormEvent) => {
-    alert("submit fired");
     e.preventDefault();
     if (!newChildName || !newChildAge) return;
 
@@ -134,7 +143,6 @@ export default function ChildrenManager() {
         learningLevel: newLearningLevel,
       };
 
-      console.log("Sending:", requestPayload);
       const res = await fetch("http://localhost:5000/api/children", {
         method: "POST",
         headers: {
@@ -147,7 +155,6 @@ export default function ChildrenManager() {
       const result: ApiResponse<Child> = await res.json();
 
       if (res.ok && result.success) {
-        console.log(result.data);
         /* ملاحظة ذهبية: الباك إيند يرجع كائن مستقل، مدمج بالـ State لتجنب الريفرش */
         if (result.data) {
           setChildren(prev => [...prev, result.data]);
@@ -261,6 +268,13 @@ export default function ChildrenManager() {
                   </div>
                   
                   <div className="flex gap-2 mt-5">
+                    <Button
+                      variant="primary"
+                      className="flex-1 !py-2 !px-4 text-[11px] font-black"
+                      onClick={() => enterChildWorld(childId)}
+                    >
+                      ادخل عالمه 🚀
+                    </Button>
                     <Button
                       variant="danger"
                       className="flex-1 !py-2 !px-4 text-[11px] font-black"

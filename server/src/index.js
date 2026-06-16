@@ -41,7 +41,10 @@ const io = new Server(httpServer, {
 })
 
 // =============== MIDDLEWARES ===============
-app.use(cors())
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true
+}))
 app.use(helmet())
 app.use(morgan('dev'))
 app.use(express.json())

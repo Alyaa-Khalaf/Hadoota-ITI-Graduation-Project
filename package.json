@@ -12,6 +12,7 @@
     "concurrently": "^8.2.0"
   },
   "dependencies": {
-    "cookie-parser": "^1.4.7"
+    "cookie-parser": "^1.4.7",
+    "lottie-react": "^2.4.1"
   }
 }
