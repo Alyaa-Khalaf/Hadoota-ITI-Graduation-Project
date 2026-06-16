@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+<<<<<<< HEAD
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -8,6 +9,22 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { Server } from "socket.io";
+=======
+// استيراد الـ Routes الكاملة من كل الفروع المدمجة بسلام
+import authRoutes from './routes/auth.routes.js'
+import userRoutes from './routes/userRoutes.js'
+import childRoutes from './routes/child.routes.js'
+import quizRoutes from './routes/quizRoutes.js'
+import gamificationRoutes from './routes/gamificationRoutes.js'
+import storyRoutes from './routes/storyRoutes.js'
+import progressRoutes from './routes/progress.routes.js'
+import parentAgentRoutes from './routes/parentAgent.routes.js'
+import screenTimeRoutes from './routes/screenTime.routes.js'
+import paymentRoutes from './routes/payment.routes.js'
+import schoolRoutes from './routes/school.routes.js'
+import adminRoutes from './routes/admin.routes.js'
+import personalizationRoutes from './routes/personalizationRoutes.js'
+>>>>>>> a0d726d0c1c5b1d6afa70f754e8193491ccb6945
 
 import connectDB from "./config/db.js";
 
@@ -50,11 +67,28 @@ app.use(
   })
 );
 
+<<<<<<< HEAD
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+=======
+// =============== GLOBAL ROUTES ===============
+app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
+app.use('/api/children', childRoutes)
+app.use('/api/quiz', quizRoutes)
+app.use('/api/gamification', gamificationRoutes)
+app.use('/api/stories', storyRoutes)
+app.use('/api/progress', progressRoutes)
+app.use('/api/parent-agent', parentAgentRoutes)
+app.use('/api/screentime', screenTimeRoutes)
+app.use('/api/payments', paymentRoutes)
+app.use('/api/schools', schoolRoutes)
+app.use('/api/admin', adminRoutes)
+app.use('/api/personalization', personalizationRoutes)
+>>>>>>> a0d726d0c1c5b1d6afa70f754e8193491ccb6945
 
 app.use("/api", generalLimiter);
 
@@ -166,4 +200,8 @@ connectDB()
     process.exit(1);
   });
 
+<<<<<<< HEAD
 export { io };
+=======
+export { io }
+>>>>>>> a0d726d0c1c5b1d6afa70f754e8193491ccb6945

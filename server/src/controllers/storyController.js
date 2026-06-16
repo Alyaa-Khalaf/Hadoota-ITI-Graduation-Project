@@ -1,9 +1,31 @@
 import Story from '../models/Story.js'
 import Child from '../models/Child.js'
+import Personalization from '../models/Personalization.js' 
 import Progress from '../models/Progress.js'
 import { orchestrateStoryGeneration } from '../services/ai/orchestrator.js'
 import { io } from '../index.js'
 import { getCachedStory, cacheStory } from '../config/redis.js'
+
+// Helper function لتحديث بيانات التخصيص تلقائياً بعد اكتمال الحدوتة الحقيقية
+const updateChildPatterns = async (childId, character, topic) => {
+  try {
+    // تحديث عداد الحواديت وإضافة الشخصية والموضوع للـ arrays بدون تكرار ($addToSet)
+    await Personalization.findOneAndUpdate(
+      { childId },
+      { 
+        $inc: { storiesListenedCount: 1 },
+        $addToSet: { 
+          favoriteCharacters: character, 
+          favoriteTopics: topic 
+        }
+      },
+      { upsert: true, new: true } // لو البروفايل مش موجود هيكاريته تلقائي
+    );
+    console.log(`🤖 Personalization Engine updated for child: ${childId}`);
+  } catch (err) {
+    console.error('❌ Failed to update personalization patterns:', err.message);
+  }
+};
 
 // Generate new story
 export const generateStory = async (req, res, next) => {
@@ -31,7 +53,22 @@ export const generateStory = async (req, res, next) => {
       })
     }
 
-    // Check Redis cache first
+    // 1. جلب داتا الـ Personalization لتمريرها للـ Orchestrator
+    let personalizationData = { isEngineActive: false };
+    const profile = await Personalization.findOne({ childId });
+    
+    // شرط الـ 3 حواديت: لا يتم التخصيص الفعلي إلا بعد سماع 3 حواديت حقيقية على الأقل
+    if (profile && profile.storiesListenedCount >= 3) {
+      personalizationData = {
+        favoriteCharacters: profile.favoriteCharacters,
+        favoriteTopics: profile.favoriteTopics,
+        preferredStoryLength: profile.preferredStoryLength,
+        vocabularyLevel: profile.vocabularyLevel,
+        isEngineActive: true
+      };
+    }
+
+    // 2. التحقق من الـ Redis cache أولاً لتوفير كوست الـ AI والوقت
     const cached = await getCachedStory(childId, character, topic)
     if (cached) {
       const storyDoc = await Story.create({
@@ -44,7 +81,8 @@ export const generateStory = async (req, res, next) => {
         status: 'completed',
         completedAt: new Date()
       })
-      Progress.findOneAndUpdate({ childId }, { $inc: { storiesCompleted: 1 } }).catch(() => {})
+
+      // الكاش بيرجع الحدوتة فوراً للفرونت إيند بدون زيادة عداد الـ Personalization
       return res.status(201).json({
         success: true,
         message: 'تم جلب الحدوتة من الكاش ⚡',
@@ -69,7 +107,7 @@ export const generateStory = async (req, res, next) => {
 
     console.log(`📖 Starting story generation for story: ${storyDoc._id}`)
 
-    // Emit initial event
+    // Emit initial event via Socket.io
     const socketId = req.body.socketId || null
     if (socketId && io) {
       io.to(socketId).emit('story:generating', {
@@ -86,17 +124,16 @@ export const generateStory = async (req, res, next) => {
       childAge: child.age,
       childName: child.name,
       socketId,
-      childId  // Pass childId for room-based emissions
+      childId,  
+      personalizationData 
     })
       .then(enrichedStory => {
-        // Update story with complete data
         storyDoc.title = enrichedStory.title
         storyDoc.scenes = enrichedStory.scenes
         storyDoc.moralLesson = enrichedStory.moralLesson
         storyDoc.educationalValue = enrichedStory.educationalValue
         storyDoc.safetyCheck = enrichedStory.safetyCheck
 
-        // Check safety before saving
         if (!enrichedStory.safetyCheck.safe) {
           storyDoc.status = 'failed'
           storyDoc.save().then(() => {
@@ -111,16 +148,19 @@ export const generateStory = async (req, res, next) => {
         } else {
           storyDoc.status = 'completed'
           storyDoc.completedAt = new Date()
-          storyDoc.save().then(savedStory => {
+          storyDoc.save().then(async (savedStory) => {
             console.log(`✅ Story saved: ${savedStory._id}`)
+            
+            // هنا المكان الصح! التحديث بيحصل فقط للقصص الجديدة والمقبولة أمنياً لضمان دقة التعلم بروفايل الطفل
+            await updateChildPatterns(childId, character, topic);
 
-            // Increment storiesCompleted in Progress
+            // تحديث الـ Progress للمستويات والـ Badges
             Progress.findOneAndUpdate(
               { childId },
               { $inc: { storiesCompleted: 1 } }
             ).catch(err => console.error('Failed to update storiesCompleted:', err))
 
-            // Cache the completed story in Redis (24h TTL)
+            // تخزينها في كاش Redis لمدة 24 ساعة للسرعة
             cacheStory(childId, character, topic, {
               title: savedStory.title,
               scenes: savedStory.scenes,
@@ -187,7 +227,6 @@ export const recordStoryChoice = async (req, res, next) => {
       })
     }
 
-    // Verify user owns the story
     if (story.childId.parentId.toString() !== userId.toString()) {
       return res.status(401).json({
         success: false,
@@ -197,7 +236,6 @@ export const recordStoryChoice = async (req, res, next) => {
       })
     }
 
-    // Store choice in story
     if (!story.userChoices) {
       story.userChoices = []
     }
@@ -225,7 +263,6 @@ export const getStoryHistory = async (req, res, next) => {
     const { page = 1, limit = 10, character, topic } = req.query
     const userId = req.user.id || req.user._id
 
-    // Verify user owns the child
     const child = await Child.findById(childId)
     if (!child) {
       return res.status(404).json({
@@ -245,7 +282,6 @@ export const getStoryHistory = async (req, res, next) => {
       })
     }
 
-    // Build query
     const query = { childId, status: 'completed' }
     if (character) query.character = character
     if (topic) query.topic = new RegExp(topic, 'i')
@@ -297,7 +333,6 @@ export const getSingleStory = async (req, res, next) => {
       })
     }
 
-    // Verify authorization
     if (story.childId.parentId.toString() !== userId.toString()) {
       return res.status(401).json({
         success: false,
@@ -335,7 +370,6 @@ export const updateStory = async (req, res, next) => {
       })
     }
 
-    // Verify authorization
     if (story.childId.parentId.toString() !== userId.toString()) {
       return res.status(401).json({
         success: false,
