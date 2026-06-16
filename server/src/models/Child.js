@@ -81,7 +81,32 @@ const childSchema = new mongoose.Schema({
       type: Date,
       default: Date.now
     }
-  }
+  },
+
+  // 🏆 7. موديول التلعيب ونظام النقاط (Gamification Module)
+  xp: {
+    type: Number,
+    default: 0 // يبدأ الطفل بـ 0 نقطة خبرة
+  },
+  level: {
+    type: Number,
+    default: 1 // المستوى الأول
+  },
+  badges: [{
+    title: {
+      type: String,
+      required: true // اسم الشارة (مثل: بطل الفضاء)
+    },
+    icon: {
+      type: String,
+      default: 'default-badge.png' // أيقونة الشارة لعرضها في الـ UI عند شيماء
+    },
+    unlockedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }]
+
 }, { timestamps: true });
 
 const Child = mongoose.model('Child', childSchema);

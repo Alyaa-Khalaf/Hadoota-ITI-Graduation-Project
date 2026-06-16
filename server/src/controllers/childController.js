@@ -1,9 +1,10 @@
 import Child from '../models/Child.js';
 
-// 1️⃣ إضافة طفل جديد وربطه بالأب تلقائياً (كود هند الآمن + الإعدادات)
+// 1️⃣ (إضافة طفل جديد وربطه بالأب تلقائياً)
 export const createChild = async (req, res, next) => {
   try {
-    const { name, age, interests, learningLevel } = req.body;
+    // 🌟 تم إضافة gender هنا لاستقباله من الـ Body
+    const { name, age, gender, interests, learningLevel } = req.body;
     const parentId = req.user?.id || req.user?._id;
 
     if (!parentId) {
@@ -19,6 +20,7 @@ export const createChild = async (req, res, next) => {
       parentId,
       name,
       age,
+      gender, // 🌟 تم تمريره لقاعدة البيانات بنجاح
       interests: interests || [],
       learningLevel: learningLevel || 'beginner',
       settings: {

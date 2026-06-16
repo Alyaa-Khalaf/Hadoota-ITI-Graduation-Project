@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-import Child from "../models/childModel.js";
+import Child from "../models/Child.js";
 import QuizSubmission from "../models/quizSubmissionModel.js";
 import Gamification from "../models/gamificationModel.js";
 import { sendSuccess, sendError } from "../utils/apiResponse.js";
