@@ -117,7 +117,7 @@ export default function SpeedReactionGame() {
       <div className="w-full max-w-3xl text-center">
 
         {/* Title */}
-        <h1 className="text-5xl font-black text-purple-700 mb-6 drop-shadow">
+        <h1 className="text-5xl font-black text-primary mb-6 drop-shadow">
           ⚡ سرعة التفاعل
         </h1>
 
@@ -149,7 +149,7 @@ export default function SpeedReactionGame() {
                 ? "bg-green-400"
                 : phase === "clicked"
                 ? "bg-purple-500"
-                : "bg-sky-400"
+                : "bg-cat-family"
             }
           `}
         >
@@ -157,7 +157,7 @@ export default function SpeedReactionGame() {
         </div>
 
         {/* Score */}
-        <p className="mt-6 text-2xl font-black text-purple-700">
+        <p className="mt-6 text-2xl font-black text-primary">
           ⭐ النقاط: {score}
         </p>
 
@@ -165,7 +165,7 @@ export default function SpeedReactionGame() {
         {phase === "waiting" && round === 0 && (
           <button
             onClick={startRound}
-            className="mt-6 px-10 py-4 bg-pink-500 text-white font-black text-xl rounded-full shadow-lg active:scale-95 transition"
+            className="mt-6 px-10 py-4 bg-meadow text-ink font-black text-xl rounded-full shadow-lg active:scale-95 transition"
           >
             ابدأ اللعبة 🚀
           </button>
@@ -186,14 +186,14 @@ export default function SpeedReactionGame() {
             <div className="flex justify-center gap-4">
               <button
                 onClick={restart}
-                className="px-6 py-3 bg-purple-500 text-white font-black rounded-full"
+                className="px-6 py-3 bg-primary text-white font-black rounded-full"
               >
                 إعادة اللعب
               </button>
 
               <Link
                 href="/games/GamesHub"
-                className="px-6 py-3 bg-sky-400 text-white font-black rounded-full"
+                className="px-6 py-3 bg-sky text-white font-black rounded-full"
               >
                 العودة 🎮
               </Link>

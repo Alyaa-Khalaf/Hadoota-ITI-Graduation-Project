@@ -11,7 +11,6 @@ export default function Navbar() {
 
   const { accessToken } = useAuth();
 
-  const [parentName, setParentName] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,11 +21,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setParentName(localStorage.getItem("parentName"));
-    }
-  }, []);
+  
 
   return (
     <motion.header
@@ -74,31 +69,32 @@ export default function Navbar() {
         </nav>
 
         {/* right side */}
-        <div className="flex items-center gap-5 font-sans">
+       <div className="flex items-center gap-5 font-sans">
+  {accessToken ? (
+    <Link href="/childAdventure">
+      <Button
+        variant="primary"
+        className="!py-2.5 !px-6 flex items-center gap-2"
+      >
+        🚀 مغامراتي
+      </Button>
+    </Link>
+  ) : (
+    <>
+      <Link href="/auth/login/">
+        <Button variant="outline" className="!py-2.5 !px-6">
+          تسجيل الدخول
+        </Button>
+      </Link>
 
-          {accessToken ? (
-            <div className="flex items-center gap-3 bg-sky/10 px-4 py-2 rounded-full">
-              <span className="text-sm font-black text-sky">
-                👋 {parentName || "مرحباً"}
-              </span>
-            </div>
-          ) : (
-            <>
-              <Link href="/auth/login/">
-                <Button variant="outline" className="!py-2.5 !px-6">
-                  تسجيل الدخول
-                </Button>
-              </Link>
-
-              <Link href="/auth/register/">
-                <Button variant="primary" className="!py-2.5 !px-6">
-                  جرّب مجاناً
-                </Button>
-              </Link>
-            </>
-          )}
-
-        </div>
+      <Link href="/auth/register/">
+        <Button variant="primary" className="!py-2.5 !px-6">
+          جرّب مجاناً
+        </Button>
+      </Link>
+    </>
+  )}
+</div>
 
       </div>
     </motion.header>

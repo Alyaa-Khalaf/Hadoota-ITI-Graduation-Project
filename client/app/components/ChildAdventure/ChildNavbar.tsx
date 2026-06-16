@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useChild } from "@/hooks/useChild";
@@ -8,7 +9,7 @@ function ChildNavbar() {
     const [isOpen, setIsOpen] = useState(false);
 
     const navItems = [
-        { label: "الرئيسية", icon: "🏠", href: "landing" },
+        { label: "الرئيسية", icon: "🏠", href: "/landing" },
         { label: "المغامرات", icon: "🗺️", href: "#" },
         { label: "الألعاب", icon: "🏆", href: "/games/GamesHub" },
         { label: "الإعدادات", icon: "⚙️", href: "/dashboard" },
