@@ -1,5 +1,5 @@
 import Story from '../models/storyModel.js'
-import { generateStoryStructure, generateSceneImage } from './openaiService.js'
+import { generateStoryStructure, generateSceneImage, getProvider } from './storyAiService.js'
 import { generateSpeech } from './elevenlabsService.js'
 import { uploadBuffer } from './gridfsService.js'
 
@@ -32,6 +32,8 @@ export const generateInteractiveStory = async ({
   })
 
   try {
+    console.log(`📖 Story generation using: ${getProvider()}`)
+
     const structure = await generateStoryStructure({
       topic,
       character,

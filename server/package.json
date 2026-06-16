@@ -9,6 +9,7 @@
     "generate:vapid": "node src/scripts/generateVapidKeys.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@langchain/openai": "^0.0.14",
     "@sendgrid/mail": "^8.1.6",
     "aws-sdk": "^2.1550.0",
