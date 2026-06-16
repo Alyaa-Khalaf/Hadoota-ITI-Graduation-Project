@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       </div>
 
       <h2 className="text-2xl font-bold text-purple-600">
-        Loading...
+        انتظر..........
       </h2>
 
       <div className="w-52 h-3 rounded-full bg-gray-200 overflow-hidden">

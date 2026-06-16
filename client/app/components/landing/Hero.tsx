@@ -1,4 +1,6 @@
 "use client";
+
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 // استيراد المكونات الموحدة بالمسار النسبي الصحيح
@@ -6,6 +8,8 @@ import Badge from "../ui/Badge";
 import Button from "../ui/Button";
 
 export default function Hero() {
+  const [openSchoolChoice, setOpenSchoolChoice] = useState(false);
+
   return (
     <section className="relative overflow-hidden bg-story-bg pt-40 pb-24 text-center" dir="rtl">
       {/* تأثيرات الإضاءة الخلفية الناعمة */}
@@ -50,22 +54,48 @@ export default function Hero() {
           transition={{ duration: 0.6, ease: "easeOut", delay: 0.3 }}
           className="mt-10 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
         >
-          {/* رابط تسجيل جديد موجه لصفحة الـ register ومبني بزرار الـ primary الأزرق */}
-          <Link href="/auth/register" className="w-full sm:w-auto">
+          {/* زر التسجيل */}
+          {/* <Link href="/auth/register" className="w-full sm:w-auto">
             <Button variant="sky" fullWidth className="text-lg !py-4 !px-10">
               ابدأ رحلة طفلك السحرية الآن ✨
             </Button>
-              </Link>
-            {/* المدرسى */}
-          <Link href="/auth/register/school" className="w-full sm:w-auto">
+          </Link> */}
 
-            <Button variant="sky" fullWidth className="text-lg !py-4 !px-10">
-             المدرسة✨
+          {/* زر المدرسة (تحول لاختيار) */}
+          <div className="relative w-full sm:w-auto">
+            <Button
+              variant="sky"
+              fullWidth
+              className="text-lg !py-4 !px-10"
+              onClick={() => setOpenSchoolChoice((v) => !v)}
+            >
+              ابدأ رحلة طفلك السحرية الآن ✨
             </Button>
-              </Link>
-        
 
-          {/* زرار آراء الأهالي واخد ستايل الـ outline الشفاف المحترف */}
+            {openSchoolChoice && (
+              <div className="absolute left-1/2 -translate-x-1/2 mt-3 w-56 bg-white shadow-xl rounded-xl overflow-hidden border z-50">
+                
+                <Link
+                  href="/auth/register/school"
+                  className="block px-4 py-3 hover:bg-sky/10 text-right"
+                  onClick={() => setOpenSchoolChoice(false)}
+                >
+                  تسجيل مدرسة
+                </Link>
+
+                <Link
+                  href="/auth/register"
+                  className="block px-4 py-3 hover:bg-sky/10 text-right border-t"
+                  onClick={() => setOpenSchoolChoice(false)}
+                >
+                  ولي أمر
+                </Link>
+
+              </div>
+            )}
+          </div>
+
+          {/* زر الآراء */}
           <Link href="#testimonials" className="w-full sm:w-auto">
             <Button variant="outline" fullWidth className="text-lg !py-4 !px-10">
               شاهد آراء الأهالي والتجارب 💬
@@ -73,7 +103,7 @@ export default function Hero() {
           </Link>
         </motion.div>
 
-        {/* البادجات السفلية المرنة موروثة بالكامل من الـ ui لتوحيد ستايل الكبسولات */}
+        {/* البادجات السفلية */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
