@@ -4,21 +4,19 @@ import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 // Education Agent — analyzes story for educational value
 export const analyzeStoryEducation = async ({ story, childAge }) => {
   try {
+    // 🌟 تم تحديث الـ Prompt لإجبار الـ AI على استخدام الـ Keys الإنجليزية بدقة وبدون فلسفة
     const systemPrompt = `أنت خبير تربوي متخصص في تعليم الأطفال العرب.
 مهمتك تقييم القيمة التعليمية للقصة وتحديد مخرجات التعلم.
 
-قيّم القصة التالية من حيث:
-1. مستوى المناسبة للعمر (${childAge} سنة)
-2. الفائدة التعليمية من 1 إلى 10
-3. المهارات والمعارف التي يتعلمها الطفل
-4. مدى تحقيق الأهداف التعليمية
+قيّم القصة التالية من حيث المناسبة لعمر (${childAge} سنة).
 
-الرد بـ JSON فقط بهذا الشكل:
+يجب أن يكون الرد عبارة عن كود JSON فقط، وممنوع تماماً كتابة أي نصوص خارج الـ JSON.
+استخدم المسميات الإنجليزية للمفاتيح (Keys) بالضبط كما هي موجهة لك في هذا النموذج:
 {
-  "score": رقم من 0 إلى 10,
-  "learningOutcomes": ["المخرج الأول", "المخرج الثاني", "المخرج الثالث"],
-  "strengths": ["نقطة قوة أولى", "نقطة قوة ثانية"],
-  "suggestedImprovements": ["تحسين مقترح أول", "تحسين مقترح ثاني"]
+  "score": 8,
+  "learningOutcomes": ["مخرج تعليمي أول", "مخرج تعليمي ثاني"],
+  "strengths": ["نقطة قوة أولى"],
+  "suggestedImprovements": ["تحسين مقترح أول"]
 }`
 
     const storyText = JSON.stringify(story, null, 2)
@@ -29,31 +27,43 @@ export const analyzeStoryEducation = async ({ story, childAge }) => {
 
     console.log('🎓 Analyzing story education value...')
     const response = await llm.invoke(messages)
-    console.log('✅ Education analysis completed!')
+    console.log('✅ Education analysis complete!')
 
-    // Parse JSON response
-    const content = response.content.trim()
+    // تنظيف وتجهيز رد الـ AI
+    let content = response.content.trim();
+    
+    // لو الـ AI حط الـ JSON جوه علامات الـ Markdown المزعجة (```json) هنشيلها فوراً
+    if (content.includes("```")) {
+      content = content.replace(/```json/g, "").replace(/```/g, "").trim();
+    }
+
     const jsonMatch = content.match(/\{[\s\S]*\}/)
     if (!jsonMatch) throw new Error('Invalid education analysis format')
 
     const analysis = JSON.parse(jsonMatch[0])
 
-    // Validate required fields
-    if (analysis.score === undefined || !Array.isArray(analysis.learningOutcomes)) {
-      throw new Error('Education analysis missing required fields')
+    // 🌟 حماية مرنة للـ Validation: لو الـ AI خرف في الـ Keys، نديها قيم افتراضية بدل ما نرمي Error ويكراش الـ Pipeline
+    const finalizedAnalysis = {
+      score: typeof analysis.score === 'number' ? analysis.score : 7,
+      learningOutcomes: Array.isArray(analysis.learningOutcomes) ? analysis.learningOutcomes : ['فهم أحداث القصة والتعلم منها'],
+      strengths: Array.isArray(analysis.strengths) ? analysis.strengths : ['مناسبة للفئة العمرية المستهدفة'],
+      suggestedImprovements: Array.isArray(analysis.suggestedImprovements) ? analysis.suggestedImprovements : []
     }
 
-    // Ensure score is within range
-    analysis.score = Math.min(10, Math.max(0, analysis.score))
+    // التأكد من أن النتيجة في النطاق الصحيح من 0 لـ 10
+    finalizedAnalysis.score = Math.min(10, Math.max(0, finalizedAnalysis.score))
 
-    return analysis
+    return finalizedAnalysis;
+
   } catch (error) {
-    console.error('Education analysis error:', error)
+    // تم تحويلها لـ console.warn عشان متظهرش بشكل كراش مرعب لأن السيستم بيتعامل معها بأمان
+    console.warn('⚠️ Education analysis sub-error treated safely:', error.message)
+    
     // Return default educational value instead of failing
     return {
-      score: 5,
-      learningOutcomes: ['فهم القصة', 'الدرس المستفاد'],
-      strengths: ['تفاعلية'],
+      score: 6,
+      learningOutcomes: ['استيعاب العبرة من القصة', 'تنمية الخيال الإبداعي'],
+      strengths: ['أسلوب تفاعلي ومبسط للطفل'],
       suggestedImprovements: []
     }
   }

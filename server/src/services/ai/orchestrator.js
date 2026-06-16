@@ -3,14 +3,15 @@ import { analyzeStoryEducation } from './educationAgent.js'
 import { validateStorySafety } from './safetyAgent.js'
 import { io } from '../../index.js'
 
-// Multi-agent orchestrator for story generation
+// Multi-agent orchestrator for story generation (تم دمج الـ Personalization)
 export const orchestrateStoryGeneration = async ({
   character,
   topic,
   childAge,
   childName,
   socketId = null,
-  childId = null
+  childId = null,
+  personalizationData = null // 👈 1. استقبلنا بيانات التخصيص هنا القادمة من الـ Controller
 }) => {
   const roomName = childId ? `child:${childId}` : null
 
@@ -44,11 +45,14 @@ export const orchestrateStoryGeneration = async ({
 
     // Step 1: Generate story
     emitProgress('story_generation', 20)
+    
+    // 👈 2. مررنا الـ personalizationData للـ Story Agent عشان يشكل الـ Prompt لـ Gemini
     const story = await generateStory({
       character,
       topic,
       childAge,
-      childName
+      childName,
+      personalizationData 
     })
     console.log('✅ Story generated!')
     emitProgress('story_generation', 40, { title: story.title })
