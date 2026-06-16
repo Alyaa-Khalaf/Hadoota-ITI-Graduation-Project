@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useChild } from "@/hooks/useChild";
+import Link from "next/link";
 
 function ChildNavbar() {
     const { child } = useChild();
@@ -9,7 +10,7 @@ function ChildNavbar() {
     const navItems = [
         { label: "الرئيسية", icon: "🏠", href: "#" },
         { label: "المغامرات", icon: "🗺️", href: "#" },
-        { label: "الإنجازات", icon: "🏆", href: "#" },
+        { label: "الألعاب", icon: "🏆", href: "/games/GamesHub" },
         { label: "الإعدادات", icon: "⚙️", href: "#" },
     ];
 
@@ -42,14 +43,14 @@ function ChildNavbar() {
                     {/* Desktop Nav */}
                     <nav className="hidden md:flex items-center gap-2">
                         {navItems.map(({ label, icon, href }) => (
-                            <a
+                            <Link
                                 key={label}
                                 href={href}
                                className="flex items-center gap-2 px-4 py-2 rounded-full font-bold text-white bg-white/15 border border-white/20 transition-all duration-200 hover:bg-white/25 hover:-translate-y-1 hover:scale-105"
                             >
                                 <span className="text-xl">{icon}</span>
                                 <span>{label}</span>
-                            </a>
+                            </Link>
                         ))}
                     </nav>
 

@@ -24,7 +24,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // =========================
   const refreshToken = useCallback(async () => {
     try {
-      console.log("🔄 [AuthContext] جاري محاولة تجديد التوكن من الكوكي...");
       setIsLoading(true);
 
       const res = await fetch(
@@ -35,23 +34,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       );
 
-      console.log("📡 [AuthContext] استجابة السيرفر لطلب الريفريش:", res.status);
       const data = await res.json();
-      console.log("📦 [AuthContext] البيانات الراجعة من الريفريش:", data);
 
       if (res.ok && data?.data?.accessToken) {
-        console.log("✅ [AuthContext] تم استلام توكن جديد بنجاح:", data.data.accessToken);
         setAccessToken(data.data.accessToken);
       } else {
-        console.warn("⚠️ [AuthContext] السيرفر رفض التجديد أو لم يرسل توكن");
         setAccessToken(null);
       }
     } catch (err) {
-      console.error("❌ [AuthContext] فشل طلب الريفريش تماماً:", err);
       setAccessToken(null);
     } finally {
       setIsLoading(false);
-      console.log("🏁 [AuthContext] انتهت محاولة التجديد تماماً والـ isLoading بقت false");
     }
   }, []);
 

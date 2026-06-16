@@ -42,7 +42,6 @@ export function useChild() {
           }
         );
         const result = await res.json();
-        console.log("CHILD RESPONSE IN HOOK:", result);
 
         if (result?.data?.length > 0) {
           setChild(result.data[0]);
