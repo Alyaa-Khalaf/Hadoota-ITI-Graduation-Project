@@ -18,6 +18,8 @@ import progressRoutes from './routes/progress.routes.js'
 import parentAgentRoutes from './routes/parentAgent.routes.js'
 import screenTimeRoutes from './routes/screenTime.routes.js'
 import paymentRoutes from './routes/payment.routes.js'
+import schoolRoutes from './routes/school.routes.js'
+import adminRoutes from './routes/admin.routes.js'
 
 // استيراد الـ Middlewares والـ Models
 import errorHandler from './middleware/errorHandler.js'
@@ -53,10 +55,12 @@ app.use('/api/children', childRoutes)
 app.use('/api/quiz', quizRoutes)
 app.use('/api/gamification', gamificationRoutes)
 app.use('/api/stories', storyRoutes)
-app.use('/api/progress', progressRoutes) // دمج مسار البروجريس الخاص بهند
+app.use('/api/progress', progressRoutes)
 app.use('/api/parent-agent', parentAgentRoutes)
 app.use('/api/screentime', screenTimeRoutes)
 app.use('/api/payments', paymentRoutes)
+app.use('/api/schools', schoolRoutes)
+app.use('/api/admin', adminRoutes)
 
 // Health Check API
 app.get('/api/health', (req, res) => {
@@ -69,7 +73,6 @@ app.get('/api/health', (req, res) => {
 })
 
 // ============== SOCKET.IO SETUP ==============
-// تطبيق حماية الـ Token على السوكت لضمان أمان الاتصال
 io.use(socketAuthMiddleware)
 
 io.on('connection', (socket) => {
@@ -78,7 +81,6 @@ io.on('connection', (socket) => {
 
   socket.data.rooms = new Set()
 
-  // 👧 غرف متابعة الأطفال الفورية
   socket.on('join:child', async (data) => {
     try {
       const { childId } = data
@@ -93,7 +95,6 @@ io.on('connection', (socket) => {
         return
       }
 
-      // التحقق من أن هذا الأب يملك هذا الطفل فعلياً
       if (child.parentId.toString() !== userId.toString()) {
         socket.emit('error', { message: 'Unauthorized: You do not own this child' })
         return
@@ -104,7 +105,6 @@ io.on('connection', (socket) => {
       socket.data.rooms.add(roomName)
       socket.data.currentChildId = childId
 
-      // Store session in Redis
       await setChildSession(childId, socket.id)
 
       console.log(`👧 ${socket.id} joined room: ${roomName}`)
@@ -127,7 +127,6 @@ io.on('connection', (socket) => {
         delete socket.data.currentChildId
       }
 
-      // Remove session from Redis
       removeChildSession(childId).catch(() => {})
 
       console.log(`👧 ${socket.id} left room: ${roomName}`)
@@ -138,7 +137,6 @@ io.on('connection', (socket) => {
     }
   })
 
-  // 📖 غرف التفاعل مع الحواديت وتحديثاتها المباشرة
   socket.on('story:subscribe', (storyId) => {
     const roomName = `story:${storyId}`
     socket.join(roomName)
@@ -155,7 +153,6 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`❌ Client disconnected: ${socket.id}`)
-    // Clean up Redis session for any joined child room
     if (socket.data.currentChildId) {
       removeChildSession(socket.data.currentChildId).catch(() => {})
     }
