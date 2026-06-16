@@ -41,8 +41,8 @@ export const addDocument = async ({
   }
 };
 
-// Search similar documents using cosine similarity
-export const searchSimilarDocs = async (query, { limit = 5 } = {}) => {
+// Search similar documents using cosine similarity with age filtering
+export const searchSimilarDocs = async (query, { limit = 5, childAge = null } = {}) => {
   try {
     const queryEmbedding = await getEmbedding(query);
 
@@ -52,11 +52,16 @@ export const searchSimilarDocs = async (query, { limit = 5 } = {}) => {
         : queryEmbedding?.values || Object.values(queryEmbedding)
     ).map(Number);
 
-    // Get all docs with embeddings
-    const docs = await KnowledgeBase.find(
-      { embedding: { $exists: true, $ne: [] } },
-      { title: 1, category: 1, tags: 1, source: 1, embedding: 1 },
-    );
+    // Filter by age range if provided
+    const filter = { embedding: { $exists: true, $ne: [] }, isActive: true };
+    if (childAge) {
+      filter['ageRange.min'] = { $lte: childAge };
+      filter['ageRange.max'] = { $gte: childAge };
+    }
+
+    const docs = await KnowledgeBase.find(filter, {
+      title: 1, content: 1, category: 1, tags: 1, source: 1, embedding: 1,
+    });
 
     // Calculate cosine similarity
     const cosineSimilarity = (a, b) => {
@@ -80,15 +85,15 @@ export const searchSimilarDocs = async (query, { limit = 5 } = {}) => {
   }
 };
 
-// Get context for story generation
+// Get context for story generation — passes childAge for age-appropriate filtering
 export const getStoryContext = async (topic, childAge) => {
   try {
-    const matches = await searchSimilarDocs(topic, { limit: 3 });
+    const matches = await searchSimilarDocs(topic, { limit: 5, childAge });
 
     if (matches.length === 0) return "";
 
     const context = matches
-      .map(({ doc }) => `${doc.title}:\n${doc.content}`)
+      .map(({ doc, score }) => `[${doc.category}] ${doc.title}:\n${doc.content}`)
       .join("\n\n---\n\n");
 
     return context;
