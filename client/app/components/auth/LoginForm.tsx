@@ -6,9 +6,13 @@ import Input from "../ui/Input";
 import Button from "../ui/Button";
 import SocialLogin from "./SocialLogin";
 import Link from "next/link";
+// 1. استيراد الـ Hook الخاص بالـ Context
+import { useAuth } from "@/context/AuthContext"; 
 
 export default function LoginForm() {
   const router = useRouter();
+  // 2. سحب دالة تخزين التوكن من الـ Context
+  const { setAccessToken } = useAuth(); 
 
   const [formData, setFormData] = useState({
     email: "",
@@ -29,7 +33,8 @@ export default function LoginForm() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+          credentials: "include", // 👈 زودي السطر ده هنا كمان عشان الكوكي تتخزن أول ما تعملي لوجن
+    body: JSON.stringify(formData),
         }
       );
 
@@ -45,7 +50,8 @@ export default function LoginForm() {
         throw new Error("Token not found in response");
       }
 
-      localStorage.setItem("token", token);
+      // 3. التعديل هنا: حفظ التوكن في الـ Context بدلاً من localStorage
+      setAccessToken(token);
 
       router.push("/childAdventure");
     } catch (err: any) {

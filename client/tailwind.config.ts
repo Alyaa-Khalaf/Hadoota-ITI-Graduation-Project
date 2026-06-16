@@ -7,6 +7,15 @@ module.exports = {
 
   theme: {
     extend: {
+      keyframes: {
+        wiggle: {
+          '0%, 100%': { transform: 'rotate(-6deg)' },
+          '50%': { transform: 'rotate(6deg)' },
+        },
+      },
+      animation: {
+        wiggle: 'wiggle 3s ease-in-out infinite',
+      },
       colors: {
         // Backgrounds
         'story-bg':    '#FFFBF0',
@@ -25,6 +34,7 @@ module.exports = {
         sky:     '#4D96FF',
         magic:   '#C77DFF',
         blossom: '#FF6B9D',
+        rose:    '#FF4D8D',
 
         // Story categories
         'cat-adventure': '#D0F0FD',
@@ -37,6 +47,7 @@ module.exports = {
         ink:           '#3D2C1E',
         'ink-muted':   '#7A6552',
         'border-warm': '#E8DED4',
+        'header':      '#511D43',
       },
 
       fontFamily: {
@@ -51,7 +62,7 @@ module.exports = {
       },
 
       borderRadius: {
-        xl:   '1rem',
+        xl:    '1rem',
         '2xl': '1.5rem',
         '3xl': '2rem',
       },
