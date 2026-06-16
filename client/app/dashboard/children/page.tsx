@@ -1,61 +1,108 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 
+
+/* تعليق: هيكل بيانات الطفل المطابق تماماً للـ Response القادم من قاعدة البيانات */
 interface Child {
-  id?: string;
-  _id?: string
+  _id: string;
   name: string;
   age: number;
   avatar: string;
+  interests: string[];
+  learningLevel: "beginner" | "intermediate" | "advanced";
+}
+
+/* تعليق: الهيكل العام الموحد لاستقبال رد الـ API */
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  errors: any[];
 }
 
 export default function ChildrenPage() {
+  /* تعليق: الـ States الخاصة بحفظ المصفوفة وحالات تحميل وفتح النوافذ المنبثقة */
   const [children, setChildren] = useState<Child[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
-  // بيانات الطفل الجديد للفورم
+  /* تعليق: الحالات الخاصة ببيانات الطفل الجديد داخل حقول الإدخال والفورم */
   const [childName, setChildName] = useState("");
-  const [childAge, setChildAge] = useState("3");
-  const [childAvatar, setChildAvatar] = useState("👦");
+  const [childAge, setChildAge] = useState("6");
+  const [childGender, setChildGender] = useState<"male" | "female">("male");
+  const [learningLevel, setLearningLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
 
-  // 1️⃣ جلب قائمة الأطفال من السيرفر (API هند)
+  /* تعليق: مصفوفة الاهتمامات المعتمدة باللغة العربية داخل الـ Enum الخاص بالباك إيند */
+  const availableInterests = ["فضاء", "حيوانات", "مغامرات", "تاريخ", "علوم", "دين", "طبيعة", "رياضة"];
+
+  // ========================================================
+  // 📥 دالة الـ GET: جلب مصفوفة الأطفال الحقيقية بناءً على توكن الأب
+  // ========================================================
   const fetchChildren = async () => {
     try {
-      const token = localStorage.getItem("accessToken"); // جلب التوكن من المتصفح
+      let token = localStorage.getItem("accessToken") || localStorage.getItem("token");
       const res = await fetch("http://localhost:5000/api/children", {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
         }
       });
 
       if (res.ok) {
-        const result = await res.json();
-        setChildren(result.data || []); // هند ترجع البيانات داخل كائن data
+        const result: ApiResponse<Child[]> = await res.json();
+        /* ملاحظة ذهبية: يتم قراءة المصفوفة مباشرة من result.data */
+        if (result.success && Array.isArray(result.data)) {
+          console.log("Children API:", result.data);
+          setChildren(result.data);
+        }
+      } else {
+        console.error("السيرفر رفض جلب الأطفال كود:", res.status);
       }
     } catch (err) {
       console.error("خطأ في جلب قائمة الأطفال", err);
     }
   };
 
+  /* تعليق: استدعاء دالة جلب البيانات فور تحميل الصفحة لأول مرة */
   useEffect(() => {
     fetchChildren();
   }, []);
 
-  // 2️⃣ إضافة طفل جديد وإرساله للسيرفر (API هند)
+  // ========================================================
+  // 🎛️ دالة مساعدة لإدارة تفعيل وإلغاء اختيار الاهتمامات (Checkboxes)
+  // ========================================================
+  const handleInterestToggle = (interest: string) => {
+    if (selectedInterests.includes(interest)) {
+      setSelectedInterests(prev => prev.filter(i => i !== interest));
+    } else {
+      setSelectedInterests(prev => [...prev, interest]);
+    }
+  };
+
+  // ========================================================
+  // 📤 دالة الـ POST: إرسال الكائن الحقيقي بالبيانات الصحيحة هندسياً للسيرفر
+  // ========================================================
   const handleAddChild = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!childName || !childAge) return;
 
     try {
-      const token = localStorage.getItem("accessToken");
+      let token = localStorage.getItem("accessToken") || localStorage.getItem("token");
       
-      // تحديد النوع تلقائياً بناءً على الأفاتار ليتوافق مع السيرفر
-      const determinedGender = childAvatar === "👧" ? "female" : "male";
+      /* تعليق: تجميع الـ Body بالهيكلية المطلوبة للـ Validation في الباك إيند */
+      const bodyPayload = {
+        name: childName,
+        age: Number(childAge),
+        avatar: childGender === "male" ? "👦" : "👧",
+        interests: selectedInterests,  // يتم إرسالها عربي كالمطلوب بالسكيما
+        learningLevel: learningLevel   // يتم إرسالها إنجليزي كالمطلوب بالسكيما
+      };
 
       const res = await fetch("http://localhost:5000/api/children", {
         method: "POST",
@@ -63,37 +110,42 @@ export default function ChildrenPage() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          name: childName, 
-          age: Number(childAge), 
-          avatar: childAvatar,
-          gender: determinedGender
-        }),
+        body: JSON.stringify(bodyPayload),
       });
 
       if (res.ok) {
+        const result: ApiResponse<Child> = await res.json();
+        /* ملاحظة ذهبية: السيرفر يرجع كائن الطفل الجديد داخل result.data نقوم بدمجه فوراً */
+        if (result.success && result.data) {
+          setChildren(prev => [...prev, result.data]);
+        }
+        
+        // إعادة تهيئة الحقول وإغلاق النافذة
         setIsAdding(false);
         setChildName("");
-        setChildAge("3");
-        setChildAvatar("👦");
-        fetchChildren(); // تحديث القائمة فوراً
-      } 
+        setChildAge("6");
+        setChildGender("male");
+        setLearningLevel("beginner");
+        setSelectedInterests([]);
+      } else {
+        console.error("فشلت إضافة الطفل، كود الاستجابة:", res.status);
+      }
     } catch (err) {
       console.error("خطأ في إضافة الطفل", err);
     }
   };
 
-  // 3️⃣ تأكيد حذف الطفل من السيرفر (API هند)
+  // ========================================================
+  // 🗑️ دالة الـ DELETE: حذف ملف الطفل نهائياً وتحديث الواجهة
+  // ========================================================
   const confirmDelete = async () => {
     if (!selectedChildId) return;
-    
-    console.log("الـ ID الجاري حذفه الآن هو:", selectedChildId); 
 
     try {
-      const token = localStorage.getItem("accessToken"); 
+      let token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+      const cleanId = String(selectedChildId).trim();
       
-      // إرسال الطلب بشكل مباشر للمسار الموحد بعد تنظيف تكرار السيرفر
-      let res = await fetch(`http://localhost:5000/api/children/${selectedChildId}`, {
+      let res = await fetch(`http://localhost:5000/api/children/${cleanId}`, {
         method: "DELETE",
         headers: { 
           "Authorization": `Bearer ${token}`,
@@ -101,16 +153,17 @@ export default function ChildrenPage() {
         }
       });
       
-      if (res.ok) {
-        console.log("تم الحذف بنجاح من السيرفر! 🎉");
+      const result = await res.json();
+      
+      if (res.ok && result.success) {
         setShowDeleteDialog(false);
+        setChildren((prevChildren) => 
+          prevChildren.filter((child) => String(child._id) !== cleanId)
+        );
         setSelectedChildId(null);
-        fetchChildren(); // تحديث القائمة فوراً في الواجهة
       } else {
-        console.error("فشل الحذف، كود استجابة السيرفر:", res.status);
         alert(`فشل الحذف، كود حالة السيرفر: ${res.status}`);
       }
-
     } catch (err) {
       console.error("خطأ في حذف الطفل", err);
     }
@@ -123,50 +176,68 @@ export default function ChildrenPage() {
         <Button variant="primary" onClick={() => setIsAdding(true)}>إضافة طفل جديد +</Button>
       </div>
 
-      {/* عرض كروت الأطفال المجلوبة من السيرفر */}
+      {/* واجهة عرض كروت ومصفوفة الأطفال الحقيقية */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {children.length === 0 ? (
           <p className="text-sm font-bold text-gray-400 col-span-full text-center py-8">لا يوجد أطفال مضافين حالياً ✨</p>
         ) : (
           children.map((child, index) => {
-            // التقاط المعرف المتاح بشكل مضمون وآمن لحل المشكلة الأساسية
-            const childId = child._id || child.id || null;
-            
+            const childId = child._id;
             return (
-              <div key={childId || `child-${index}`} className="bg-white p-4 rounded-[20px] shadow-sm border border-gray-100 flex items-center justify-between">
+              <div key={childId || `child-${index}`} className="bg-white p-5 rounded-[25px] shadow-sm border border-gray-100 flex flex-col justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-4xl">{child.avatar}</span>
+                  <span className="text-4xl"> {child.avatar} </span>
                   <div>
-                    <h3 className="font-bold text-lg text-secondary">{child.name}</h3>
-                    <p className="text-sm text-gray-500 font-medium">العمر: {child.age} سنوات</p>
+                    <h3 className="font-bold text-base text-secondary">{child.name}</h3>
+                    <p className="text-xs text-gray-500 font-bold">العمر: {child.age} سنوات</p>
                   </div>
                 </div>
-                <Button 
-                  variant="sky" 
-                  className="!p-2 !bg-red-50 text-red-500 hover:!bg-red-100 border-none"
-                  onClick={() => {
-                    if (childId) {
-                      setSelectedChildId(childId);
-                      setShowDeleteDialog(true);
-                    }
-                  }}
-                >
-                  🗑️
-                </Button>
+
+                <div className="pt-2 border-t border-gray-50 space-y-2">
+                  <div className="text-[11px] font-bold text-gray-600">
+                    <span className="text-gray-400">مستوى التعلم:</span>{" "}
+                    <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md text-[10px] font-mono">
+                      {child.learningLevel}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {child.interests && child.interests.map((interest, i) => (
+                      <span key={i} className="bg-orange-50 text-[#FF7043] text-[9px] font-black px-2 py-0.5 rounded-md">
+                        {interest}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button 
+                    variant="sky" 
+                    className="!p-2 !bg-red-50 !text-red-500 hover:!bg-red-100 border-none text-xs"
+                    onClick={() => {
+                      if (childId) {
+                        setSelectedChildId(childId);
+                        setShowDeleteDialog(true);
+                      }
+                    }}
+                  >
+                    🗑️ حذف الملف
+                  </Button>
+                </div>
               </div>
             );
           })
         )}
       </div>
 
-      {/* مودال إضافة طفل جديد */}
+      {/* مودال النوافذ المنبثقة لإضافة طفل جديد برمجياً */}
       {isAdding && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <form onSubmit={handleAddChild} className="bg-white rounded-[30px] p-6 max-w-md w-full space-y-4 shadow-xl">
+          <form onSubmit={handleAddChild} className="bg-white rounded-[30px] p-6 max-w-md w-full space-y-4 shadow-xl max-h-[90vh] overflow-y-auto text-right">
             <h3 className="text-xl font-black text-secondary text-center">إضافة طفل جديد ✨</h3>
             
             <div className="space-y-3">
-              <label className="block text-sm font-bold text-gray-700">اسم الطفل</label>
+              <div>
+                <label className="block text-xs font-black text-gray-700 mb-1">اسم الطفل بالكامل</label>
                 <Input 
                   type="text"
                   placeholder="أدخل اسم الطفل هنا..."
@@ -175,33 +246,66 @@ export default function ChildrenPage() {
                   required
                   label=""
                 /> 
+              </div>
 
-              <label className="block text-sm font-bold text-gray-700">عمر الطفل</label>
-              <select
-                value={childAge}
-                onChange={(e) => setChildAge(e.target.value)}
-                className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-primary font-bold bg-gray-50 text-secondary"
-                required
-              >
-                <option value="" disabled>اختر عمر الطفل</option>
-                {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
-                  <option key={num} value={num}>
-                    {num} سنوات
-                  </option>
-                ))}
-              </select>
-
-              <label className="block text-sm font-bold text-gray-700 text-center pt-2">اختر الأفاتار</label>
-              <div className="flex justify-center gap-4 text-3xl p-2 bg-gray-50 rounded-xl">
-                {["👦", "👧", "👶", "🧚‍♂️"].map((emoji) => (
-                  <span 
-                    key={emoji} 
-                    className={`cursor-pointer p-1 rounded-lg transition ${childAvatar === emoji ? "scale-125 bg-white shadow-sm ring-2 ring-primary" : "opacity-60"}`} 
-                    onClick={() => setChildAvatar(emoji)}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-black text-gray-700 mb-1">العمر</label>
+                  <select
+                    value={childAge}
+                    onChange={(e) => setChildAge(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-gray-200 focus:outline-none font-bold bg-gray-50 text-xs text-secondary"
+                    required
                   >
-                    {emoji}
-                  </span>
-                ))}
+                    {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
+                      <option key={num} value={num}>{num} سنوات</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-gray-700 mb-1">الجنس</label>
+                  <select
+                    value={childGender}
+                    onChange={(e) => setChildGender(e.target.value as any)}
+                    className="w-full p-2.5 rounded-xl border border-gray-200 focus:outline-none font-bold bg-gray-50 text-xs text-secondary"
+                    required
+                  >
+                    <option value="male">ذكر (👦)</option>
+                    <option value="female">أنثى (👧)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-gray-700 mb-1">مستوى التعلم الحالي</label>
+                <select
+                  value={learningLevel}
+                  onChange={(e) => setLearningLevel(e.target.value as any)}
+                  className="w-full p-2.5 rounded-xl border border-gray-200 focus:outline-none font-bold bg-gray-50 text-xs text-secondary"
+                  required
+                >
+                  <option value="beginner">مبتدئ (Beginner)</option>
+                  <option value="intermediate">متوسط (Intermediate)</option>
+                  <option value="advanced">متقدم (Advanced)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-gray-700 mb-1">شغف واهتمامات الطفل (محدد من السكيما)</label>
+                <div className="grid grid-cols-2 gap-2 bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs">
+                  {availableInterests.map((interest) => (
+                    <label key={interest} className="flex items-center gap-2 font-bold text-gray-600 cursor-pointer">
+                      <input 
+                        type="checkbox"
+                        checked={selectedInterests.includes(interest)}
+                        onChange={() => handleInterestToggle(interest)}
+                        className="rounded text-primary focus:ring-primary w-4 h-4"
+                      />
+                      <span>{interest}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               <div className="flex gap-3 pt-4">
@@ -213,7 +317,7 @@ export default function ChildrenPage() {
         </div>
       )}
 
-      {/* ديالوج تأكيد الحذف */}
+      {/* ديالوج لتأكيد مسح البيانات من السيرفر */}
       {showDeleteDialog && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[30px] p-6 max-w-xs w-full text-center space-y-4">

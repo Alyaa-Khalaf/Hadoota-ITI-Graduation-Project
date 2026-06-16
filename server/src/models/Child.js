@@ -1,4 +1,4 @@
-﻿import mongoose from 'mongoose'
+import mongoose from 'mongoose'
 
 const childSchema = new mongoose.Schema({
   // 1. ربط الطفل بالأهل

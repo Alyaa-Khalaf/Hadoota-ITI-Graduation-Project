@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import ParentInfoForm from "@/components/dashboard/ParentInfoForm"; // تأكدي من صحة المسار للفولدر العلوي
+import ParentInfoForm from "@/components/dashboard/ParentInfoForm"; 
 
 export default function ProfilePage() {
   // حالات التحميل والباسورد
@@ -12,7 +12,7 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
 
-  // 3️⃣ تغيير الباسورد (API نورهان الحقيقي)
+  
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordMessage("");

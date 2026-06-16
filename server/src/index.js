@@ -81,6 +81,7 @@ io.on('connection', (socket) => {
 
   socket.data.rooms = new Set()
 
+  // 👧 غرف متابعة الأطفال الفورية
   socket.on('join:child', async (data) => {
     try {
       const { childId } = data
@@ -137,6 +138,7 @@ io.on('connection', (socket) => {
     }
   })
 
+  // 📖 غرف التفاعل مع الحواديت وتحديثاتها المباشرة
   socket.on('story:subscribe', (storyId) => {
     const roomName = `story:${storyId}`
     socket.join(roomName)

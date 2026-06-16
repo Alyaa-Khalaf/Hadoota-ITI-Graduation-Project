@@ -1,9 +1,30 @@
 import Child from '../models/Child.js';
 
-// 1️⃣ إضافة طفل جديد وربطه بالأب تلقائياً
+// 1️⃣ جلب كل أطفال الأب المسجل حالياً فقط
+export const getChildren = async (req, res, next) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+
+    const children = await Child.find({ parentId: userId });
+
+    res.status(200).json({
+      success: true,
+      message: 'تم الحصول على أطفال المستخدم بنجاح',
+      data: children,
+      errors: []
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// للتوافق مع childRoutes.js القديم
+export const getAllChildren = getChildren;
+
+// 2️⃣ إضافة طفل جديد وربطه بالأب تلقائياً
 export const createChild = async (req, res, next) => {
   try {
-    const { name, age, interests, learningLevel } = req.body;
+    const { name, age, interests, learningLevel, avatar } = req.body;
     const parentId = req.user?.id || req.user?._id;
 
     if (!parentId) {
@@ -19,6 +40,7 @@ export const createChild = async (req, res, next) => {
       parentId,
       name,
       age,
+      avatar: avatar || 'default-child.png',
       interests: interests || [],
       learningLevel: learningLevel || 'beginner',
       settings: {
@@ -39,7 +61,7 @@ export const createChild = async (req, res, next) => {
   }
 };
 
-// 2️⃣ جلب تفاصيل طفل محدد بواسطة الـ ID مع فحص الأمان
+// 3️⃣ جلب تفاصيل طفل محدد بواسطة الـ ID مع فحص الأمان
 export const getChild = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -74,27 +96,6 @@ export const getChild = async (req, res, next) => {
     next(error);
   }
 };
-
-// 3️⃣ جلب كل أطفال الأب المسجل حالياً فقط
-export const getChildren = async (req, res, next) => {
-  try {
-    const userId = req.user?.id || req.user?._id;
-
-    const children = await Child.find({ parentId: userId });
-
-    res.status(200).json({
-      success: true,
-      message: 'تم الحصول على أطفال المستخدم بنجاح',
-      data: children,
-      errors: []
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// للتوافق مع childRoutes.js القديم
-export const getAllChildren = getChildren;
 
 // 4️⃣ تعديل بيانات الطفل
 export const updateChild = async (req, res, next) => {

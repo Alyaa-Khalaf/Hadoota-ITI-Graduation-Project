@@ -6,7 +6,7 @@ const errorHandler = (err, req, res, next) => {
     message: err.message || 'حدث خطأ في السيرفر',
     errors: err.errors || [],
     data: null
-  })
+  });
 }
 
 export default errorHandler

@@ -125,7 +125,14 @@ export const login = async (req, res, next) => {
       errors: []
     })
   } catch (error) {
-    next(error)
+    // next(error)
+     console.error("LOGIN ERROR:", error);
+
+  return res.status(500).json({
+    success: false,
+    message: error.message,
+    stack: error.stack
+  });
   }
 }
 
