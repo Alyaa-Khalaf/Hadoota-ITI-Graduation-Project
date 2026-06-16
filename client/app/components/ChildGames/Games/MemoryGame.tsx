@@ -154,7 +154,7 @@ export default function MemoryGame() {
                 w-full
                 h-[140px]
                 rounded-[28px]
-                bg-sky
+                bg-cat-animals
                 shadow-lg
                 flex
                 items-center
