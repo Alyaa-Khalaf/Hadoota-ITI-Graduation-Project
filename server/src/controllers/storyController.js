@@ -3,6 +3,7 @@ import Child from '../models/Child.js'
 import Progress from '../models/Progress.js'
 import { orchestrateStoryGeneration } from '../services/ai/orchestrator.js'
 import { io } from '../index.js'
+import { getCachedStory, cacheStory } from '../config/redis.js'
 
 // Generate new story
 export const generateStory = async (req, res, next) => {
@@ -27,6 +28,28 @@ export const generateStory = async (req, res, next) => {
         message: 'غير مصرح لك بإنشاء حدوتة لهذا الطفل',
         data: null,
         errors: [{ field: 'childId', message: 'غير مصرح' }]
+      })
+    }
+
+    // Check Redis cache first
+    const cached = await getCachedStory(childId, character, topic)
+    if (cached) {
+      const storyDoc = await Story.create({
+        childId, character, topic,
+        title: cached.title,
+        scenes: cached.scenes,
+        moralLesson: cached.moralLesson,
+        educationalValue: cached.educationalValue,
+        safetyCheck: cached.safetyCheck,
+        status: 'completed',
+        completedAt: new Date()
+      })
+      Progress.findOneAndUpdate({ childId }, { $inc: { storiesCompleted: 1 } }).catch(() => {})
+      return res.status(201).json({
+        success: true,
+        message: 'تم جلب الحدوتة من الكاش ⚡',
+        data: storyDoc,
+        errors: []
       })
     }
 
@@ -96,6 +119,15 @@ export const generateStory = async (req, res, next) => {
               { childId },
               { $inc: { storiesCompleted: 1 } }
             ).catch(err => console.error('Failed to update storiesCompleted:', err))
+
+            // Cache the completed story in Redis (24h TTL)
+            cacheStory(childId, character, topic, {
+              title: savedStory.title,
+              scenes: savedStory.scenes,
+              moralLesson: savedStory.moralLesson,
+              educationalValue: savedStory.educationalValue,
+              safetyCheck: savedStory.safetyCheck
+            }).catch(() => {})
 
             if (socketId && io) {
               io.to(socketId).emit('story:completed', {

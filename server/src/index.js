@@ -24,6 +24,7 @@ import errorHandler from './middleware/errorHandler.js'
 import notFound from './middleware/notFound.js'
 import { generalLimiter } from './middleware/rateLimiter.js'
 import { socketAuthMiddleware } from './middleware/socketAuth.js'
+import { setChildSession, removeChildSession } from './config/redis.js'
 import Child from './models/Child.js'
 
 const app = express()
@@ -103,6 +104,9 @@ io.on('connection', (socket) => {
       socket.data.rooms.add(roomName)
       socket.data.currentChildId = childId
 
+      // Store session in Redis
+      await setChildSession(childId, socket.id)
+
       console.log(`👧 ${socket.id} joined room: ${roomName}`)
       socket.emit('room:joined', { childId, roomName })
     } catch (error) {
@@ -122,6 +126,9 @@ io.on('connection', (socket) => {
       if (socket.data.currentChildId === childId) {
         delete socket.data.currentChildId
       }
+
+      // Remove session from Redis
+      removeChildSession(childId).catch(() => {})
 
       console.log(`👧 ${socket.id} left room: ${roomName}`)
       socket.emit('room:left', { childId })
@@ -148,6 +155,10 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`❌ Client disconnected: ${socket.id}`)
+    // Clean up Redis session for any joined child room
+    if (socket.data.currentChildId) {
+      removeChildSession(socket.data.currentChildId).catch(() => {})
+    }
   })
 
   socket.on('error', (error) => {
