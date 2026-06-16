@@ -6,12 +6,19 @@ import {
   addFavorite,
   removeFavorite,
 } from "../controllers/storyController.js";
+import {
+  generateStory,
+  getGeneratedStory,
+} from "../controllers/storyGenerationController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { verifyChildOwnership } from "../middleware/childOwnershipMiddleware.js";
 
 const router = express.Router();
 
 router.use(protect);
+
+router.post("/generate", verifyChildOwnership, generateStory);
+router.get("/generated/:id", getGeneratedStory);
 
 router.get("/search", verifyChildOwnership, searchStories);
 router.get("/filter", verifyChildOwnership, filterStories);

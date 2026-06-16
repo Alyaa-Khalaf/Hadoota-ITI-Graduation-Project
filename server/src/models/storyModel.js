@@ -1,5 +1,24 @@
 import mongoose from "mongoose";
 
+const choiceSchema = new mongoose.Schema(
+  {
+    text: { type: String, required: true, trim: true },
+    nextSceneIndex: { type: Number, required: true, min: 0 },
+  },
+  { _id: false }
+);
+
+const sceneSchema = new mongoose.Schema(
+  {
+    sceneIndex: { type: Number, required: true, min: 0 },
+    text: { type: String, required: true },
+    imageFileId: { type: mongoose.Schema.Types.ObjectId },
+    audioFileId: { type: mongoose.Schema.Types.ObjectId },
+    choices: { type: [choiceSchema], default: [] },
+  },
+  { _id: false }
+);
+
 const storySchema = new mongoose.Schema(
   {
     title: {
@@ -22,6 +41,25 @@ const storySchema = new mongoose.Schema(
     content: {
       type: String,
       default: "",
+    },
+    childId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "child",
+      index: true,
+    },
+    parentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      index: true,
+    },
+    status: {
+      type: String,
+      enum: ["generating", "ready", "failed"],
+      default: "ready",
+    },
+    scenes: {
+      type: [sceneSchema],
+      default: [],
     },
     views: {
       type: Number,

@@ -13,6 +13,7 @@ import quizRoutes from './routes/quizRoutes.js'
 import gamificationRoutes from './routes/gamificationRoutes.js'
 import analyticsRoutes from './routes/analyticsRoutes.js'
 import storyRoutes from './routes/storyRoutes.js'
+import mediaRoutes from './routes/mediaRoutes.js'
 import notificationRoutes from './routes/notificationRoutes.js'
 import errorHandler from './middleware/errorHandler.js'
 import notFound from './middleware/notFound.js'
@@ -46,6 +47,7 @@ app.use('/api/quiz', quizRoutes)
 app.use('/api/gamification', gamificationRoutes)
 app.use('/api/analytics', analyticsRoutes)
 app.use('/api/stories', storyRoutes)
+app.use('/api/media', mediaRoutes)
 app.use('/api/notifications', notificationRoutes)
 
 // Health Check
