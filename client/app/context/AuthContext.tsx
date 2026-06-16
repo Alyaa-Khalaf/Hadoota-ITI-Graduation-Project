@@ -25,12 +25,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshToken = useCallback(async () => {
     try {
       setIsLoading(true);
+      const storedRefreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+      if (!storedRefreshToken) {
+        setAccessToken(null);
+        return;
+      }
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/auth/refresh`,
         {
           method: "POST",
-          credentials: "include", // مهمة جداً عشان الكوكي تتبعت
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken: storedRefreshToken }),
         }
       );
 
@@ -38,8 +44,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (res.ok && data?.data?.accessToken) {
         setAccessToken(data.data.accessToken);
+        localStorage.setItem('refreshToken', data.data.refreshToken);
       } else {
         setAccessToken(null);
+        localStorage.removeItem('refreshToken');
       }
     } catch (err) {
       setAccessToken(null);

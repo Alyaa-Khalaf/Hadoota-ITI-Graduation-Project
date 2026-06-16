@@ -45,13 +45,14 @@ export default function LoginForm() {
       }
 
       const token = data?.data?.accessToken;
+      const refresh = data?.data?.refreshToken;
 
       if (!token) {
         throw new Error("Token not found in response");
       }
 
-      // 3. التعديل هنا: حفظ التوكن في الـ Context بدلاً من localStorage
       setAccessToken(token);
+      if (refresh) localStorage.setItem('refreshToken', refresh);
 
       router.push("/childAdventure");
     } catch (err: any) {
