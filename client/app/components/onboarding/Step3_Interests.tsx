@@ -1,103 +1,143 @@
 "use client";
-import { useState } from "react";
-import Button from "../ui/Button";
 
-interface Step3Props {
-  onNext: () => void;
+import Button from "../ui/Button";
+import { useOnboardingStore } from "@/store/onboardingStore";
+import { useRouter } from "next/navigation";
+// 1. استيراد الـ useAuth عشان نسحب التوكن
+import { useAuth } from "@/context/AuthContext";
+
+const INTERESTS = [
+  { id: "adventures", label: "مغامرات", icon: "🚀" },
+  { id: "animals", label: "حيوانات", icon: "🦁" },
+  { id: "science", label: "علوم", icon: "🌍" },
+  { id: "morals", label: "قيم", icon: "🤝" },
+  { id: "history", label: "تاريخ", icon: "🏰" },
+  { id: "mysteries", label: "ألغاز", icon: "🔍" },
+];
+
+interface Props {
   onPrev: () => void;
 }
 
-// قائمة الاهتمامات والمواضيع مع الأيقونات والألوان المناسبة للأطفال
-const INTERESTS = [
-  { id: "adventures", label: "مغامرات وخيال", icon: "🚀", color: "bg-purple-50 text-purple-700 border-purple-200" },
-  { id: "animals", label: "قصص حيوانات", icon: "🦁", color: "bg-green-50 text-green-700 border-green-200" },
-  { id: "science", label: "علوم وفضاء", icon: "🌍", color: "bg-blue-50 text-blue-700 border-blue-200" },
-  { id: "morals", label: "قيم وأخلاق", icon: "🤝", color: "bg-amber-50 text-amber-700 border-amber-200" },
-  { id: "history", label: "قصص تاريخية", icon: "🏰", color: "bg-rose-50 text-rose-700 border-rose-200" },
-  { id: "mysteries", label: "أشياء غامضة وألغاز", icon: "🔍", color: "bg-indigo-50 text-indigo-700 border-indigo-200" },
-];
+export default function Step3_Interests({ onPrev }: Props) {
+  const router = useRouter();
 
-export default function Step3_Interests({ onNext, onPrev }: Step3Props) {
-  // الـ State دي بنحفظ فيها الـ ids بتاعة الاهتمامات اللي تم اختيارها
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  // 2. سحب الـ accessToken من الـ Context
+  const { accessToken } = useAuth();
 
-  // دالة لتحديد أو إلغاء تحديد اهتمام عند الضغط عليه
+  const child = useOnboardingStore((s) => s.child);
+  const setChild = useOnboardingStore((s) => s.setChild);
+  const reset = useOnboardingStore((s) => s.reset);
+
   const toggleInterest = (id: string) => {
-    if (selectedInterests.includes(id)) {
-      setSelectedInterests(selectedInterests.filter((item) => item !== id));
-    } else {
-      setSelectedInterests([...selectedInterests, id]);
+    const exists = child.interests.includes(id);
+
+    const updated = exists
+      ? child.interests.filter((i) => i !== id)
+      : [...child.interests, id];
+
+    setChild({ interests: updated });
+  };
+
+  const handleFinish = async () => {
+    try {
+      console.log("TOKEN FROM CONTEXT:", accessToken);
+      console.log("API:", process.env.NEXT_PUBLIC_API_URL);
+
+      // 3. التعديل هنا: نتحقق من وجود التوكن القادم من الـ Context
+      if (!accessToken) {
+        alert("يجب تسجيل الدخول أولاً أو انتهاء تحميل الجلسة");
+        return;
+      }
+
+      if (!child.name) {
+        alert("أدخل اسم الطفل");
+        return;
+      }
+
+      if (!child.age) {
+        alert("أدخل عمر الطفل");
+        return;
+      }
+
+      if (child.interests.length === 0) {
+        alert("اختر اهتماماً واحداً على الأقل");
+        return;
+      }
+
+      const payload = {
+        name: child.name,
+        age: Number(child.age),
+        gender: child.gender,
+        avatar: child.avatar || "lion",
+        interests: child.interests,
+      };
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/children`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // 4. نمرر التوكن الآمن هنا
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+
+      const data = await res.json();
+
+      console.log("CREATE CHILD RESPONSE:", data);
+
+      if (!res.ok) {
+        throw new Error(data.message || "حدث خطأ أثناء إنشاء ملف الطفل");
+      }
+
+      reset();
+
+      router.push("/childAdventure");
+    } catch (error) {
+      console.error(error);
+
+      alert(error instanceof Error ? error.message : "حدث خطأ غير متوقع");
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedInterests.length === 0) return; // يفضل يختار حاجة واحدة ع الأقل
-
-    // حفظ الاهتمامات مؤقتاً
-    localStorage.setItem("tempChildInterests", JSON.stringify(selectedInterests));
-    
-    onNext(); // الانتقال للخطوة الرابعة (وقت الشاشة)
-  };
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 text-right font-sans animate-fadeIn">
-      {/* العنوان الرئيسي */}
-      <div className="text-center space-y-1">
-        <h3 className="text-xl font-black text-ink">ماذا يحب أن يسمع أو يقرأ؟ 📑✨</h3>
-        <p className="text-xs font-bold text-ink-muted">
-          اختر موضوعاً واحداً أو أكثر لصنع عالم مليء بالشغف لطفلك.
-        </p>
+    <div className="space-y-6 text-right">
+      <div>
+        <h3 className="text-xl font-black mb-2">اختر اهتمامات طفلك ✨</h3>
+
+        <p className="text-sm text-gray-500">اختر اهتماماً واحداً أو أكثر.</p>
       </div>
 
-      {/* شبكة عرض الاهتمامات (Grid) */}
-      <div className="grid grid-cols-2 gap-3.5">
-        {INTERESTS.map((item) => {
-          const isSelected = selectedInterests.includes(item.id);
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => toggleInterest(item.id)}
-              className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-right transition-all cursor-pointer ${
-                isSelected
-                  ? "border-primary bg-primary/5 scale-[1.02] shadow-sm"
-                  : `${item.color} hover:opacity-90`
-              }`}
-            >
-              {/* أيقونة مميزة */}
-              <span className="text-2xl bg-white p-2 rounded-xl shadow-xs">{item.icon}</span>
-              {/* اسم الاهتمام وعلامة الاختيار */}
-              <div className="flex-1 flex justify-between items-center">
-                <span className="text-sm font-black text-ink">{item.label}</span>
-                {isSelected && <span className="text-primary text-lg font-bold">✓</span>}
-              </div>
-            </button>
-          );
-        })}
+      <div className="grid grid-cols-2 gap-3">
+        {INTERESTS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => toggleInterest(item.id)}
+            className={`p-3 rounded-xl border transition ${
+              child.interests.includes(item.id)
+                ? "border-primary bg-primary/10"
+                : "border-gray-200"
+            }`}
+          >
+            {item.icon} {item.label}
+          </button>
+        ))}
       </div>
 
-      {/* أزرار التحكم */}
       <div className="flex gap-3 pt-4">
-        <Button
-          type="submit"
-          variant="primary"
-          fullWidth={true}
-          disabled={selectedInterests.length === 0} // الزرار هيقفل لو مأختارش حاجة خالص
-          className="!py-3.5 font-black order-2"
-        >
-          {selectedInterests.length === 0 ? "اختر موضوعاً للمتابعة" : "التالي: وقت الشاشة ⏳"}
+        <Button onClick={handleFinish} fullWidth variant="primary">
+          إنهاء وإنشاء الحساب 🚀
         </Button>
-        <Button
-          type="button"
-          variant="sky"
-          fullWidth={false}
-          onClick={onPrev}
-          className="!py-3.5 px-6 font-bold text-ink order-1"
-        >
+
+        <Button type="button" variant="sky" onClick={onPrev}>
           رجوع
         </Button>
       </div>
-    </form>
+    </div>
   );
 }

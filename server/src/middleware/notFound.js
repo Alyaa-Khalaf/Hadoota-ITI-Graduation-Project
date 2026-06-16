@@ -4,7 +4,7 @@ const notFound = (req, res, next) => {
     message: `المسار ${req.originalUrl} غير موجود`,
     data: null,
     errors: []
-  })
+  });
 }
 
 export default notFound

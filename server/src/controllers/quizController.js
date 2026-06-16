@@ -4,8 +4,9 @@ import Gamification from "../models/gamificationModel.js";
 import { sendSuccess, sendError } from "../utils/apiResponse.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// 🌟 إجبار الـ SDK على استخدام v1beta المتوافقة مع الموديلات الحديثة
-const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY, { apiVersion: "v1beta" });
+const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY, {
+  apiVersion: "v1beta",
+});
 const PASS_THRESHOLD = 60;
 
 // ==========================================
@@ -14,17 +15,22 @@ const PASS_THRESHOLD = 60;
 export const generateQuiz = async (req, res) => {
   try {
     const { storyId } = req.params;
-    const { childId } = req.body; 
+    const { childId } = req.body;
 
     if (!childId) return sendError(res, 400, "معرف الطفل مطلوب لتوليد الكويز");
 
     const story = await Story.findById(storyId);
-    if (!story) return sendError(res, 404, "الحدوتة غير موجودة لتوليد الكويز لها");
+    if (!story)
+      return sendError(res, 404, "الحدوتة غير موجودة لتوليد الكويز لها");
 
-    // منع التكرار
     let existingQuiz = await Quiz.findOne({ storyId, childId });
     if (existingQuiz) {
-      return sendSuccess(res, 200, "تم جلب الكويز المتولد مسبقاً لهذه القصة", existingQuiz);
+      return sendSuccess(
+        res,
+        200,
+        "تم جلب الكويز المتولد مسبقاً لهذه القصة",
+        existingQuiz,
+      );
     }
 
     const prompt = `
@@ -34,33 +40,32 @@ export const generateQuiz = async (req, res) => {
       قم بتوليد كويز تفاعلي من 3 أسئلة اختيار من متعدد (4 خيارات لكل سؤال).
       اجعل الأسئلة مبهجة ومناسبة للأطفال.
       
-      يجب أن تعيد النتيجة بصيغة JSON نظيفة جداً وبدون أي نصوص إضافية أو علامات markdown (لا تكتب \`\`\`json ولا تكتب \`\`\`).
-      الهيكل المطلوب للـ JSON يجب أن يطابق هذا الهيكل تماماً:
+      يجب أن تعيد النتيجة بصيغة JSON نظيفة جداً وبدون أي نصوص إضافية أو علامات markdown.
+      الهيكل المطلوب:
       {
         "questions": [
           {
             "question": "نص السؤال الأول هنا؟",
             "options": [
               { "text": "الاختيار الأول", "isCorrect": false },
-              { "text": "الاختيار الثاني الصحيح مثلاً", "isCorrect": true },
+              { "text": "الاختيار الثاني الصحيح", "isCorrect": true },
               { "text": "الاختيار الثالث", "isCorrect": false },
               { "text": "الاختيار الرابع", "isCorrect": false }
             ],
-            "explanation": "توضيح مبسط ومبهج للطفل يفسر الإجابة الصحيحة"
+            "explanation": "توضيح مبسط ومبهج للطفل"
           }
         ]
       }
-      تنبيه: يجب أن يكون هناك اختيار واحد فقط صحيح (isCorrect: true) من بين الاختيارات الأربعة لكل سؤال.
+      تنبيه: يجب أن يكون هناك اختيار واحد فقط صحيح من بين الاختيارات الأربعة لكل سؤال.
     `;
 
-    // استخدام الموديل القياسي المستقر للـ v1beta المحدثة
     const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const result = await model.generateContent({
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { responseMimeType: "application/json" }
+      generationConfig: { responseMimeType: "application/json" },
     });
-    
+
     if (!result.response || !result.response.text) {
       throw new Error("لم يقم الذكاء الاصطناعي بإرجاع استجابة صحيحة");
     }
@@ -72,10 +77,15 @@ export const generateQuiz = async (req, res) => {
       childId,
       questions: quizData.questions,
       attempts: [],
-      bestScore: 0
+      bestScore: 0,
     });
 
-    return sendSuccess(res, 201, "تم توليد الكويز بالـ AI بنجاح بناءً على أحداث القصة", newQuiz);
+    return sendSuccess(
+      res,
+      201,
+      "تم توليد الكويز بالـ AI بنجاح بناءً على أحداث القصة",
+      newQuiz,
+    );
   } catch (error) {
     return sendError(res, 500, "خطأ في توليد الكويز بالـ AI", [error.message]);
   }
@@ -86,9 +96,13 @@ export const generateQuiz = async (req, res) => {
 // ==========================================
 export const submitQuiz = async (req, res) => {
   try {
-    const { quizId, userAnswers } = req.body; 
+    const { quizId, userAnswers } = req.body;
 
-    if (!userAnswers || !Array.isArray(userAnswers) || userAnswers.length === 0) {
+    if (
+      !userAnswers ||
+      !Array.isArray(userAnswers) ||
+      userAnswers.length === 0
+    ) {
       return sendError(res, 400, "مصفوفة إجابات الطفل مطلوبة");
     }
 
@@ -103,27 +117,32 @@ export const submitQuiz = async (req, res) => {
       const question = quiz.questions[userAns.questionIndex];
       if (question) {
         const selectedOptionObj = question.options[userAns.selectedOption];
-        const isCorrect = selectedOptionObj ? selectedOptionObj.isCorrect === true : false;
+        const isCorrect = selectedOptionObj
+          ? selectedOptionObj.isCorrect === true
+          : false;
 
         if (isCorrect) correctCount++;
 
         attemptAnswers.push({
           questionIndex: userAns.questionIndex,
           selectedOption: userAns.selectedOption,
-          isCorrect
+          isCorrect,
         });
       }
     });
 
     const score = correctCount;
-    const percentage = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+    const percentage =
+      totalQuestions > 0
+        ? Math.round((correctCount / totalQuestions) * 100)
+        : 0;
     const passed = percentage >= PASS_THRESHOLD;
 
     const newAttempt = {
       answers: attemptAnswers,
       score,
       percentage,
-      completedAt: new Date()
+      completedAt: new Date(),
     };
 
     quiz.attempts.push(newAttempt);
@@ -134,11 +153,8 @@ export const submitQuiz = async (req, res) => {
 
     await quiz.save();
 
-    // ========================================================
-    // 🪙 حساب المكافآت بناءً على الـ Gamification Schema الحقيقية
-    // ========================================================
-    let starsEarned = correctCount * 2; // كل سؤال صح بنجمتين
-    let bonusStars = percentage === 100 ? 5 : 0; // 5 نجوم بونص لو قفل الكويز
+    let starsEarned = correctCount * 2;
+    let bonusStars = percentage === 100 ? 5 : 0;
     let totalStarsToGive = starsEarned + bonusStars;
 
     let newBadge = null;
@@ -146,35 +162,39 @@ export const submitQuiz = async (req, res) => {
 
     if (totalStarsToGive > 0 || percentage === 100) {
       let g = await Gamification.findOne({ childId: quiz.childId });
-      if (!g) g = new Gamification({ childId: quiz.childId, stars: 0, badges: [], rewardHistory: [] });
+      if (!g)
+        g = new Gamification({
+          childId: quiz.childId,
+          stars: 0,
+          badges: [],
+          rewardHistory: [],
+        });
 
-      // 1️⃣ إضافة النجوم
       if (totalStarsToGive > 0) {
         g.stars += totalStarsToGive;
         g.rewardHistory.push({
-          type: "star", // يطابق الـ enum بالملي
+          type: "star",
           amount: totalStarsToGive,
-          reason: `أنهى كويز بنتيجة ${percentage}%`
+          reason: `أنهى كويز بنتيجة ${percentage}%`,
         });
       }
 
-      // 2️⃣ إضافة الـ Badge لو قفل الكويز بنسبة 100%
-      if (percentage === 100 && !g.badges.some(b => b.name === 'العبقري الصغير')) {
-        newBadge = { name: 'العبقري الصغير', earnedAt: new Date() };
+      if (
+        percentage === 100 &&
+        !g.badges.some((b) => b.name === "العبقري الصغير")
+      ) {
+        newBadge = { name: "العبقري الصغير", earnedAt: new Date() };
         g.badges.push(newBadge);
 
-        // تسجيل إضافة الـ Badge في الـ history
         g.rewardHistory.push({
-          type: "badge", // يطابق الـ enum بالملي
+          type: "badge",
           amount: 1,
           badgeName: "العبقري الصغير",
-          reason: "تقفيل كويز الحدوتة بنتيجة 100%"
+          reason: "تقفيل كويز الحدوتة بنتيجة 100%",
         });
       }
 
       await g.save();
-      
-      // لتسهيل الـ Response لشيماء في الـ UI
       currentStars = g.stars;
     }
 
@@ -185,17 +205,16 @@ export const submitQuiz = async (req, res) => {
       percentage,
       passed,
       bestScore: quiz.bestScore,
-      questionsWithExplanations: quiz.questions.map(q => ({
+      questionsWithExplanations: quiz.questions.map((q) => ({
         question: q.question,
-        explanation: q.explanation 
+        explanation: q.explanation,
       })),
       gamification: {
         starsEarned: totalStarsToGive,
         totalStars: currentStars,
-        newBadge: newBadge
-      }
+        newBadge: newBadge,
+      },
     });
-
   } catch (error) {
     return sendError(res, 500, "خطأ في تسليم إجابات الكويز", [error.message]);
   }
@@ -208,12 +227,12 @@ export const getChildQuizHistory = async (req, res) => {
   try {
     const { childId } = req.params;
 
-    const history = await Quiz.find({ 
-      childId, 
-      "attempts.0": { $exists: true } 
+    const history = await Quiz.find({
+      childId,
+      "attempts.0": { $exists: true },
     })
-    .populate('storyId', 'title') 
-    .sort({ updatedAt: -1 });
+      .populate("storyId", "title")
+      .sort({ updatedAt: -1 });
 
     return sendSuccess(res, 200, "تم جلب تاريخ كويزات الطفل بنجاح", history);
   } catch (error) {

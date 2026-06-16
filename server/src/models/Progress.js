@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from 'mongoose'
 
 const progressSchema = new mongoose.Schema({
   // 1. ربط ملف التقدم بالطفل
@@ -9,18 +9,18 @@ const progressSchema = new mongoose.Schema({
     unique: true
   },
 
-  // 2. المؤشرات العامة للألعاب والتقدم (Gamification & Overview)
+  // 2. المؤشرات العامة للألعاب والتقدم
   storiesCompleted: {
     type: Number,
     default: 0
   },
   totalTimeSpent: {
     type: Number,
-    default: 0 // بالدقائق الإجمالية
+    default: 0
   },
   totalPoints: {
     type: Number,
-    default: 0 // تم دمج حقل هند ليكون مرادفاً للـ XP
+    default: 0
   },
   xpPoints: {
     type: Number,
@@ -35,7 +35,7 @@ const progressSchema = new mongoose.Schema({
     default: 0
   },
 
-  // 3. الشارات والإنجازات (Badges)
+  // 3. الشارات والإنجازات
   badges: [{
     name: String,
     description: String,
@@ -46,15 +46,15 @@ const progressSchema = new mongoose.Schema({
     }
   }],
 
-  // 4. تاريخ النقاط اليومي (من كود هند - ممتاز للـ Charts والرسوم البيانية)
+  // 4. تاريخ النقاط اليومي
   dailyHistory: [
     {
-      day: { type: String, required: true }, // مثل: "Sun", "Mon", "Tue"
+      day: { type: String, required: true },
       points: { type: Number, default: 0 }
     }
   ],
 
-  // 5. المواضيع والمجالات التي تعلمها الطفل (مهم جداً لتخصيص المنهج للمدرسة)
+  // 5. المواضيع والمجالات التي تعلمها الطفل
   topicsLearned: [{
     topic: String,
     count: {
@@ -63,7 +63,7 @@ const progressSchema = new mongoose.Schema({
     }
   }],
 
-  // 6. الإحصائيات الأسبوعية (المغذي الرئيسي لـ GET /api/schools/:id/report)
+  // 6. الإحصائيات الأسبوعية
   weeklyStats: [{
     week: Date,
     storiesCount: Number,
@@ -72,7 +72,7 @@ const progressSchema = new mongoose.Schema({
     topicsLearned: [String]
   }],
 
-  // 7. إحصائيات الاختبارات (المغذي لـ GET /api/schools/:id/analytics)
+  // 7. إحصائيات الاختبارات
   quizStats: {
     totalQuizzes: {
       type: Number,
@@ -88,7 +88,7 @@ const progressSchema = new mongoose.Schema({
     }
   },
 
-  // 8. الالتزام اليومي والتفاعل (Streak)
+  // 8. الالتزام اليومي والتفاعل
   streak: {
     current: {
       type: Number,
@@ -100,7 +100,7 @@ const progressSchema = new mongoose.Schema({
     },
     lastActivity: Date
   }
-}, { timestamps: true });
+}, { timestamps: true })
 
-const Progress = mongoose.model('Progress', progressSchema);
-export default Progress;
+const Progress = mongoose.model('Progress', progressSchema)
+export default Progress

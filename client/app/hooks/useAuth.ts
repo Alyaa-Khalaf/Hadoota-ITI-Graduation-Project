@@ -36,11 +36,7 @@ export const useAuth = () => {
       try {
         const response = await authService.register(name, email, password)
         if (response.success && response.data) {
-          setUser(response.data.user)
-          setToken(response.data.accessToken)
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('token', response.data.accessToken)
-          }
+          setUser(response.data)
         } else {
           setError(response.error || 'Registration failed')
         }
@@ -50,7 +46,7 @@ export const useAuth = () => {
         setLoading(false)
       }
     },
-    [setUser, setToken, setLoading, setError]
+    [setUser, setLoading, setError]
   )
 
   const handleLogout = useCallback(() => {

@@ -1,9 +1,4 @@
-import dotenv from 'dotenv'
-dotenv.config();
-import path from 'path'
-// تفعيل الـ Environment Variables بالمسار الصحيح
-dotenv.config();
-
+import './env.js'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
@@ -12,7 +7,7 @@ import { createServer } from 'http'
 import { Server } from 'socket.io'
 import connectDB from './config/db.js'
 
-// استيراد الـ Routes الكاملة من كل الفروع المدمجة
+// استيراد الـ Routes الكاملة من كل الفروع المدمجة بسلام
 import authRoutes from './routes/auth.routes.js'
 import userRoutes from './routes/userRoutes.js'
 import childRoutes from './routes/child.routes.js'
@@ -20,16 +15,19 @@ import quizRoutes from './routes/quizRoutes.js'
 import gamificationRoutes from './routes/gamificationRoutes.js'
 import storyRoutes from './routes/storyRoutes.js'
 import progressRoutes from './routes/progress.routes.js'
+import parentAgentRoutes from './routes/parentAgent.routes.js'
+import screenTimeRoutes from './routes/screenTime.routes.js'
+import paymentRoutes from './routes/payment.routes.js'
 import schoolRoutes from './routes/school.routes.js'
-import adminRoutes from './routes/admin.routes.js';
-import personalizationRoutes from './routes/personalizationRoutes.js';
-
+import adminRoutes from './routes/admin.routes.js'
+import personalizationRoutes from './routes/personalizationRoutes.js'
 
 // استيراد الـ Middlewares والـ Models
 import errorHandler from './middleware/errorHandler.js'
 import notFound from './middleware/notFound.js'
 import { generalLimiter } from './middleware/rateLimiter.js'
 import { socketAuthMiddleware } from './middleware/socketAuth.js'
+import { setChildSession, removeChildSession } from './config/redis.js'
 import Child from './models/Child.js'
 
 const app = express()
@@ -44,7 +42,10 @@ const io = new Server(httpServer, {
 })
 
 // =============== MIDDLEWARES ===============
-app.use(cors())
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true
+}))
 app.use(helmet())
 app.use(morgan('dev'))
 app.use(express.json())
@@ -58,10 +59,13 @@ app.use('/api/children', childRoutes)
 app.use('/api/quiz', quizRoutes)
 app.use('/api/gamification', gamificationRoutes)
 app.use('/api/stories', storyRoutes)
-app.use('/api/progress', progressRoutes) // دمج مسار progressRoutes  
+app.use('/api/progress', progressRoutes)
+app.use('/api/parent-agent', parentAgentRoutes)
+app.use('/api/screentime', screenTimeRoutes)
+app.use('/api/payments', paymentRoutes)
 app.use('/api/schools', schoolRoutes)
 app.use('/api/admin', adminRoutes)
-app.use('/api/personalization', personalizationRoutes);
+app.use('/api/personalization', personalizationRoutes)
 
 // Health Check API
 app.get('/api/health', (req, res) => {
@@ -74,7 +78,6 @@ app.get('/api/health', (req, res) => {
 })
 
 // ============== SOCKET.IO SETUP ==============
-// تطبيق حماية الـ Token على السوكت لضمان أمان الاتصال
 io.use(socketAuthMiddleware)
 
 io.on('connection', (socket) => {
@@ -98,7 +101,6 @@ io.on('connection', (socket) => {
         return
       }
 
-      // التحقق من أن هذا الأب يملك هذا الطفل فعلياً
       if (child.parentId.toString() !== userId.toString()) {
         socket.emit('error', { message: 'Unauthorized: You do not own this child' })
         return
@@ -108,6 +110,8 @@ io.on('connection', (socket) => {
       socket.join(roomName)
       socket.data.rooms.add(roomName)
       socket.data.currentChildId = childId
+
+      await setChildSession(childId, socket.id)
 
       console.log(`👧 ${socket.id} joined room: ${roomName}`)
       socket.emit('room:joined', { childId, roomName })
@@ -128,6 +132,8 @@ io.on('connection', (socket) => {
       if (socket.data.currentChildId === childId) {
         delete socket.data.currentChildId
       }
+
+      removeChildSession(childId).catch(() => {})
 
       console.log(`👧 ${socket.id} left room: ${roomName}`)
       socket.emit('room:left', { childId })
@@ -154,6 +160,9 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`❌ Client disconnected: ${socket.id}`)
+    if (socket.data.currentChildId) {
+      removeChildSession(socket.data.currentChildId).catch(() => {})
+    }
   })
 
   socket.on('error', (error) => {

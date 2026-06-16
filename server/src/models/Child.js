@@ -1,18 +1,18 @@
-import mongoose from 'mongoose';
+import mongoose from 'mongoose'
 
 const childSchema = new mongoose.Schema({
-  // 1. ربط الطفل بالأهل 
+  // 1. ربط الطفل بالأهل
   parentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: [true, 'معرف الأهل مطلوب']
   },
-  
-  // 🏢 2. ربط الطفل بالمدرسة 
+
+  // 2. ربط الطفل بالمدرسة
   schoolId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'School',
-    default: null // null لو بيقرأ من البيت، وبياخد ID لو تبع مدرسة
+    default: null
   },
   classId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -43,10 +43,10 @@ const childSchema = new mongoose.Schema({
     default: 'default-child.png'
   },
 
-  // 4. التخصيص والاهتمامات (مهمة للـ LLM وتوليد الحواديت)
+  // 4. التخصيص والاهتمامات
   interests: [{
     type: String,
-    enum: ['فضاء', 'حيوانات', 'مغامرات', 'تاريخ', 'علوم', 'دين', 'طبيعة', 'رياضة']
+    enum: ['adventures', 'animals', 'science', 'morals', 'history', 'mysteries', 'space', 'religion', 'nature', 'sports']
   }],
   learningLevel: {
     type: String,
@@ -58,11 +58,11 @@ const childSchema = new mongoose.Schema({
   settings: {
     allowedTopics: [{
       type: String,
-      enum: ['دين', 'علوم', 'لغة عربية', 'تاريخ', 'طبيعة', 'مغامرات', 'فضاء']
+      enum: ['religion', 'science', 'arabic', 'history', 'nature', 'adventures', 'space']
     }],
     screenTimeLimit: {
       type: Number,
-      default: 30 // بالدقائق
+      default: 30
     },
     difficultyLevel: {
       type: String,
@@ -80,26 +80,34 @@ const childSchema = new mongoose.Schema({
     lastReset: {
       type: Date,
       default: Date.now
+    },
+    sessionStart: {
+      type: Date,
+      default: null
+    },
+    warningNotified: {
+      type: Boolean,
+      default: false
     }
   },
 
   // 🏆 7. موديول التلعيب ونظام النقاط (Gamification Module)
   xp: {
     type: Number,
-    default: 0 // يبدأ الطفل بـ 0 نقطة خبرة
+    default: 0
   },
   level: {
     type: Number,
-    default: 1 // المستوى الأول
+    default: 1
   },
   badges: [{
     title: {
       type: String,
-      required: true // اسم الشارة (مثل: بطل الفضاء)
+      required: true
     },
     icon: {
       type: String,
-      default: 'default-badge.png' // أيقونة الشارة لعرضها في الـ UI عند شيماء
+      default: 'default-badge.png'
     },
     unlockedAt: {
       type: Date,
@@ -109,5 +117,5 @@ const childSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-const Child = mongoose.model('Child', childSchema);
-export default Child;
+const Child = mongoose.model('Child', childSchema)
+export default Child

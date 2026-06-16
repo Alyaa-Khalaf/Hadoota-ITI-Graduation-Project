@@ -18,7 +18,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     await login(formData.email, formData.password)
-    router.push('/onboarding')
+    router.push(ROUTES.DASHBOARD)
   }
 
   return (

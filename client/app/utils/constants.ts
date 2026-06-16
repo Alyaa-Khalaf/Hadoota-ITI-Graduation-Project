@@ -15,4 +15,5 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   PROFILE: '/profile',
   STORIES: '/stories',
+  CHARACTERS:'/characters',
 }

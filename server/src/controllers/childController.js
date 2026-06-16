@@ -1,10 +1,29 @@
 import Child from '../models/Child.js';
 
-// 1️⃣ (إضافة طفل جديد وربطه بالأب تلقائياً)
+// 1️⃣ جلب كل أطفال الأب المسجل حالياً فقط
+export const getChildren = async (req, res, next) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+
+    const children = await Child.find({ parentId: userId });
+
+    res.status(200).json({
+      success: true,
+      message: 'تم الحصول على أطفال المستخدم بنجاح',
+      data: children,
+      errors: []
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllChildren = getChildren;
+
+// 2️⃣ إضافة طفل جديد وربطه بالأب تلقائياً
 export const createChild = async (req, res, next) => {
   try {
-    // 🌟 تم إضافة gender هنا لاستقباله من الـ Body
-    const { name, age, gender, interests, learningLevel } = req.body;
+    const { name, age, gender, interests, learningLevel, avatar } = req.body;
     const parentId = req.user?.id || req.user?._id;
 
     if (!parentId) {
@@ -20,7 +39,8 @@ export const createChild = async (req, res, next) => {
       parentId,
       name,
       age,
-      gender, // 🌟 تم تمريره لقاعدة البيانات بنجاح
+      gender,
+      avatar: avatar || 'default-child.png',
       interests: interests || [],
       learningLevel: learningLevel || 'beginner',
       settings: {
@@ -41,7 +61,7 @@ export const createChild = async (req, res, next) => {
   }
 };
 
-// 2️⃣ جلب تفاصيل طفل محدد بواسطة الـ ID مع فحص الأمان (كود هند الآمن)
+// 3️⃣ جلب تفاصيل طفل محدد بواسطة الـ ID مع فحص الأمان
 export const getChild = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -57,7 +77,6 @@ export const getChild = async (req, res, next) => {
       });
     }
 
-    // شرط الأمان لمنع اختراق بيانات الأطفال
     if (child.parentId.toString() !== userId.toString()) {
       return res.status(401).json({
         success: false,
@@ -78,31 +97,12 @@ export const getChild = async (req, res, next) => {
   }
 };
 
-// 3️⃣ جلب كل أطفال الأب المسجل حالياً فقط
-export const getChildren = async (req, res, next) => {
-  try {
-    const userId = req.user?.id || req.user?._id;
-
-    const children = await Child.find({ parentId: userId });
-
-    res.status(200).json({
-      success: true,
-      message: 'تم الحصول على أطفال المستخدم بنجاح',
-      data: children,
-      errors: []
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// 4️⃣ تعديل بيانات الطفل (تمت تهيئته ليتماشى مع الـ Structure بتاعكِ)
+// 4️⃣ تعديل بيانات الطفل
 export const updateChild = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id || req.user?._id;
 
-    // تأمين الحماية: التأكد أن الأب هو من يملك الطفل قبل التعديل
     const child = await Child.findById(id);
     if (!child || child.parentId.toString() !== userId.toString()) {
       return res.status(401).json({ success: false, message: 'غير مصرح أو الطفل غير موجود' });
@@ -112,7 +112,7 @@ export const updateChild = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "تم تعديل بيانات الطفل بنجاح",
+      message: 'تم تعديل بيانات الطفل بنجاح',
       data: updatedChild,
       errors: []
     });
@@ -121,13 +121,12 @@ export const updateChild = async (req, res, next) => {
   }
 };
 
-// 5️⃣ حذف طفل نهائياً (تمت تهيئته ليتماشى مع الـ Structure بتاعكِ)
+// 5️⃣ حذف طفل نهائياً
 export const deleteChild = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id || req.user?._id;
 
-    // تأمين الحماية: التأكد أن الأب هو من يملك الطفل قبل الحذف
     const child = await Child.findById(id);
     if (!child || child.parentId.toString() !== userId.toString()) {
       return res.status(401).json({ success: false, message: 'غير مصرح أو الطفل غير موجود' });
@@ -137,7 +136,7 @@ export const deleteChild = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "تم حذف الطفل بنجاح",
+      message: 'تم حذف الطفل بنجاح',
       data: null,
       errors: []
     });

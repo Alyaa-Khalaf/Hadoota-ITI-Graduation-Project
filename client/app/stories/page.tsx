@@ -1,38 +1,31 @@
-'use client'
+"use client"
 
-import { useAuth } from '@/hooks/useAuth'
-import { ROUTES } from '@/utils/constants'
-import Link from 'next/link'
+import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
+import StoryPlayer from "@/components/story-player/StoryPlayer"
 
-export default function StoriesPage() {
-  const { user } = useAuth()
+export default function Page() {
+  const searchParams = useSearchParams()
+  const [childId, setChildId] = useState<string>("")
 
-  if (!user) {
+  const character = searchParams.get("character") || ""
+  const topic = searchParams.get("topic") || ""
+
+  useEffect(() => {
+    const fromQuery = searchParams.get("childId")
+    const fromStorage = localStorage.getItem("activeChildId")
+    setChildId(fromQuery || fromStorage || "")
+  }, [searchParams])
+
+  if (!childId || !character || !topic) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">يجب تسجيل الدخول أولاً</h1>
-          <Link href={ROUTES.LOGIN} className="text-primary hover:underline">
-            اذهب إلى صفحة الدخول
-          </Link>
-        </div>
+      <div className="max-w-4xl mx-auto p-6 text-center">
+        <p className="text-red-500 font-bold">
+          بيانات الحدوتة غير مكتملة. لازم تحدد الطفل، الشخصية، والموضوع أولاً.
+        </p>
       </div>
     )
   }
 
-  return (
-    <div className="container mx-auto px-4 py-12">
-      <h1 className="text-4xl font-bold mb-8">القصص</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Placeholder for stories */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-2">قصة 1</h2>
-          <p className="text-gray-600 mb-4">وصف القصة</p>
-          <button className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">
-            اقرأ القصة
-          </button>
-        </div>
-      </div>
-    </div>
-  )
+  return <StoryPlayer childId={childId} character={character} topic={topic} />
 }

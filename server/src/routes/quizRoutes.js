@@ -1,7 +1,7 @@
 import express from 'express'
 import { body, param } from 'express-validator'
 import { generateQuiz, submitQuiz, getChildQuizHistory } from '../controllers/quizController.js'
-import authMiddleware from '../middleware/auth.js' // الميديول الخاص بكِ للحماية
+import authMiddleware from '../middleware/auth.js'
 import { verifyChildOwnership } from '../middleware/childOwnershipMiddleware.js'
 import validate from '../middleware/validate.js'
 
@@ -11,7 +11,6 @@ const router = express.Router()
 router.use(authMiddleware)
 
 // 1️⃣ توليد كويز بالـ AI بعد الحدوتة
-// نقرأ الـ childId من الـ body للتأكد من ملكيته قبل استدعاء OpenAI
 router.post(
   '/generate/:storyId',
   [
@@ -19,7 +18,7 @@ router.post(
     body('childId').isMongoId().withMessage('معرف الطفل مطلوب وصحيح')
   ],
   validate,
-  verifyChildOwnership, // التأكد من أن الأب يملك الطفل قبل توليد الأسئلة له
+  verifyChildOwnership,
   generateQuiz
 )
 
@@ -34,7 +33,7 @@ router.post(
     body('userAnswers.*.selectedOption').isInt({ min: 0 }).withMessage('مؤشر الخيار المختار غير صحيح')
   ],
   validate,
-  verifyChildOwnership, // حماية النتيجة؛ لا يمكن لأب تسليم كويز لطفل آخر
+  verifyChildOwnership,
   submitQuiz
 )
 
@@ -45,7 +44,7 @@ router.get(
     param('childId').isMongoId().withMessage('معرف الطفل غير صحيح')
   ],
   validate,
-  verifyChildOwnership, // الأمان: الأب يرى تاريخ أطفاله فقط
+  verifyChildOwnership,
   getChildQuizHistory
 )
 
