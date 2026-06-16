@@ -8,13 +8,13 @@ import {
   getProgressAnalyticsHandler,
   getDashboardAnalyticsHandler,
 } from "../controllers/analyticsController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import authMiddleware from '../middleware/auth.js';
 import { verifyChildOwnership } from "../middleware/childOwnershipMiddleware.js";
 import { verifyParentOwnership } from "../middleware/parentOwnershipMiddleware.js";
 
 const router = express.Router();
 
-router.use(protect);
+router.use(authMiddleware);
 
 router.post("/session", verifyChildOwnership, trackStorySession);
 

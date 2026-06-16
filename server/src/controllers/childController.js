@@ -18,7 +18,6 @@ export const getChildren = async (req, res, next) => {
   }
 };
 
-// للتوافق مع childRoutes.js القديم
 export const getAllChildren = getChildren;
 
 // 2️⃣ إضافة طفل جديد وربطه بالأب تلقائياً

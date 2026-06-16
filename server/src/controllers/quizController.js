@@ -1,5 +1,5 @@
 import QuizSubmission from "../models/quizSubmissionModel.js";
-import Child from "../models/childModel.js";
+import Child from "../models/Child.js";
 import { getOrCreateGamification } from "../utils/gamificationHelper.js";
 import { sendSuccess, sendError } from "../utils/apiResponse.js";
 import { invalidateAnalyticsCache } from "../services/cacheService.js";

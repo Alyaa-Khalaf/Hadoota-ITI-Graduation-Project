@@ -1,10 +1,10 @@
 import express from 'express'
-import { protect } from '../middleware/authMiddleware.js'
+import authMiddleware from '../middleware/auth.js'
 import { streamMedia } from '../controllers/storyGenerationController.js'
 
 const router = express.Router()
 
-router.use(protect)
+router.use(authMiddleware)
 router.get('/:fileId', streamMedia)
 
 export default router

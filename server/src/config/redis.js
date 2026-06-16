@@ -126,4 +126,5 @@ export const removeChildSession = async (childId) => {
   }
 }
 
+export const getRedisClient = getRedis
 export default getRedis

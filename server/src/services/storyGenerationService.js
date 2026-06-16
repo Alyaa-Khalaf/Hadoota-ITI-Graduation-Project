@@ -1,4 +1,4 @@
-import Story from '../models/storyModel.js'
+import Story from '../models/Story.js'
 import { generateStoryStructure, generateSceneImage } from './openaiService.js'
 import { generateSpeech } from './elevenlabsService.js'
 import { uploadBuffer } from './gridfsService.js'
