@@ -79,7 +79,35 @@ const userSchema = new mongoose.Schema({
   isEmailVerified: {
     type: Boolean,
     default: false
-  }
+  },
+  screenTimeLimitMinutes: {
+    type: Number,
+    default: 60,
+    min: 15,
+    max: 480
+  },
+  notificationSettings: {
+    email: {
+      welcome: { type: Boolean, default: true },
+      weeklyReport: { type: Boolean, default: true },
+      inactivityReminder: { type: Boolean, default: true },
+      screenTimeAlert: { type: Boolean, default: true },
+      subscription: { type: Boolean, default: true }
+    },
+    push: {
+      badgeEarned: { type: Boolean, default: true },
+      screenTimeLimit: { type: Boolean, default: true },
+      weeklyReportReady: { type: Boolean, default: true }
+    }
+  },
+  pushSubscriptions: [{
+    endpoint: { type: String, required: true },
+    keys: {
+      p256dh: { type: String, required: true },
+      auth: { type: String, required: true }
+    },
+    createdAt: { type: Date, default: Date.now }
+  }]
 }, { timestamps: true })
 
 // Hash password before save

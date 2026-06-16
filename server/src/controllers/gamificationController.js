@@ -1,5 +1,6 @@
 import { getOrCreateGamification } from "../utils/gamificationHelper.js";
 import { sendSuccess, sendError } from "../utils/apiResponse.js";
+import { notifyBadgeEarned } from "../services/notifications/notificationService.js";
 
 // GET /api/gamification/:childId
 export const getGamification = async (req, res) => {
@@ -63,6 +64,12 @@ export const grantReward = async (req, res) => {
     }
 
     await gamification.save();
+
+    if (type === "badge") {
+      notifyBadgeEarned(childId, badgeName).catch((err) =>
+        console.error("Badge notification failed:", err.message)
+      );
+    }
 
     return sendSuccess(res, 200, "Reward granted successfully", {
       childId: gamification.childId,
