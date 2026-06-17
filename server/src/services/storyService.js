@@ -1,4 +1,4 @@
-import Story from "../models/storyModel.js";
+import Story from "../models/Story.js";
 import Favorite from "../models/favoriteModel.js";
 
 const DEFAULT_LIMIT = 10;

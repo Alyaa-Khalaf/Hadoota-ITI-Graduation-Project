@@ -27,8 +27,26 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['parent', 'admin'],
+    enum: ['parent', 'admin','teacher', 'student'],
     default: 'parent'
+  },
+  schoolId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'School',
+    default: null
+  },
+  parentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', 
+    default: null
+  },
+  schoolCode: {
+    type: String,
+    default: null
+  },
+  isPending: {
+    type: Boolean,
+    default: false
   },
   subscription: {
     plan: {
@@ -93,14 +111,14 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 // Hash password before save
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next()
+userSchema.pre('save', async function () {
+  if (!this.isModified('password')) return
+
   this.password = await bcrypt.hash(this.password, 12)
-  next()
 })
 
 // Compare password
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password)
 }
 

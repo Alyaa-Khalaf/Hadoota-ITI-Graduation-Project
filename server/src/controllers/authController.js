@@ -1,18 +1,17 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
-import {
-  sendWelcomeEmail,
-  sendResetPasswordEmail,
-} from '../services/notifications/notificationService.js'
+import { sendEmail } from '../services/emailService.js'
+import { resetPasswordTemplate } from '../services/notifications/templates/resetPassword.js'
+import { welcomeTemplate } from '../services/notifications/templates/welcome.js'
 
-// Generate Access Token
+// Generate Access Token (15 Minutes)
 const generateAccessToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: '15m'
   })
 }
 
-// Generate Refresh Token
+// Generate Refresh Token (30 Days)
 const generateRefreshToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET, {
     expiresIn: '30d'
@@ -26,6 +25,7 @@ export const register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body
 
+    // Check if user exists
     const existingUser = await User.findOne({ email })
     if (existingUser) {
       return res.status(400).json({
@@ -36,17 +36,19 @@ export const register = async (req, res, next) => {
       })
     }
 
+    // Create user
     const user = await User.create({ name, email, password })
 
+    // Generate tokens
     const accessToken = generateAccessToken(user._id)
     const refreshToken = generateRefreshToken(user._id)
 
+    // Save refresh token
     user.refreshToken = refreshToken
     await user.save({ validateBeforeSave: false })
 
-    sendWelcomeEmail(user).catch((err) =>
-      console.error('Welcome email failed:', err.message)
-    )
+    // Send welcome email
+    await sendEmail(user.email, welcomeTemplate(user.name))
 
     res.status(201).json({
       success: true,
@@ -76,6 +78,7 @@ export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body
 
+    // Check if user exists + get password
     const user = await User.findOne({ email }).select('+password')
     if (!user) {
       return res.status(401).json({
@@ -86,6 +89,7 @@ export const login = async (req, res, next) => {
       })
     }
 
+    // Check password
     const isMatch = await user.comparePassword(password)
     if (!isMatch) {
       return res.status(401).json({
@@ -96,9 +100,11 @@ export const login = async (req, res, next) => {
       })
     }
 
+    // Generate tokens
     const accessToken = generateAccessToken(user._id)
     const refreshToken = generateRefreshToken(user._id)
 
+    // Save refresh token
     user.refreshToken = refreshToken
     await user.save({ validateBeforeSave: false })
 
@@ -119,7 +125,14 @@ export const login = async (req, res, next) => {
       errors: []
     })
   } catch (error) {
-    next(error)
+    // next(error)
+     console.error("LOGIN ERROR:", error);
+
+  return res.status(500).json({
+    success: false,
+    message: error.message,
+    stack: error.stack
+  });
   }
 }
 
@@ -128,6 +141,7 @@ export const login = async (req, res, next) => {
 // @access  Private
 export const logout = async (req, res, next) => {
   try {
+    // Clear refresh token
     await User.findByIdAndUpdate(req.user.id, { refreshToken: null })
 
     res.status(200).json({
@@ -157,8 +171,10 @@ export const refreshToken = async (req, res, next) => {
       })
     }
 
+    // Verify refresh token
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET)
 
+    // Check if user exists + token matches
     const user = await User.findById(decoded.id).select('+refreshToken')
     if (!user || user.refreshToken !== refreshToken) {
       return res.status(401).json({
@@ -169,9 +185,11 @@ export const refreshToken = async (req, res, next) => {
       })
     }
 
+    // Generate new tokens
     const newAccessToken = generateAccessToken(user._id)
     const newRefreshToken = generateRefreshToken(user._id)
 
+    // Save new refresh token
     user.refreshToken = newRefreshToken
     await user.save({ validateBeforeSave: false })
 
@@ -206,17 +224,17 @@ export const forgotPassword = async (req, res, next) => {
       })
     }
 
+    // Generate reset token
     const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: '1h'
     })
 
     user.resetPasswordToken = resetToken
-    user.resetPasswordExpires = Date.now() + 3600000
+    user.resetPasswordExpires = Date.now() + 3600000 // 1 hour
     await user.save({ validateBeforeSave: false })
 
-    sendResetPasswordEmail(user, resetToken).catch((err) =>
-      console.error('Reset password email failed:', err.message)
-    )
+    // TODO: Send email with reset token (SendGrid)
+    await sendEmail(user.email, resetPasswordTemplate(resetToken))
 
     res.status(200).json({
       success: true,
@@ -228,7 +246,6 @@ export const forgotPassword = async (req, res, next) => {
     next(error)
   }
 }
-
 // @desc    Reset Password
 // @route   POST /api/auth/reset-password
 // @access  Public
@@ -236,10 +253,12 @@ export const resetPassword = async (req, res, next) => {
   try {
     const { resetToken, newPassword } = req.body
 
+    // Verify reset token
     const decoded = jwt.verify(resetToken, process.env.JWT_SECRET)
 
+    // Find user
     const user = await User.findById(decoded.id).select('+resetPasswordToken +resetPasswordExpires')
-
+    
     if (!user || user.resetPasswordToken !== resetToken) {
       return res.status(400).json({
         success: false,
@@ -249,6 +268,7 @@ export const resetPassword = async (req, res, next) => {
       })
     }
 
+    // Check if token expired
     if (user.resetPasswordExpires < Date.now()) {
       return res.status(400).json({
         success: false,
@@ -258,6 +278,7 @@ export const resetPassword = async (req, res, next) => {
       })
     }
 
+    // Update password
     user.password = newPassword
     user.resetPasswordToken = null
     user.resetPasswordExpires = null

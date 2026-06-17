@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Child from "../models/childModel.js";
+import Child from "../models/Child.js";
 import StorySession from "../models/storySessionModel.js";
 import QuizSubmission from "../models/quizSubmissionModel.js";
 import Gamification from "../models/gamificationModel.js";

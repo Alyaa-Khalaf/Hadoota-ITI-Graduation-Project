@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 import User from '../../models/User.js'
-import Child from '../../models/childModel.js'
+import Child from '../../models/Child.js'
 import Notification from '../../models/notificationModel.js'
 import StorySession from '../../models/storySessionModel.js'
 import { sendEmail, sendRawEmail } from './emailService.js'

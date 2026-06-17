@@ -1,6 +1,6 @@
 import express from 'express'
 import { body } from 'express-validator'
-import { protect } from '../middleware/authMiddleware.js'
+import authMiddleware from '../middleware/auth.js'
 import validate from '../middleware/validate.js'
 import {
   sendNotificationHandler,
@@ -14,11 +14,11 @@ import {
 
 const router = express.Router()
 
-router.get('/vapid-public-key', protect, getVapidKey)
+router.get('/vapid-public-key', authMiddleware, getVapidKey)
 
 router.post(
   '/send',
-  protect,
+  authMiddleware,
   [
     body('userId').notEmpty().withMessage('userId is required'),
     body('title').notEmpty().withMessage('title is required'),
@@ -30,14 +30,14 @@ router.post(
 
 router.put(
   '/settings',
-  protect,
+  authMiddleware,
   updateSettings
 )
 
-router.post('/subscribe', protect, subscribePush)
-router.delete('/subscribe', protect, unsubscribePush)
+router.post('/subscribe', authMiddleware, subscribePush)
+router.delete('/subscribe', authMiddleware, unsubscribePush)
 
-router.get('/:userId', protect, getNotifications)
-router.put('/:id/read', protect, markAsRead)
+router.get('/:userId', authMiddleware, getNotifications)
+router.put('/:id/read', authMiddleware, markAsRead)
 
 export default router

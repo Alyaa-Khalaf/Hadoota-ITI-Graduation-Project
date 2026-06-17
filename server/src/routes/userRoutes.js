@@ -6,11 +6,11 @@ import {
   deleteAccount,
   getSubscription,
 } from "../controllers/userController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import authMiddleware from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.use(protect);
+router.use(authMiddleware);
 
 router.get("/profile", getUserProfile);
 router.put("/profile", updateUserProfile);

@@ -1,172 +1,371 @@
-import Story from "../models/storyModel.js";
-import Favorite from "../models/favoriteModel.js";
-import { sendSuccess, sendError } from "../utils/apiResponse.js";
-import {
-  parsePagination,
-  buildPaginationMeta,
-  buildSearchQuery,
-  buildFilterQuery,
-  fetchStoriesWithSort,
-  getFavoriteStoryIds,
-  attachFavoriteFlag,
-} from "../services/storyService.js";
+import Story from '../models/Story.js'
+import Child from '../models/Child.js'
+import Personalization from '../models/Personalization.js' 
+import Progress from '../models/Progress.js'
+import { runNourhanStoryPipeline } from '../services/storyGenerationService.js'
+import { io } from '../index.js'
+import { getCachedStory, cacheStory } from '../config/redis.js'
 
-const validateSort = (sort) => {
-  const allowed = ["latest", "views", "favorites"];
-  return allowed.includes(sort) ? sort : "latest";
-};
-
-// GET /api/stories/search?q=...&childId=...
-export const searchStories = async (req, res) => {
+// Helper function لتحديث بيانات التخصيص تلقائياً بعد اكتمال الحدوتة الحقيقية
+const updateChildPatterns = async (childId, character, topic) => {
   try {
-    const { q, sort = "latest" } = req.query;
-    const { page, limit, skip } = parsePagination(req.query);
-
-    if (!q || !q.trim()) {
-      return sendError(res, 400, "Search query q is required");
-    }
-
-    const query = buildSearchQuery(q);
-    const { stories, total } = await fetchStoriesWithSort(query, {
-      sort: validateSort(sort),
-      skip,
-      limit,
-    });
-
-    const favoriteIds = await getFavoriteStoryIds(
-      req.child._id,
-      stories.map((story) => story._id)
+    // تحديث عداد الحواديت وإضافة الشخصية والموضوع للـ arrays بدون تكرار ($addToSet)
+    await Personalization.findOneAndUpdate(
+      { childId },
+      { 
+        $inc: { storiesListenedCount: 1 },
+        $addToSet: { 
+          favoriteCharacters: character, 
+          favoriteTopics: topic 
+        }
+      },
+      { upsert: true, new: true } // لو البروفايل مش موجود هيكاريته تلقائي
     );
-
-    return sendSuccess(res, 200, "Stories search completed successfully", {
-      stories: attachFavoriteFlag(stories, favoriteIds),
-      pagination: buildPaginationMeta(total, page, limit),
-    });
-  } catch (error) {
-    return sendError(res, 500, "Server error", [error.message]);
+    console.log(`🤖 Personalization Engine updated for child: ${childId}`);
+  } catch (err) {
+    console.error('❌ Failed to update personalization patterns:', err.message);
   }
 };
 
-// GET /api/stories/filter?character=...&topic=...&childId=...
-export const filterStories = async (req, res) => {
+// Generate new story
+export const generateStory = async (req, res, next) => {
   try {
-    const { character, topic, fromDate, toDate, sort = "latest" } = req.query;
-    const { page, limit, skip } = parsePagination(req.query);
+    const { childId, character, topic } = req.body
+    const userId = req.user.id || req.user._id
 
-    if (!character?.trim() && !topic?.trim() && !fromDate && !toDate) {
-      return sendError(
-        res,
-        400,
-        "At least one filter is required: character, topic, fromDate, or toDate"
-      );
+    // Verify user owns the child
+    const child = await Child.findById(childId)
+    if (!child) {
+      return res.status(404).json({
+        success: false,
+        message: 'الطفل غير موجود',
+        data: null,
+        errors: [{ field: 'childId', message: 'الطفل غير موجود' }]
+      })
     }
 
-    const query = buildFilterQuery({ character, topic, fromDate, toDate });
-    const { stories, total } = await fetchStoriesWithSort(query, {
-      sort: validateSort(sort),
-      skip,
-      limit,
-    });
-
-    const favoriteIds = await getFavoriteStoryIds(
-      req.child._id,
-      stories.map((story) => story._id)
-    );
-
-    return sendSuccess(res, 200, "Stories filtered successfully", {
-      stories: attachFavoriteFlag(stories, favoriteIds),
-      pagination: buildPaginationMeta(total, page, limit),
-    });
-  } catch (error) {
-    return sendError(res, 500, "Server error", [error.message]);
-  }
-};
-
-// GET /api/stories/:childId/favorites
-export const getFavoriteStories = async (req, res) => {
-  try {
-    const { page, limit, skip } = parsePagination(req.query);
-    const childId = req.child._id;
-
-    const [favorites, total] = await Promise.all([
-      Favorite.find({ childId })
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .populate("storyId")
-        .lean(),
-      Favorite.countDocuments({ childId }),
-    ]);
-
-    const stories = favorites
-      .filter((item) => item.storyId)
-      .map((item) => ({
-        ...item.storyId,
-        isFavorite: true,
-        favoritedAt: item.createdAt,
-      }));
-
-    return sendSuccess(res, 200, "Favorite stories fetched successfully", {
-      stories,
-      pagination: buildPaginationMeta(total, page, limit),
-    });
-  } catch (error) {
-    return sendError(res, 500, "Server error", [error.message]);
-  }
-};
-
-// POST /api/stories/:id/favorite
-export const addFavorite = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const childId = req.body.childId || req.query.childId;
-
-    if (!childId) {
-      return sendError(res, 400, "childId is required");
+    if (child.parentId.toString() !== userId.toString()) {
+      return res.status(401).json({
+        success: false,
+        message: 'غير مصرح لك بإنشاء حدوتة لهذا الطفل',
+        data: null,
+        errors: [{ field: 'childId', message: 'غير مصرح' }]
+      })
     }
 
-    const story = await Story.findById(id);
+    // 1. جلب داتا الـ Personalization لتمريرها للـ Orchestrator
+    let personalizationData = { isEngineActive: false };
+    const profile = await Personalization.findOne({ childId });
+    
+    // شرط الـ 3 حواديت: لا يتم التخصيص الفعلي إلا بعد سماع 3 حواديت حقيقية على الأقل
+    if (profile && profile.storiesListenedCount >= 3) {
+      personalizationData = {
+        favoriteCharacters: profile.favoriteCharacters,
+        favoriteTopics: profile.favoriteTopics,
+        preferredStoryLength: profile.preferredStoryLength,
+        vocabularyLevel: profile.vocabularyLevel,
+        isEngineActive: true
+      };
+    }
+
+    // 2. التحقق من الـ Redis cache أولاً لتوفير كوست الـ AI والوقت
+    const cached = await getCachedStory(childId, character, topic)
+    if (cached) {
+      const storyDoc = await Story.create({
+        childId, character, topic,
+        title: cached.title,
+        scenes: cached.scenes,
+        moralLesson: cached.moralLesson,
+        educationalValue: cached.educationalValue,
+        safetyCheck: cached.safetyCheck,
+        status: 'completed',
+        completedAt: new Date()
+      })
+
+      // الكاش بيرجع الحدوتة فوراً للفرونت إيند بدون زيادة عداد الـ Personalization
+      return res.status(201).json({
+        success: true,
+        message: 'تم جلب الحدوتة من الكاش ⚡',
+        data: storyDoc,
+        errors: []
+      })
+    }
+
+    // Create story document with generating status
+    const storyDoc = await Story.create({
+      childId,
+      character,
+      topic,
+      title: `حدوتة عن ${topic}`,
+      status: 'generating',
+      safetyCheck: {
+        safe: true,
+        flagged: false,
+        reason: ''
+      }
+    })
+
+    console.log(`📖 Starting story generation for story: ${storyDoc._id}`)
+
+    // Emit initial event via Socket.io
+    const socketId = req.body.socketId || null
+    if (socketId && io) {
+      io.to(socketId).emit('story:generating', {
+        storyId: storyDoc._id,
+        stage: 'starting',
+        progress: 5
+      })
+    }
+
+    // Nourhan pipeline: Gemini + ElevenLabs + GridFS (background, keeps socket events)
+    runNourhanStoryPipeline({
+      storyDoc,
+      childId,
+      parentId: userId,
+      character,
+      topic,
+      childAge: child.age,
+      sceneCount: 2,
+    })
+      .then(async (savedStory) => {
+        console.log(`✅ Story saved: ${savedStory._id}`)
+
+        await updateChildPatterns(childId, character, topic)
+
+        Progress.findOneAndUpdate(
+          { childId },
+          { $inc: { storiesCompleted: 1 } }
+        ).catch((err) => console.error('Failed to update storiesCompleted:', err))
+
+        cacheStory(childId, character, topic, {
+          title: savedStory.title,
+          scenes: savedStory.scenes,
+          moralLesson: savedStory.moralLesson,
+          educationalValue: savedStory.educationalValue,
+          safetyCheck: savedStory.safetyCheck,
+        }).catch(() => {})
+
+        if (socketId && io) {
+          io.to(socketId).emit('story:completed', {
+            storyId: savedStory._id,
+            story: savedStory,
+          })
+        }
+      })
+      .catch(error => {
+        console.error('❌ Story generation error:', error)
+        storyDoc.status = 'failed'
+        storyDoc.save().then(() => {
+          if (socketId && io) {
+            io.to(socketId).emit('story:error', {
+              storyId: storyDoc._id,
+              message: error.message || 'حدث خطأ في توليد الحدوتة'
+            })
+          }
+        })
+      })
+
+    // Return immediately with story ID and generating status
+    res.status(201).json({
+      success: true,
+      message: 'جاري توليد الحدوتة...',
+      data: {
+        _id: storyDoc._id,
+        childId,
+        character,
+        topic,
+        status: 'generating',
+        createdAt: storyDoc.createdAt
+      },
+      errors: []
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// Record story choice
+export const recordStoryChoice = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { choice } = req.body
+    const userId = req.user.id || req.user._id
+
+    const story = await Story.findById(id).populate('childId')
     if (!story) {
-      return sendError(res, 404, "Story not found");
+      return res.status(404).json({
+        success: false,
+        message: 'الحدوتة غير موجودة',
+        data: null,
+        errors: [{ field: 'id', message: 'الحدوتة غير موجودة' }]
+      })
     }
 
-    const existing = await Favorite.findOne({ childId, storyId: id });
-    if (existing) {
-      return sendError(res, 400, "Story is already in favorites");
+    if (story.childId.parentId.toString() !== userId.toString()) {
+      return res.status(401).json({
+        success: false,
+        message: 'غير مصرح للوصول لهذه الحدوتة',
+        data: null,
+        errors: []
+      })
     }
 
-    const favorite = await Favorite.create({ childId, storyId: id });
+    if (!story.userChoices) {
+      story.userChoices = []
+    }
+    story.userChoices.push({
+      sceneOrder: choice,
+      timestamp: new Date()
+    })
+    await story.save()
 
-    return sendSuccess(res, 201, "Story added to favorites", {
-      favoriteId: favorite._id,
-      storyId: id,
-      childId,
-    });
+    res.status(200).json({
+      success: true,
+      message: 'تم تسجيل الاختيار',
+      data: { storyId: story._id, choice },
+      errors: []
+    })
   } catch (error) {
-    return sendError(res, 500, "Server error", [error.message]);
+    next(error)
   }
-};
+}
 
-// DELETE /api/stories/:id/favorite
-export const removeFavorite = async (req, res) => {
+// Get story history for child
+export const getStoryHistory = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const childId = req.query.childId || req.body.childId;
+    const { childId } = req.params
+    const { page = 1, limit = 10, character, topic } = req.query
+    const userId = req.user.id || req.user._id
 
-    if (!childId) {
-      return sendError(res, 400, "childId is required");
+    const child = await Child.findById(childId)
+    if (!child) {
+      return res.status(404).json({
+        success: false,
+        message: 'الطفل غير موجود',
+        data: null,
+        errors: [{ field: 'childId', message: 'الطفل غير موجود' }]
+      })
     }
 
-    const favorite = await Favorite.findOneAndDelete({ childId, storyId: id });
-    if (!favorite) {
-      return sendError(res, 404, "Favorite not found");
+    if (child.parentId.toString() !== userId.toString()) {
+      return res.status(401).json({
+        success: false,
+        message: 'غير مصرح للوصول لبيانات هذا الطفل',
+        data: null,
+        errors: []
+      })
     }
 
-    return sendSuccess(res, 200, "Story removed from favorites", {
-      storyId: id,
-      childId,
-    });
+    const query = { childId, status: 'completed' }
+    if (character) query.character = character
+    if (topic) query.topic = new RegExp(topic, 'i')
+
+    const pageNum = parseInt(page)
+    const limitNum = parseInt(limit)
+    const skip = (pageNum - 1) * limitNum
+
+    const stories = await Story.find(query)
+      .sort({ completedAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
+      .select('title character topic moralLesson status isFavorite createdAt completedAt educationalValue safetyCheck')
+
+    const total = await Story.countDocuments(query)
+
+    res.status(200).json({
+      success: true,
+      message: 'تم الحصول على سجل الحدوتات',
+      data: {
+        stories,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          pages: Math.ceil(total / limitNum)
+        }
+      },
+      errors: []
+    })
   } catch (error) {
-    return sendError(res, 500, "Server error", [error.message]);
+    next(error)
   }
-};
+}
+
+// Get single story
+export const getSingleStory = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const userId = req.user.id || req.user._id
+
+    const story = await Story.findById(id).populate('childId')
+    if (!story) {
+      return res.status(404).json({
+        success: false,
+        message: 'الحدوتة غير موجودة',
+        data: null,
+        errors: [{ field: 'id', message: 'الحدوتة غير موجودة' }]
+      })
+    }
+
+    if (story.childId.parentId.toString() !== userId.toString()) {
+      return res.status(401).json({
+        success: false,
+        message: 'غير مصرح للوصول لهذه الحدوتة',
+        data: null,
+        errors: []
+      })
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'تم الحصول على الحدوتة',
+      data: story,
+      errors: []
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// Update story
+export const updateStory = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { isFavorite } = req.body
+    const userId = req.user.id || req.user._id
+
+    const story = await Story.findById(id).populate('childId')
+    if (!story) {
+      return res.status(404).json({
+        success: false,
+        message: 'الحدوتة غير موجودة',
+        data: null,
+        errors: [{ field: 'id', message: 'الحدوتة غير موجودة' }]
+      })
+    }
+
+    if (story.childId.parentId.toString() !== userId.toString()) {
+      return res.status(401).json({
+        success: false,
+        message: 'غير مصرح لتحديث هذه الحدوتة',
+        data: null,
+        errors: []
+      })
+    }
+
+    if (isFavorite !== undefined) {
+      story.isFavorite = isFavorite
+    }
+
+    await story.save()
+
+    res.status(200).json({
+      success: true,
+      message: 'تم تحديث الحدوتة',
+      data: story,
+      errors: []
+    })
+  } catch (error) {
+    next(error)
+  }
+}

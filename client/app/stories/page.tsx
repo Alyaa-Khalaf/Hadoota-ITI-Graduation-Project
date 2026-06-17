@@ -1,51 +1,65 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { useAuth } from '@/hooks/useAuth'
-import { ROUTES } from '@/utils/constants'
+import { useState } from "react";
+import { useStorySocket } from "@/hooks/useStorySocket";
+import StoryPlayer from "@/components/story-player/StoryPlayer";
+import { useStoryInput } from "@/hooks/useStoryInput";
 
 export default function StoriesPage() {
-  const { user, isHydrated, isLoading } = useAuth()
+  const { childId, character, topic } = useStoryInput();
 
-  if (!isHydrated || isLoading) {
+  const {
+    generateStory,
+    isGenerating,
+    scenes,
+    storyTitle,
+    error,
+  } = useStorySocket();
+
+  const [started, setStarted] = useState(false);
+
+  const handleStart = async () => {
+    if (!childId || !character || !topic) {
+      return;
+    }
+
+    setStarted(true);
+    await generateStory(childId, character, topic);
+  };
+
+  const canStart = Boolean(childId && character && topic);
+
+  if (!started) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">جاري التحميل...</p>
+      <div className="text-center p-10">
+        {!canStart && (
+          <p className="text-red-500 mb-4">
+            تأكدي من اختيار الطفل والشخصية والموضوع قبل البدء
+          </p>
+        )}
+        <button
+          onClick={handleStart}
+          disabled={!canStart}
+          className="bg-blue-600 text-white px-6 py-3 rounded disabled:opacity-50"
+        >
+          ابدأ الحدوتة
+        </button>
+
+        {error && <p className="text-red-500 mt-4">{error}</p>}
       </div>
-    )
+    );
   }
 
-  if (!user) {
+  if (isGenerating || !scenes) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">يجب تسجيل الدخول أولاً</h1>
-          <Link href={ROUTES.LOGIN} className="text-primary hover:underline">
-            اذهب إلى صفحة الدخول
-          </Link>
-        </div>
+      <div className="text-center p-10">
+        ✨ جاري توليد الحدوتة...
+        {error && <p className="text-red-500 mt-4">{error}</p>}
       </div>
-    )
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <h1 className="text-4xl font-bold">القصص</h1>
-        <Link
-          href={ROUTES.STORIES_CREATE}
-          className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark text-center"
-        >
-          ✨ إنشاء حدوتة جديدة
-        </Link>
-      </div>
-
-      <div className="bg-white rounded-lg shadow p-8 text-center text-gray-600">
-        <p className="mb-4">ابدأ بإنشاء حدوتة تفاعلية مخصصة لطفلك.</p>
-        <Link href={ROUTES.STORIES_CREATE} className="text-primary hover:underline font-medium">
-          اذهب إلى صفحة الإنشاء
-        </Link>
-      </div>
-    </div>
-  )
+    <StoryPlayer scenes={scenes} title={storyTitle} />
+  );
 }
