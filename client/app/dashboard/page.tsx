@@ -5,7 +5,15 @@ import { ROUTES } from '@/utils/constants'
 import Link from 'next/link'
 
 export default function DashboardPage() {
-  const { user } = useAuth()
+  const { user, isHydrated, isLoading } = useAuth()
+
+  if (!isHydrated || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600">جاري التحميل...</p>
+      </div>
+    )
+  }
 
   if (!user) {
     return (
@@ -46,14 +54,17 @@ export default function DashboardPage() {
         <h2 className="text-2xl font-semibold mb-4">الإجراءات السريعة</h2>
         <div className="flex gap-4 flex-wrap">
           <Link
-            href={ROUTES.STORIES}
+            href={ROUTES.STORIES_CREATE}
             className="px-6 py-2 bg-primary text-white rounded hover:bg-primary-dark"
+          >
+            إنشاء حدوتة
+          </Link>
+          <Link
+            href={ROUTES.STORIES}
+            className="px-6 py-2 border-2 border-primary text-primary rounded hover:bg-primary hover:text-white"
           >
             استكشف القصص
           </Link>
-          <button className="px-6 py-2 border-2 border-primary text-primary rounded hover:bg-primary hover:text-white">
-            تعديل الملف الشخصي
-          </button>
         </div>
       </div>
     </div>

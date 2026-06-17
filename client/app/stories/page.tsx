@@ -1,11 +1,19 @@
 'use client'
 
+import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { ROUTES } from '@/utils/constants'
-import Link from 'next/link'
 
 export default function StoriesPage() {
-  const { user } = useAuth()
+  const { user, isHydrated, isLoading } = useAuth()
+
+  if (!isHydrated || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600">جاري التحميل...</p>
+      </div>
+    )
+  }
 
   if (!user) {
     return (
@@ -22,16 +30,21 @@ export default function StoriesPage() {
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <h1 className="text-4xl font-bold mb-8">القصص</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Placeholder for stories */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-2">قصة 1</h2>
-          <p className="text-gray-600 mb-4">وصف القصة</p>
-          <button className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">
-            اقرأ القصة
-          </button>
-        </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <h1 className="text-4xl font-bold">القصص</h1>
+        <Link
+          href={ROUTES.STORIES_CREATE}
+          className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark text-center"
+        >
+          ✨ إنشاء حدوتة جديدة
+        </Link>
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-8 text-center text-gray-600">
+        <p className="mb-4">ابدأ بإنشاء حدوتة تفاعلية مخصصة لطفلك.</p>
+        <Link href={ROUTES.STORIES_CREATE} className="text-primary hover:underline font-medium">
+          اذهب إلى صفحة الإنشاء
+        </Link>
       </div>
     </div>
   )

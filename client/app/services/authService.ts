@@ -1,25 +1,57 @@
 import apiClient from '@/utils/api'
-import { User, ApiResponse } from '@/types'
+import { User, AuthPayload, ApiResponse } from '@/types'
+import { mapUser } from '@/utils/mappers'
 
 export const authService = {
-  login: async (email: string, password: string): Promise<ApiResponse<{ user: User; token: string }>> => {
+  login: async (email: string, password: string): Promise<ApiResponse<AuthPayload>> => {
     const response = await apiClient.post('/auth/login', { email, password })
-    return response.data
+    const body = response.data as ApiResponse<AuthPayload & { user: User & { _id?: string } }>
+    if (body.success && body.data) {
+      return {
+        ...body,
+        data: {
+          accessToken: body.data.accessToken,
+          refreshToken: body.data.refreshToken,
+          user: mapUser(body.data.user),
+        },
+      }
+    }
+    return body
   },
 
-  register: async (name: string, email: string, password: string): Promise<ApiResponse<User>> => {
+  register: async (name: string, email: string, password: string): Promise<ApiResponse<AuthPayload>> => {
     const response = await apiClient.post('/auth/register', { name, email, password })
-    return response.data
+    const body = response.data as ApiResponse<AuthPayload & { user: User & { _id?: string } }>
+    if (body.success && body.data) {
+      return {
+        ...body,
+        data: {
+          accessToken: body.data.accessToken,
+          refreshToken: body.data.refreshToken,
+          user: mapUser(body.data.user),
+        },
+      }
+    }
+    return body
   },
 
   logout: async (): Promise<void> => {
+    try {
+      await apiClient.post('/auth/logout')
+    } catch {
+      // Clear local session even if server logout fails
+    }
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token')
     }
   },
 
-  getCurrentUser: async (): Promise<ApiResponse<User>> => {
-    const response = await apiClient.get('/auth/me')
-    return response.data
+  getProfile: async (): Promise<ApiResponse<User>> => {
+    const response = await apiClient.get('/users/profile')
+    const body = response.data as ApiResponse<User & { _id?: string }>
+    if (body.success && body.data) {
+      return { ...body, data: mapUser(body.data) }
+    }
+    return body as ApiResponse<User>
   },
 }
