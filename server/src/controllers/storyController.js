@@ -148,7 +148,7 @@ export const generateStory = async (req, res, next) => {
         if (socketId && io) {
           io.to(socketId).emit('story:completed', {
             storyId: savedStory._id,
-            story: savedStory,
+            story: savedStory.toObject(),
           })
         }
       })

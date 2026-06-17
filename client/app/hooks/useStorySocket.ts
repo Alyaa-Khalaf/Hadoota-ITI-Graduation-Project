@@ -3,25 +3,18 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/context/AuthContext";
-import { mapScenesWithAuthMedia } from "@/services/mediaService";
+import { API_ORIGIN } from "@/lib/apiConfig";
+import { mapScenesWithAuthMedia, type MappedStoryScene } from "@/services/mediaService";
 
 const SOCKET_URL =
-  process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000";
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, "") ||
-  "http://localhost:5000";
-
-interface StoryScene {
-  id: number;
-  image: string;
-  text: string;
-}
+  process.env.NEXT_PUBLIC_SOCKET_URL || API_ORIGIN;
+const API_BASE_URL = API_ORIGIN;
 
 export function useStorySocket() {
   const socketRef = useRef<Socket | null>(null);
   const { accessToken } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [scenes, setScenes] = useState<StoryScene[] | null>(null);
+  const [scenes, setScenes] = useState<MappedStoryScene[] | null>(null);
   const [storyTitle, setStoryTitle] = useState("");
   const [error, setError] = useState("");
 
@@ -34,6 +27,7 @@ export function useStorySocket() {
         text: string;
         imageUrl: string;
         audioUrl?: string;
+        choices?: Array<{ text: string; nextScene: number }>;
       }>;
     }) => {
       if (!accessToken) return;

@@ -19,8 +19,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { API_ORIGIN } from "@/lib/apiConfig";
+
+const API = API_ORIGIN;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);

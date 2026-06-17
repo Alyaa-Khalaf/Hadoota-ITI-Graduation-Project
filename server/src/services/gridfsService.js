@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import { GridFSBucket, ObjectId } from 'mongodb'
 
 const BUCKET_NAME = 'hadootaMedia'
 
@@ -10,10 +9,13 @@ const getBucket = () => {
     if (!mongoose.connection.db) {
       throw new Error('MongoDB not connected')
     }
+    const { GridFSBucket } = mongoose.mongo
     bucket = new GridFSBucket(mongoose.connection.db, { bucketName: BUCKET_NAME })
   }
   return bucket
 }
+
+const toObjectId = (fileId) => new mongoose.Types.ObjectId(fileId)
 
 export const uploadBuffer = (buffer, filename, metadata = {}) => {
   return new Promise((resolve, reject) => {
@@ -25,16 +27,16 @@ export const uploadBuffer = (buffer, filename, metadata = {}) => {
 }
 
 export const openDownloadStream = (fileId) => {
-  return getBucket().openDownloadStream(new ObjectId(fileId))
+  return getBucket().openDownloadStream(toObjectId(fileId))
 }
 
 export const getFileMetadata = async (fileId) => {
   const files = await getBucket()
-    .find({ _id: new ObjectId(fileId) })
+    .find({ _id: toObjectId(fileId) })
     .toArray()
   return files[0] || null
 }
 
 export const deleteFile = async (fileId) => {
-  await getBucket().delete(new ObjectId(fileId))
+  await getBucket().delete(toObjectId(fileId))
 }
