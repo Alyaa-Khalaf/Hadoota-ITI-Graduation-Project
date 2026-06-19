@@ -26,8 +26,14 @@ export default function RegisterPage() {
       alert('كلمات المرور غير متطابقة')
       return
     }
-    await register(formData.name, formData.email, formData.password)
-    router.push(ROUTES.LOGIN)
+    if (formData.password.length < 8) {
+      alert('كلمة المرور يجب أن تكون 8 أحرف على الأقل')
+      return
+    }
+    const success = await register(formData.name, formData.email, formData.password)
+    if (success) {
+      router.push(ROUTES.DASHBOARD)
+    }
   }
 
   return (
@@ -74,6 +80,7 @@ export default function RegisterPage() {
               value={formData.password}
               onChange={handleChange}
               required
+              minLength={8}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -86,6 +93,7 @@ export default function RegisterPage() {
               value={formData.confirmPassword}
               onChange={handleChange}
               required
+              minLength={8}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>

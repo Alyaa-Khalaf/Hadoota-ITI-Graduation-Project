@@ -3,75 +3,79 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/context/AuthContext";
+import { API_ORIGIN } from "@/lib/apiConfig";
+import { mapScenesWithAuthMedia, type MappedStoryScene } from "@/services/mediaService";
 
-const API_BASE_URL = "http://localhost:5000";
-
-interface BackendScene {
-  sceneIndex: number;
-  text: string;
-  imageUrl: string;
-  audioUrl?: string;
-}
-
-interface StoryScene {
-  id: number;
-  image: string;
-  text: string;
-}
-
-function map(scene: BackendScene): StoryScene {
-  return {
-    id: scene.sceneIndex,
-    image: scene.imageUrl,
-    text: scene.text,
-  };
-}
+const SOCKET_URL =
+  process.env.NEXT_PUBLIC_SOCKET_URL || API_ORIGIN;
+const API_BASE_URL = API_ORIGIN;
 
 export function useStorySocket() {
   const socketRef = useRef<Socket | null>(null);
-   const { accessToken } = useAuth();
+  const { accessToken } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [scenes, setScenes] = useState<StoryScene[] | null>(null);
+  const [scenes, setScenes] = useState<MappedStoryScene[] | null>(null);
   const [storyTitle, setStoryTitle] = useState("");
   const [error, setError] = useState("");
 
-  // init socket
+  const applyStoryPayload = useCallback(
+    async (story: {
+      title: string;
+      scenes: Array<{
+        sceneIndex?: number;
+        order?: number;
+        text: string;
+        imageUrl: string;
+        audioUrl?: string;
+        choices?: Array<{ text: string; nextScene: number }>;
+      }>;
+    }) => {
+      if (!accessToken) return;
+
+      const sorted = [...story.scenes].sort(
+        (a, b) => (a.sceneIndex ?? a.order ?? 0) - (b.sceneIndex ?? b.order ?? 0)
+      );
+
+      const mapped = await mapScenesWithAuthMedia(sorted, accessToken);
+      setScenes(mapped);
+      setStoryTitle(story.title);
+      setIsGenerating(false);
+    },
+    [accessToken]
+  );
+
   useEffect(() => {
-  if (!accessToken) return;
+    if (!accessToken) return;
 
-  const socket = io(API_BASE_URL, {
-    auth: { token: accessToken },
-  });
+    const socket = io(SOCKET_URL, {
+      auth: { token: accessToken },
+    });
 
-  socketRef.current = socket;
+    socketRef.current = socket;
 
-  socket.on("story:generating", () => {
-    setIsGenerating(true);
-  });
+    socket.on("story:generating", () => {
+      setIsGenerating(true);
+    });
 
-  socket.on("story:completed", (payload: any) => {
-    const story = payload.story;
+    socket.on("story:completed", async (payload: { story: Parameters<typeof applyStoryPayload>[0] }) => {
+      try {
+        await applyStoryPayload(payload.story);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "تعذر تحميل الوسائط");
+        setIsGenerating(false);
+      }
+    });
 
-    const mapped = story.scenes
-      .sort((a: any, b: any) => a.sceneIndex - b.sceneIndex)
-      .map(map);
+    socket.on("story:error", (err: { message?: string }) => {
+      setError(err.message || "Error");
+      setIsGenerating(false);
+    });
 
-    setScenes(mapped);
-    setStoryTitle(story.title);
-    setIsGenerating(false);
-  });
+    return () => {
+      socket.disconnect();
+    };
+  }, [accessToken, applyStoryPayload]);
 
-  socket.on("story:error", (err) => {
-    setError(err.message || "Error");
-    setIsGenerating(false);
-  });
-
-  return () => {
-    socket.disconnect();
-  };
-}, [accessToken]); // 👈 مهم جدًا
-
-  // generate story
   const generateStory = useCallback(
     async (childId: string, character: string, topic: string) => {
       setError("");
@@ -85,22 +89,20 @@ export function useStorySocket() {
       }
 
       try {
-        const res = await fetch(
-          `${API_BASE_URL}/api/stories/generate`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({
-              childId,
-              character,
-              topic,
-              socketId: socketRef.current?.id,
-            }),
-          }
-        );
+        const res = await fetch(`${API_BASE_URL}/api/stories/generate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            childId,
+            character,
+            topic,
+            sceneCount: 2,
+            socketId: socketRef.current?.id,
+          }),
+        });
 
         const data = await res.json();
 
@@ -108,13 +110,16 @@ export function useStorySocket() {
           throw new Error(data.message || "فشل في توليد الحدوتة");
         }
 
-        // Response only confirms the generate request. Final story arrives via socket events.
+        // Cached stories return the full story immediately
+        if (data.data?.scenes?.length && data.data.status === "completed") {
+          await applyStoryPayload(data.data);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error");
         setIsGenerating(false);
       }
     },
-    [accessToken]
+    [accessToken, applyStoryPayload]
   );
 
   return {

@@ -6,6 +6,7 @@ import Input from "../ui/Input";
 import Button from "../ui/Button";
 import SocialLogin from "./SocialLogin";
 import { useAuth } from "@/context/AuthContext";
+import { API_ORIGIN } from "@/lib/apiConfig";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function RegisterForm() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/auth/register`,
+        `${API_ORIGIN}/api/auth/register`,
         {
           method: "POST",
           headers: {

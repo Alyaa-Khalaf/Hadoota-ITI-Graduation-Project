@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useState } from "react";
 import { useStorySocket } from "@/hooks/useStorySocket";
 import StoryPlayer from "@/components/story-player/StoryPlayer";
 import { useStoryInput } from "@/hooks/useStoryInput";
 
 export default function StoriesPage() {
-  const { accessToken } = useAuth();
-  const { childId, childName, childAge, character, topic } = useStoryInput();
+  const { childId, character, topic } = useStoryInput();
 
   const {
     generateStory,
@@ -21,21 +19,28 @@ export default function StoriesPage() {
   const [started, setStarted] = useState(false);
 
   const handleStart = async () => {
-    setStarted(true);
+    if (!childId || !character || !topic) {
+      return;
+    }
 
-    await generateStory(
-      childId,
-      character,
-      topic
-    );
+    setStarted(true);
+    await generateStory(childId, character, topic);
   };
+
+  const canStart = Boolean(childId && character && topic);
 
   if (!started) {
     return (
       <div className="text-center p-10">
+        {!canStart && (
+          <p className="text-red-500 mb-4">
+            تأكدي من اختيار الطفل والشخصية والموضوع قبل البدء
+          </p>
+        )}
         <button
           onClick={handleStart}
-          className="bg-blue-600 text-white px-6 py-3 rounded"
+          disabled={!canStart}
+          className="bg-blue-600 text-white px-6 py-3 rounded disabled:opacity-50"
         >
           ابدأ الحدوتة
         </button>

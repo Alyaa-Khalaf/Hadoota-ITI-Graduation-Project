@@ -1,16 +1,16 @@
-import dotenv from "dotenv";
-dotenv.config();
+import dotenv from 'dotenv'
+dotenv.config()
 
-<<<<<<< HEAD
-import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import morgan from "morgan";
-import cookieParser from "cookie-parser";
-import { createServer } from "http";
-import { Server } from "socket.io";
-=======
-// استيراد الـ Routes الكاملة من كل الفروع المدمجة بسلام
+import express from 'express'
+import cors from 'cors'
+import helmet from 'helmet'
+import morgan from 'morgan'
+import cookieParser from 'cookie-parser'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
+
+import connectDB from './config/db.js'
+
 import authRoutes from './routes/auth.routes.js'
 import userRoutes from './routes/userRoutes.js'
 import childRoutes from './routes/child.routes.js'
@@ -24,57 +24,41 @@ import paymentRoutes from './routes/payment.routes.js'
 import schoolRoutes from './routes/school.routes.js'
 import adminRoutes from './routes/admin.routes.js'
 import personalizationRoutes from './routes/personalizationRoutes.js'
->>>>>>> a0d726d0c1c5b1d6afa70f754e8193491ccb6945
+import mediaRoutes from './routes/mediaRoutes.js'
+import notificationRoutes from './routes/notificationRoutes.js'
 
-import connectDB from "./config/db.js";
+import errorHandler from './middleware/errorHandler.js'
+import notFound from './middleware/notFound.js'
+import { generalLimiter } from './middleware/rateLimiter.js'
+import { socketAuthMiddleware } from './middleware/socketAuth.js'
+import { startNotificationJobs } from './services/notifications/jobs/notificationJobs.js'
 
-// Routes
-import authRoutes from "./routes/auth.routes.js";
-import userRoutes from "./routes/userRoutes.js";
-import childRoutes from "./routes/child.routes.js";
-import quizRoutes from "./routes/quizRoutes.js";
-import gamificationRoutes from "./routes/gamificationRoutes.js";
-import storyRoutes from "./routes/storyRoutes.js";
-import progressRoutes from "./routes/progress.routes.js";
-import schoolRoutes from "./routes/school.routes.js";
-import adminRoutes from "./routes/admin.routes.js";
+import Child from './models/Child.js'
 
-// Middlewares
-import errorHandler from "./middleware/errorHandler.js";
-import notFound from "./middleware/notFound.js";
-import { generalLimiter } from "./middleware/rateLimiter.js";
-import { socketAuthMiddleware } from "./middleware/socketAuth.js";
+const app = express()
+const httpServer = createServer(app)
 
-// Models
-import Child from "./models/Child.js";
-
-const app = express();
-const httpServer = createServer(app);
-
-// Socket.IO
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
-    methods: ["GET", "POST"],
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    methods: ['GET', 'POST'],
   },
-});
+})
 
-// =============== MIDDLEWARES ===============
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
     credentials: true,
   })
-);
+)
 
-<<<<<<< HEAD
-app.use(helmet());
-app.use(morgan("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-=======
-// =============== GLOBAL ROUTES ===============
+app.use(helmet())
+app.use(morgan('dev'))
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser())
+app.use('/api', generalLimiter)
+
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/children', childRoutes)
@@ -88,120 +72,96 @@ app.use('/api/payments', paymentRoutes)
 app.use('/api/schools', schoolRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/personalization', personalizationRoutes)
->>>>>>> a0d726d0c1c5b1d6afa70f754e8193491ccb6945
+app.use('/api/media', mediaRoutes)
+app.use('/api/notifications', notificationRoutes)
 
-app.use("/api", generalLimiter);
-
-// =============== ROUTES ===============
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/children", childRoutes);
-app.use("/api/quiz", quizRoutes);
-app.use("/api/gamification", gamificationRoutes);
-app.use("/api/stories", storyRoutes);
-app.use("/api/progress", progressRoutes);
-app.use("/api/schools", schoolRoutes);
-app.use("/api/admin", adminRoutes);
-
-// Health Check
-app.get("/api/health", (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({
     success: true,
-    message: "Server is running 🚀",
-  });
-});
+    message: 'Server is running 🚀',
+  })
+})
 
-// =============== SOCKET.IO ===============
-io.use(socketAuthMiddleware);
+io.use(socketAuthMiddleware)
 
-io.on("connection", (socket) => {
-  const userId = socket.data.userId;
+io.on('connection', (socket) => {
+  const userId = socket.data.userId
 
-  console.log(`🔌 Client connected: ${socket.id} (User: ${userId})`);
+  console.log(`🔌 Client connected: ${socket.id} (User: ${userId})`)
 
-  socket.data.rooms = new Set();
+  socket.data.rooms = new Set()
 
-  // Join child room
-  socket.on("join:child", async ({ childId }) => {
+  socket.on('join:child', async ({ childId }) => {
     try {
       if (!childId) {
-        return socket.emit("error", { message: "childId is required" });
+        return socket.emit('error', { message: 'childId is required' })
       }
 
-      const child = await Child.findById(childId);
+      const child = await Child.findById(childId)
 
       if (!child) {
-        return socket.emit("error", { message: "Child not found" });
+        return socket.emit('error', { message: 'Child not found' })
       }
 
       if (child.parentId.toString() !== userId.toString()) {
-        return socket.emit("error", {
-          message: "Unauthorized access",
-        });
+        return socket.emit('error', { message: 'Unauthorized access' })
       }
 
-      const room = `child:${childId}`;
-      socket.join(room);
-      socket.data.rooms.add(room);
-      socket.data.currentChildId = childId;
+      const room = `child:${childId}`
+      socket.join(room)
+      socket.data.rooms.add(room)
+      socket.data.currentChildId = childId
 
-      socket.emit("room:joined", { childId, room });
+      socket.emit('room:joined', { childId, room })
     } catch (err) {
-      socket.emit("error", { message: err.message });
+      socket.emit('error', { message: err.message })
     }
-  });
+  })
 
-  // Leave child room
-  socket.on("leave:child", ({ childId }) => {
-    const room = `child:${childId}`;
-    socket.leave(room);
-    socket.data.rooms.delete(room);
+  socket.on('leave:child', ({ childId }) => {
+    const room = `child:${childId}`
+    socket.leave(room)
+    socket.data.rooms.delete(room)
 
     if (socket.data.currentChildId === childId) {
-      delete socket.data.currentChildId;
+      delete socket.data.currentChildId
     }
 
-    socket.emit("room:left", { childId });
-  });
+    socket.emit('room:left', { childId })
+  })
 
-  // Story events
-  socket.on("story:subscribe", (storyId) => {
-    const room = `story:${storyId}`;
-    socket.join(room);
-    socket.data.rooms.add(room);
-  });
+  socket.on('story:subscribe', (storyId) => {
+    const room = `story:${storyId}`
+    socket.join(room)
+    socket.data.rooms.add(room)
+  })
 
-  socket.on("story:unsubscribe", (storyId) => {
-    const room = `story:${storyId}`;
-    socket.leave(room);
-    socket.data.rooms.delete(room);
-  });
+  socket.on('story:unsubscribe', (storyId) => {
+    const room = `story:${storyId}`
+    socket.leave(room)
+    socket.data.rooms.delete(room)
+  })
 
-  socket.on("disconnect", () => {
-    console.log(`❌ Disconnected: ${socket.id}`);
-  });
-});
+  socket.on('disconnect', () => {
+    console.log(`❌ Disconnected: ${socket.id}`)
+  })
+})
 
-// =============== ERROR HANDLERS ===============
-app.use(notFound);
-app.use(errorHandler);
+app.use(notFound)
+app.use(errorHandler)
 
-// =============== START SERVER ===============
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000
 
 connectDB()
   .then(() => {
+    startNotificationJobs()
     httpServer.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
+      console.log(`🚀 Server running on port ${PORT}`)
+    })
   })
   .catch((err) => {
-    console.error("❌ Database connection failed:", err.message);
-    process.exit(1);
-  });
+    console.error('❌ Database connection failed:', err.message)
+    process.exit(1)
+  })
 
-<<<<<<< HEAD
-export { io };
-=======
 export { io }
->>>>>>> a0d726d0c1c5b1d6afa70f754e8193491ccb6945

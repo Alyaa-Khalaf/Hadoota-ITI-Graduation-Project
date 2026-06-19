@@ -2,7 +2,7 @@ import Story from '../models/Story.js'
 import Child from '../models/Child.js'
 import Personalization from '../models/Personalization.js' 
 import Progress from '../models/Progress.js'
-import { orchestrateStoryGeneration } from '../services/ai/orchestrator.js'
+import { runNourhanStoryPipeline } from '../services/storyGenerationService.js'
 import { io } from '../index.js'
 import { getCachedStory, cacheStory } from '../config/redis.js'
 
@@ -117,64 +117,38 @@ export const generateStory = async (req, res, next) => {
       })
     }
 
-    // Run orchestration in background
-    orchestrateStoryGeneration({
+    // Nourhan pipeline: Gemini + ElevenLabs + GridFS (background, keeps socket events)
+    runNourhanStoryPipeline({
+      storyDoc,
+      childId,
+      parentId: userId,
       character,
       topic,
       childAge: child.age,
-      childName: child.name,
-      socketId,
-      childId,  
-      personalizationData 
+      sceneCount: 2,
     })
-      .then(enrichedStory => {
-        storyDoc.title = enrichedStory.title
-        storyDoc.scenes = enrichedStory.scenes
-        storyDoc.moralLesson = enrichedStory.moralLesson
-        storyDoc.educationalValue = enrichedStory.educationalValue
-        storyDoc.safetyCheck = enrichedStory.safetyCheck
+      .then(async (savedStory) => {
+        console.log(`✅ Story saved: ${savedStory._id}`)
 
-        if (!enrichedStory.safetyCheck.safe) {
-          storyDoc.status = 'failed'
-          storyDoc.save().then(() => {
-            if (socketId && io) {
-              io.to(socketId).emit('story:error', {
-                storyId: storyDoc._id,
-                message: `القصة لم تجتز فحص السلامة: ${enrichedStory.safetyCheck.reason}`,
-                reason: enrichedStory.safetyCheck.reason
-              })
-            }
-          })
-        } else {
-          storyDoc.status = 'completed'
-          storyDoc.completedAt = new Date()
-          storyDoc.save().then(async (savedStory) => {
-            console.log(`✅ Story saved: ${savedStory._id}`)
-            
-            // هنا المكان الصح! التحديث بيحصل فقط للقصص الجديدة والمقبولة أمنياً لضمان دقة التعلم بروفايل الطفل
-            await updateChildPatterns(childId, character, topic);
+        await updateChildPatterns(childId, character, topic)
 
-            // تحديث الـ Progress للمستويات والـ Badges
-            Progress.findOneAndUpdate(
-              { childId },
-              { $inc: { storiesCompleted: 1 } }
-            ).catch(err => console.error('Failed to update storiesCompleted:', err))
+        Progress.findOneAndUpdate(
+          { childId },
+          { $inc: { storiesCompleted: 1 } }
+        ).catch((err) => console.error('Failed to update storiesCompleted:', err))
 
-            // تخزينها في كاش Redis لمدة 24 ساعة للسرعة
-            cacheStory(childId, character, topic, {
-              title: savedStory.title,
-              scenes: savedStory.scenes,
-              moralLesson: savedStory.moralLesson,
-              educationalValue: savedStory.educationalValue,
-              safetyCheck: savedStory.safetyCheck
-            }).catch(() => {})
+        cacheStory(childId, character, topic, {
+          title: savedStory.title,
+          scenes: savedStory.scenes,
+          moralLesson: savedStory.moralLesson,
+          educationalValue: savedStory.educationalValue,
+          safetyCheck: savedStory.safetyCheck,
+        }).catch(() => {})
 
-            if (socketId && io) {
-              io.to(socketId).emit('story:completed', {
-                storyId: savedStory._id,
-                story: savedStory
-              })
-            }
+        if (socketId && io) {
+          io.to(socketId).emit('story:completed', {
+            storyId: savedStory._id,
+            story: savedStory.toObject(),
           })
         }
       })

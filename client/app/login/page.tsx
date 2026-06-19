@@ -17,8 +17,10 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await login(formData.email, formData.password)
-    router.push(ROUTES.DASHBOARD)
+    const success = await login(formData.email, formData.password)
+    if (success) {
+      router.push(ROUTES.DASHBOARD)
+    }
   }
 
   return (
@@ -53,6 +55,7 @@ export default function LoginPage() {
               value={formData.password}
               onChange={handleChange}
               required
+              minLength={8}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>

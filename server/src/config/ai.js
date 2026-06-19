@@ -1,8 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai'
 
-const API_KEY = process.env.GOOGLE_API_KEY
-if (!API_KEY) throw new Error('GOOGLE_API_KEY is not set in environment variables')
+const API_KEY = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY
+if (!API_KEY) {
+  throw new Error('GOOGLE_API_KEY or GEMINI_API_KEY is not set in environment variables')
+}
 
 
 const genAI = new GoogleGenerativeAI(API_KEY)

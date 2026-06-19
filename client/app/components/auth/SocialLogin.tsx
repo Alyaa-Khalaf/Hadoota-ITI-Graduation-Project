@@ -1,5 +1,6 @@
 "use client";
 import Button from "../ui/Button";
+import { API_ORIGIN } from "@/lib/apiConfig";
 
 interface SocialLoginProps {
   isLoading: boolean;
@@ -9,7 +10,7 @@ export default function SocialLogin({ isLoading }: SocialLoginProps) {
   const handleGoogleLogin = () => {
     if (isLoading) return;
     // هنا بيتم التوجيه لـ API جوجل الخاص بعلياء
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/auth/google`;
+    window.location.href = `${API_ORIGIN}/api/auth/google`;
   };
 
   return (
