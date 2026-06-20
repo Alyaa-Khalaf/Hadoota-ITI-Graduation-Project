@@ -46,6 +46,7 @@ export default function LoginForm() {
       }
 
       localStorage.setItem("token", token);
+      
 
       router.push("/childAdventure");
     } catch (err: any) {
