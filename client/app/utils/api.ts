@@ -12,7 +12,10 @@ const apiClient: AxiosInstance = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('accessToken') || localStorage.getItem('token')
+        : null
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -27,6 +30,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token')
+        localStorage.removeItem('accessToken')
         if (!window.location.pathname.includes('/login')) {
           window.location.href = '/login'
         }
