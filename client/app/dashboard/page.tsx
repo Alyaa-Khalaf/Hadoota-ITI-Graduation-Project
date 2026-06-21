@@ -11,7 +11,8 @@ import {
   Check, Trash2, ShieldAlert, Trophy, Mail, Globe
 } from "lucide-react";
 import { io } from "socket.io-client";
-import Link from "next/link";
+
+
 // ==========================================
 // Interfaces 
 // ==========================================
@@ -88,8 +89,10 @@ interface IApiResponse<T> {
 const API_BASE_URL = "http://localhost:5000"; 
 
 export default function ParentDashboard() {
+
   /* تعليق: الـ State المسؤولة عن تبديل الصفحات الداخلية (التبويبات) في لوحة التحكم */
   const [activeTab, setActiveTab] = useState<"overview" | "reports" | "content" | "notifications" | "settings">("overview");
+
   
   /* تعليق: الـ States الخاصة ببيانات الأب، حالة التحميل العامة، وحالة تحميل توليد الـ AI */
   const [parent, setParent] = useState<IParentData | null>(null);
@@ -122,17 +125,30 @@ export default function ParentDashboard() {
     /* تعليق: هذا الكود يعمل فور فتح الصفحة لجلب التوكن الحقيقي وبيانات الأب المسجل من الـ LocalStorage وثم استدعاء الـ APIs */
     const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
+
     
     if (storedUser) {
-      const parsedUser: IParentData = JSON.parse(storedUser);
-      setParent(parsedUser);
-      
-      if (parsedUser._id) {
-        fetchDashboardOverview(parsedUser._id, token);
-        fetchInitialNotifications(token);
-        fetchNotificationSettings(token);
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setParent(parsedUser);
+        
+        const parentId = parsedUser._id || parsedUser.id;
+        
+        if (parentId) {
+          console.log("🚀 تم العثور على ID الأب بنجاح وهو:", parentId, "جاري استدعاء الـ APIs...");
+          fetchDashboardOverview(parentId, token);
+          fetchInitialNotifications(token);
+          fetchNotificationSettings(token);
+        } else {
+          console.error("❌ خطأ: كائن المستخدم موجود في الـ LocalStorage ولكن لا يحتوي على _id أو id!");
+          setLoading(false);
+        }
+      } catch (e) {
+        console.error("❌ خطأ أثناء عمل Parse لكائن الـ user من الـ LocalStorage:", e);
+        setLoading(false);
       }
     } else {
+      console.warn("⚠️ تنبيه: لم يتم العثور على أي بيانات مستخدم (user) داخل الـ LocalStorage!");
       setLoading(false);
     }
 
@@ -471,32 +487,75 @@ export default function ParentDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/*  */}
         
         {/* ================= TAB 1: OVERVIEW ================= */}
         {activeTab === "overview" && (
           <div className="space-y-8">
             <h3 className="text-lg font-bold border-r-4 border-[#FF7043] pr-3">قائمة الأطفال المسجلين</h3>
+            
             {children.length === 0 ? (
-              <div className="bg-white rounded-3xl p-8 text-center border border-[#E8DED4] text-[#7A6552] text-sm">لا يوجد أطفال مضافين في قاعدة البيانات حالياً.</div>
+              <div className="bg-white rounded-3xl p-8 text-center border border-[#E8DED4] text-[#7A6552] text-sm">
+                لا يوجد أطفال مضافين في قاعدة البيانات حالياً.
+              </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {children.map((child) => (
-                  <div key={child._id} className="bg-white rounded-3xl p-6 border border-[#E8DED4] shadow-sm">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-[#FFF5E6] w-12 h-12 rounded-2xl flex items-center justify-center text-2xl">{child.avatar || "👶"}</div>
-                      <div>
-                        <h4 className="font-bold text-lg text-[#3D2C1E]">{child.name}</h4>
-                        <p className="text-xs text-[#7A6552]">كود تتبع الطفل: <span className="text-[#FF7043] font-mono font-bold">{child._id}</span></p>
+              <>
+                {/* 1. شبكة عرض كروت الأطفال */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {children.map((child) => (
+                    <div key={child._id} className="bg-white rounded-3xl p-6 border border-[#E8DED4] shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-[#FFF5E6] w-12 h-12 rounded-2xl flex items-center justify-center text-2xl">
+                          {child.avatar || "👶"}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-lg text-[#3D2C1E]">{child.name}</h4>
+                          <p className="text-xs text-[#7A6552]">
+                            كود تتبع الطفل: <span className="text-[#FF7043] font-mono font-bold">{child._id}</span>
+                          </p>
+                        </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+
+                {/* 2. شبكة عرض الرسوم البيانية (تظهر فقط مع وجود أطفال وفي الـ overview) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                  
+                  {/* 📈 منحنى قراءة القصص الأسبوعي */}
+                  <div className="bg-white p-6 rounded-3xl border border-[#E8DED4] h-80 shadow-sm">
+                    <h4 className="font-bold text-sm mb-4">📈 منحنى قراءة القصص الأسبوعي</h4>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={weeklyActivity}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="stories" stroke="#FF7043" strokeWidth={3} />
+                      </LineChart>
+                    </ResponsiveContainer>
                   </div>
-                ))}
-              </div>
+
+                  {/* 🍕 دائرة توزيع الاهتمامات */}
+                  <div className="bg-white p-6 rounded-3xl border border-[#E8DED4] h-80 shadow-sm">
+                    <h4 className="font-bold text-sm mb-4">🍕 توزيع اهتمامات وشغف الطفل</h4>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={topicDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                          {topicDistribution.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color || "#C77DFF"} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                </div>
+              </>
             )}
           </div>
         )}
-
+        
         {/* ================= TAB 2: REPORTS (التقرير الأسبوعي) ================= */}
         {activeTab === "reports" && (
           <div className="space-y-8">

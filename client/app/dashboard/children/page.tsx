@@ -89,51 +89,50 @@ export default function ChildrenPage() {
   // 📤 دالة الـ POST: إرسال الكائن الحقيقي بالبيانات الصحيحة هندسياً للسيرفر
   // ========================================================
   const handleAddChild = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!childName || !childAge) return;
+  e.preventDefault();
+  if (!childName || !childAge) return;
 
-    try {
-      let token = localStorage.getItem("accessToken") || localStorage.getItem("token");
-      
-      /* تعليق: تجميع الـ Body بالهيكلية المطلوبة للـ Validation في الباك إيند */
-      const bodyPayload = {
-        name: childName,
-        age: Number(childAge),
-        avatar: childGender === "male" ? "👦" : "👧",
-        interests: selectedInterests,  // يتم إرسالها عربي كالمطلوب بالسكيما
-        learningLevel: learningLevel   // يتم إرسالها إنجليزي كالمطلوب بالسكيما
-      };
+  try {
+    // to read tokens
+    let token = localStorage.getItem("accessToken") || localStorage.getItem("token");
 
-      const res = await fetch("http://localhost:5000/api/children", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(bodyPayload),
-      });
+    const bodyPayload = {
+      name: childName,
+      age: Number(childAge),
+      avatar: childGender === "male" ? "👦" : "👧",
+      interests: selectedInterests,
+      learningLevel: learningLevel
+    };
 
-      if (res.ok) {
-        const result: ApiResponse<Child> = await res.json();
-        /* ملاحظة ذهبية: السيرفر يرجع كائن الطفل الجديد داخل result.data نقوم بدمجه فوراً */
-        if (result.success && result.data) {
-          setChildren(prev => [...prev, result.data]);
-        }
-        
-        // إعادة تهيئة الحقول وإغلاق النافذة
-        setIsAdding(false);
-        setChildName("");
-        setChildAge("6");
-        setChildGender("male");
-        setLearningLevel("beginner");
-        setSelectedInterests([]);
-      } else {
-        console.error("فشلت إضافة الطفل، كود الاستجابة:", res.status);
+    const res = await fetch("http://localhost:5000/api/children", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(bodyPayload),
+    });
+
+    if (res.ok) {
+      const result: ApiResponse<Child> = await res.json();
+
+      if (result.success) {
+        await fetchChildren(); // 👈 أهم تعديل
       }
-    } catch (err) {
-      console.error("خطأ في إضافة الطفل", err);
+
+      setIsAdding(false);
+      setChildName("");
+      setChildAge("6");
+      setChildGender("male");
+      setLearningLevel("beginner");
+      setSelectedInterests([]);
+    } else {
+      console.error("فشلت إضافة الطفل، كود الاستجابة:", res.status);
     }
-  };
+  } catch (err) {
+    console.error("خطأ في إضافة الطفل", err);
+  }
+};
 
   // ========================================================
   // 🗑️ دالة الـ DELETE: حذف ملف الطفل نهائياً وتحديث الواجهة
