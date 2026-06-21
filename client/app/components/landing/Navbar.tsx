@@ -8,8 +8,9 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { accessToken, logout } = useAuth();
 
-  const { accessToken } = useAuth();
+  // const { accessToken } = useAuth();
 
 
   useEffect(() => {
@@ -69,16 +70,26 @@ export default function Navbar() {
         </nav>
 
         {/* right side */}
-       <div className="flex items-center gap-5 font-sans">
+      <div className="flex items-center gap-5 font-sans">
   {accessToken ? (
-    <Link href="/childAdventure">
+    <>
+      <Link href="/childAdventure">
+        <Button
+          variant="primary"
+          className="!py-2.5 !px-6 flex items-center gap-2"
+        >
+          🚀 مغامراتي
+        </Button>
+      </Link>
+
       <Button
-        variant="primary"
-        className="!py-2.5 !px-6 flex items-center gap-2"
+        variant="outline"
+        className="!py-2.5 !px-6"
+        onClick={logout}
       >
-        🚀 مغامراتي
+        تسجيل الخروج
       </Button>
-    </Link>
+    </>
   ) : (
     <>
       <Link href="/auth/login/">

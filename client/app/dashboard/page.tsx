@@ -11,7 +11,7 @@ import {
   Check, Trash2, ShieldAlert, Trophy, Mail, Globe
 } from "lucide-react";
 import { io } from "socket.io-client";
-
+import Link from "next/link";
 // ==========================================
 // Interfaces 
 // ==========================================
@@ -471,6 +471,7 @@ export default function ParentDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/*  */}
         
         {/* ================= TAB 1: OVERVIEW ================= */}
         {activeTab === "overview" && (

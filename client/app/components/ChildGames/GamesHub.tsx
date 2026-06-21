@@ -32,7 +32,7 @@ const games = [
     color: "bg-[#97C459]",
     textColor: "text-[#27500A]",
     subColor: "text-[#3B6D11]",
-    href: "/games/puzzle",
+    href: "/games/CollectedImages",
   },
   {
     id: "speed",
