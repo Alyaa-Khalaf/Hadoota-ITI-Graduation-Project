@@ -1,8 +1,8 @@
 "use client";
 import { motion } from "framer-motion";
-// استيراد المكونات الموحدة بالمسار النسبي الصحيح
 import Badge from "../ui/Badge";
 import Card from "../ui/Card";
+import {useEffect, useState} from "react";
 
 const list = {
   hidden: {},
@@ -14,34 +14,40 @@ const item = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
 };
 
-const testimonials = [
-  {
-    name: "أ. هدى منصور",
-    role: "معلمة روضة – القاهرة",
-    title: "النتيجة في الفصل كانت مذهلة",
-    quote: "استخدمت حدوتة في فصلي مع ٢٢ طفل - النتيجة كانت مذهلة! الأطفال بقوا يحبوا القراءة وعندهم مفردات أكثر بكثير. الأسئلة في نهاية القصة بتقيم الفهم بشكل ممتع ومحفز.",
-    avatar: "👩‍🏫",
-    avatarBg: "bg-cat-nature/40"
-  },
-  {
-    name: "منى إبراهيم",
-    role: "أم وطبيبة أطفال",
-    title: "آمنة ١٠٠٪ وبتعلّم قيم حلوة",
-    quote: "كأم وطبيبة أطفال، أهتم جداً بنوعية المحتوى. حدوتة آمنة ١٠٠٪ وبتعلّم قيم حلوة زي الصدق والشجاعة. بنتي سلمى بتحكيلي القصص وهي فرحانة – ده أكثر حاجة ممكن أتمنّاها.",
-    avatar: "👩‍⚕️",
-    avatarBg: "bg-cat-adventure"
-  },
-  {
-    name: "أحمد السيد",
-    role: "أب لطفلين",
-    title: "غيّرت علاقة أولادي بالشاشة تماماً",
-    quote: "أولادي كانوا بيقضوا ساعات طويلة بدون فائدة، لكن مع حدوتة الوضع اتغيّر تماماً. بقوا بيسمعوا ويتعلموا، وأنا بتابع تقارير ذكاء أطفال أول بأول وأشوف بالظبط إيه اللي اتعلموه.",
-    avatar: "👨",
-    avatarBg: "bg-cat-animals"
-  },
-];
+type Testimonial = {
+  id: string;
+  name: string;
+  role: string;
+  title: string;
+  quote: string;
+  avatar?: string;
+  avatarBg?: string;
+};
 
 export default function Testimonials() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        setLoading(true);
+
+        // استبدل ده بالـ endpoint الحقيقي لاحقاً
+        // const res = await fetch("/api/testimonials");
+        // const data = await res.json();
+        // setTestimonials(data.data?? []);
+
+      } catch (error) {
+        console.error("Failed to fetch testimonials", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // fetchTestimonials();
+  }, []);
+
   return (
     // استخدام لون خلفية متناسق مأخوذ من الـ Config بدلاً من درجة اللون العشوائية لتطابق النظام الموحد
     <section id="testimonials" className="bg-story-bg py-24" dir="rtl">
@@ -68,8 +74,8 @@ export default function Testimonials() {
           variants={list} 
           className="mt-16 grid gap-8 md:grid-cols-3 text-right"
         >
-          {testimonials.map((t) => (
-            <motion.div key={t.name} variants={item} className="flex">
+          {testimonials?.map((t) => (
+            <motion.div key={t.id} variants={item} className="flex">
               {/* وراثة الكارت بالكامل وجعله يتمدد ليتساوى مع جيرانه تلقائياً */}
               <Card 
                 hoverEffect={true} 

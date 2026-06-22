@@ -9,7 +9,6 @@ interface SocialLoginProps {
 export default function SocialLogin({ isLoading }: SocialLoginProps) {
   const handleGoogleLogin = () => {
     if (isLoading) return;
-    // هنا بيتم التوجيه لـ API جوجل الخاص بعلياء
     window.location.href = `${API_ORIGIN}/api/auth/google`;
   };
 

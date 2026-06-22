@@ -1,7 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
 import Link from "next/link";
-// استيراد المكونات الموحدة بالمسار النسبي الصحيح
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
 
