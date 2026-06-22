@@ -9,19 +9,25 @@ const steps = [
     icon: "🧙‍♂️",
     number: "١",
     title: "اختر الشخصية والموضوع",
-    description: "يختار طفلك بطلاً لقصته وموضوعاً يثير فضوله ويبدأ رحلته الخاصة.",
+    description: "...",
+    color: "bg-sky/10 text-sky",
+    iconBg: "bg-sky/15",
   },
   {
     icon: "🧩",
     number: "٢",
     title: "استمتع بالقصة التفاعلية",
-    description: "الذكاء الاصطناعي يبني قصة فريدة فوراً مع صور مبهجة وأصوات واختيارات مشوقة.",
+    description: "...",
+    color: "bg-primary/10 text-primary",
+    iconBg: "bg-primary/15",
   },
   {
     icon: "🏆",
     number: "٣",
     title: "تعلم واكسب الجوائز",
-    description: "أسئلة ذكية وممتعة في نهاية كل قصة لتعزيز الفهم اللغوي وكسب نقاط المكافأة.",
+    description: "...",
+    color: "bg-sunny/20 text-amber-600",
+    iconBg: "bg-sunny/25",
   },
 ];
 
@@ -29,12 +35,13 @@ export default function HowItWorks() {
   return (
     <section id="how-it-works" className="py-24" dir="rtl">
       <div className="container mx-auto px-6 max-w-7xl">
-        
+
         {/* النصوص العلوية المنسقة بالبادج الموحد والخط العريض */}
         <div className="mx-auto mb-16 max-w-3xl text-center font-sans">
-          <Badge variant="dreamy">كيف تبدأ المغامرة؟</Badge>
-          
-          <h2 className="mt-4 text-4xl font-black text-ink md:text-5xl tracking-tight">
+         <Badge variant="sky">
+           كيف تبدأ المغامرة؟
+        </Badge>
+          <h2 className="mt-4 text-4xl md:text-5xl font-black text-header tracking-tight">
             ثلاث خطوات بسيطة لتجربة تعليمية ممتعة
           </h2>
           <p className="mt-4 text-base font-bold text-ink-muted md:text-lg">
@@ -54,21 +61,25 @@ export default function HowItWorks() {
               className="flex"
             >
               {/* وراثة الكارت بالكامل وجعل الخلفية الهادئة مريحة للعين */}
-              <Card 
-                hoverEffect={true}
-                className="w-full bg-page-dreamy/30 border border-border-warm/40 p-8 text-center flex flex-col items-center justify-between"
+              <Card
+                hoverEffect
+                className=" w-full bg-white/80 backdrop-blur-sm border border-primary/10 shadow-card p-8 text-center flex flex-col items-center justify-between"
               >
                 <div>
                   {/* دائرة الأيقونة أو الإيموجي */}
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-page-warm text-3xl shadow-sm border border-border-warm/20">
+                  <div
+                    className={`mx-auto flex h-16 w-16 items-center justify-center rounded-2xl text-3xl border border-border-warm/20 ${step.iconBg}`}
+                  >
                     {step.icon}
                   </div>
-                  
+
                   {/* رقم الخطوة الدائري الملون بروح الموف السحري */}
-                  <div className="mt-5 inline-flex h-10 w-10 items-center justify-center rounded-full bg-magic/10 text-lg font-black text-magic">
+                  <div
+                    className={`mt-5 inline-flex h-10 w-10 items-center justify-center hover:bg-primary hover:text-white rounded-full font-black ${step.color}`}
+                  >
                     {step.number}
                   </div>
-                  
+
                   {/* عنوان الخطوة */}
                   <h3 className="mt-5 text-xl font-black text-ink tracking-tight">
                     {step.title}
@@ -83,7 +94,7 @@ export default function HowItWorks() {
             </motion.div>
           ))}
         </div>
-        
+
       </div>
     </section>
   );

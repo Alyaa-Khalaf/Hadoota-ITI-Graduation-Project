@@ -1,4 +1,5 @@
 "use client";
+
 import { motion } from "framer-motion";
 import Badge from "../ui/Badge";
 import Card from "../ui/Card";
@@ -6,12 +7,23 @@ import {useEffect, useState} from "react";
 
 const list = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.12 } },
+  visible: {
+    transition: {
+      staggerChildren: 0.12,
+    },
+  },
 };
 
 const item = {
   hidden: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.55,
+      ease: "easeOut",
+    },
+  },
 };
 
 type Testimonial = {
@@ -49,30 +61,33 @@ export default function Testimonials() {
   }, []);
 
   return (
-    // استخدام لون خلفية متناسق مأخوذ من الـ Config بدلاً من درجة اللون العشوائية لتطابق النظام الموحد
-    <section id="testimonials" className="bg-story-bg py-24" dir="rtl">
+    <section
+      id="testimonials"
+      className="bg-story-bg py-24"
+      dir="rtl"
+    >
       <div className="mx-auto max-w-7xl px-6 text-center font-sans">
         
-        {/* البادج العلوي الموحد */}
         <div>
-          <Badge variant="sunny">آراء الأهل</Badge>
+          <Badge variant="sunny">
+            آراء الأهل
+          </Badge>
         </div>
 
-        {/* العنوان الرئيسي الكبير */}
-        <h2 className="mt-4 text-4xl font-black text-ink md:text-5xl">
-          ماذا يقول <span className="text-sky">أهالينا؟</span>
+        <h2 className="mt-4 text-4xl font-black tracking-tight text-header md:text-5xl">
+          ماذا يقول <span className="text-primary">أهالينا؟</span>
         </h2>
-        
-        <p className="mx-auto mt-3 max-w-2xl text-base font-bold text-ink-muted md:text-lg">
+
+        <p className="mx-auto mt-4 max-w-2xl text-base font-bold text-ink-muted md:text-lg">
           أكثر من عائلة مصرية وثقت بحدوتة – إليك بعض آرائهم
         </p>
 
-        {/* شبكة الكروت الثلاثية المبهجة الموروثة من الـ UI */}
-        <motion.div 
-          initial="hidden" 
-          whileInView="visible" 
-          variants={list} 
-          className="mt-16 grid gap-8 md:grid-cols-3 text-right"
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={list}
+          className="mt-16 grid gap-8 text-right md:grid-cols-3"
         >
           {testimonials?.map((t) => (
             <motion.div key={t.id} variants={item} className="flex">
@@ -82,35 +97,72 @@ export default function Testimonials() {
                 className="relative flex flex-col justify-between w-full p-8"
               >
                 <div>
-                  {/* علامة الاقتباس الموف الأنيقة */}
-                  <div className="absolute top-6 left-6 text-3xl font-serif text-magic/20 select-none">
+                  <div
+                    className="
+                      absolute
+                      top-5
+                      left-5
+                      text-5xl
+                      font-serif
+                      text-primary/10
+                      select-none
+                    "
+                  >
                     ❞
                   </div>
 
-                  {/* العنوان الداخلي المبهج للكارت موروث من الـ ui */}
                   <div className="mb-5">
-                    <Badge variant="dreamy">"{t.title}"</Badge>
+                    <Badge variant={ "sky"}>
+                      "{t.title}"
+                    </Badge>
                   </div>
 
-                  {/* نص الرأي الكامل */}
                   <p className="text-sm font-bold leading-relaxed text-ink-muted">
                     {t.quote}
                   </p>
                 </div>
 
-                {/* الجزء السفلي: بيانات الشخص والأفاتار */}
-                <div className="mt-8 pt-5 border-t border-border-warm/40">
+                <div className="mt-8 border-t border-border-warm pt-5">
                   <div className="flex items-center gap-3">
-                    {/* الأفاتار */}
-                    <div className={`w-10 h-10 rounded-full ${t.avatarBg} flex items-center justify-center text-lg shadow-inner select-none`}>
+                    <div
+                      className={`
+                        flex
+                        h-11
+                        w-11
+                        items-center
+                        justify-center
+                        rounded-full
+                        text-lg
+                        shadow-sm
+                        ${t.avatarBg}
+                      `}
+                    >
                       {t.avatar}
                     </div>
+
                     <div>
-                      <p className="font-black text-sm text-ink">{t.name}</p>
-                      <p className="text-xs font-bold text-ink-muted mt-0.5">{t.role}</p>
+                      <p className="text-sm font-black text-ink">
+                        {t.name}
+                      </p>
+
+                      <p className="mt-0.5 text-xs font-bold text-ink-muted">
+                        {t.role}
+                      </p>
                     </div>
                   </div>
                 </div>
+
+                <div
+                  className={`
+                    absolute
+                    top-0
+                    right-0
+                    h-1.5
+                    w-full
+                    rounded-t-3xl
+                    bg-primary
+                  `}
+                />
               </Card>
             </motion.div>
           ))}
