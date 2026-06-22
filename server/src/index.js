@@ -25,6 +25,8 @@ import adminRoutes from './routes/admin.routes.js'
 import personalizationRoutes from './routes/personalizationRoutes.js'
 import mediaRoutes from './routes/mediaRoutes.js'
 import notificationRoutes from './routes/notificationRoutes.js'
+import testimonialRoutes from './routes/testimonialRoutes.js';
+
 
 // استيراد الـ Middlewares والـ Models
 import errorHandler from './middleware/errorHandler.js'
@@ -67,7 +69,7 @@ app.use('/api/screentime', screenTimeRoutes)
 app.use('/api/payments', paymentRoutes)
 app.use('/api/schools', schoolRoutes)
 app.use('/api/admin', adminRoutes)
-
+app.use('/api/testimonials', testimonialRoutes)
 // Health Check
 app.get('/api/health', (req, res) => {
   res.json({
