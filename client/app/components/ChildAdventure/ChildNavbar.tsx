@@ -54,7 +54,7 @@ export default function ChildNavbar() {
     rounded-full
     border border-white/50
 
-    bg-story-bg
+    bg-page-sky
     backdrop-blur-xl
 
     shadow-[0_10px_35px_rgba(0,0,0,0.12)]
@@ -199,7 +199,7 @@ export default function ChildNavbar() {
             w-11 h-11
             rounded-full
 
-            bg-white/10
+            bg-primary
             border border-white/20
 
             flex items-center justify-center

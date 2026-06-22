@@ -1,47 +1,33 @@
 "use client";
 
+import { useGamification } from "@/hooks/useGamification";
 import AchievementCard from "./AchievementCard";
 import AdventureHeader from "./AdventureHeader";
 
-interface Achievement {
-  id: number;
-  title: string;
-  icon: string;
-  description: string;
-  unlocked: boolean;
-}
+type Badge = {
+  name: string;
+};
 
 export default function Achievements() {
-  const achievements: Achievement[] = [
-    {
-      id: 1,
-      title: "مستكشف محترف",
-      icon: "🏆",
-      description: "أنهيت 5 حواديت كاملة",
-      unlocked: true,
-    },
-    {
-      id: 2,
-      title: "محب النجوم",
-      icon: "⭐",
-      description: "جمعت 20 نجمة",
-      unlocked: true,
-    },
-    {
-      id: 3,
-      title: "كاتب صغير",
-      icon: "✍️",
-      description: "أنشأت أول قصة بنفسك",
-      unlocked: false,
-    },
-    {
-      id: 4,
-      title: "بطل الفضول",
-      icon: "🧠",
-      description: "أجبت على 10 أسئلة",
-      unlocked: false,
-    },
-  ];
+  const { data, loading } = useGamification();
+
+  if (loading) {
+    return <div className="text-center py-6">⏳ Loading achievements...</div>;
+  }
+
+  if (!data) {
+    return <div className="text-center py-6">لا توجد بيانات</div>;
+  }
+
+  const badges: Badge[] = data.badges || [];
+
+  const achievements = badges.map((achievement, index) => ({
+    id: index + 1,
+    title: achievement.name,
+    icon: "🏆",
+    description: "تم فتح هذا الإنجاز",
+    unlocked: true,
+  }));
 
   return (
     <section className="mt-8">
@@ -51,13 +37,19 @@ export default function Achievements() {
       />
 
       <div className="grid grid-cols-2 gap-4 mt-6">
-        {achievements.map((achievement, index) => (
-          <AchievementCard
-            key={achievement.id}
-            {...achievement}
-            index={index}
-          />
-        ))}
+        {achievements.length > 0 ? (
+          achievements.map((achievement, index) => (
+            <AchievementCard
+              key={achievement.id}
+              {...achievement}
+              index={index}
+            />
+          ))
+        ) : (
+          <div className="col-span-2 text-center text-ink-mute">
+            مفيش إنجازات لسه... كمل حواديتك ✨
+          </div>
+        )}
       </div>
     </section>
   );
