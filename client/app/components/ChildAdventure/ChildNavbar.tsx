@@ -44,27 +44,24 @@ export default function ChildNavbar() {
 
     return (
         <>
-            <header
-                dir="rtl"
-                className="
-fixed top-4 left-1/2 -translate-x-1/2
-z-50
-w-[95%] max-w-7xl
+           <header
+  dir="rtl"
+  className="
+    fixed top-4 left-1/2 -translate-x-1/2
+    z-50
+    w-[95%] max-w-7xl
 
-      rounded-full
-      border border-white/20
+    rounded-full
+    border border-white/50
 
-      bg-gradient-to-r
-      from-primary/95
-      via-primary
-      to-primary/95
+    bg-story-bg
+    backdrop-blur-xl
 
-      backdrop-blur-xl
-      shadow-[0_10px_35px_rgba(0,0,0,0.18)]
+    shadow-[0_10px_35px_rgba(0,0,0,0.12)]
 
-      px-5 py-3
-    "
-            >
+    px-5 py-3
+  "
+>
                 <div className="flex items-center justify-between">
                     {/* Logo */}
                     <Link
@@ -97,7 +94,7 @@ w-[95%] max-w-7xl
                         </motion.div>
 
                         <div className="hidden sm:block">
-                            <h2 className="text-white text-2xl font-black">
+                            <h2 className="text-primary text-2xl font-black">
                                 بطل
                             </h2>
 
@@ -125,13 +122,13 @@ w-[95%] max-w-7xl
 
                 rounded-full
 
-                text-white/90
+                text-primary
                 font-bold
 
                 transition-all duration-300
 
-                hover:bg-white/15
-                hover:text-white
+                hover:bg-primary-light
+                hover:text-header
                 hover:-translate-y-1
               "
                                 >
