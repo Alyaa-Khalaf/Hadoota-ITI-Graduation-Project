@@ -13,41 +13,43 @@ module.exports = {
           '50%': { transform: 'rotate(6deg)' },
         },
       },
+
       animation: {
         wiggle: 'wiggle 3s ease-in-out infinite',
       },
+
       colors: {
         // Backgrounds
-        'story-bg':    '#FFFBF0',
-        'page-warm':   '#FFF5E6',
-        'page-sky':    '#F0F8FF',
-        'page-dreamy': '#F3F0FF',
+        'story-bg': '#FFFDF7',
+        'page-warm': '#FFF7EC',
+        'page-sky': '#F5FAFF',
+        'page-dreamy': '#F8F5FF',
 
-        // Primary
-        primary:         '#FF7043',
-        'primary-light': '#FF9A70',
-        'primary-wash':  '#FFF0EB',
+        // Primary (Pastel Pink Theme)
+        primary: '#ff6b95',
+        'primary-light': '#FFC2D3',
+        'primary-wash': '#FFF3F7',
 
-        // Accent
-        sunny:   '#FFD93D',
-        meadow:  '#6BCB77',
-        sky:     '#4D96FF',
-        magic:   '#C77DFF',
-        blossom: '#FF6B9D',
-        rose:    '#FF4D8D',
+        // Accent Pastels
+        sunny: '#FFE58A',
+        meadow: '#9AD9A4',
+        sky: '#8CC8FF',
+        magic: '#D8B4FE',
+        blossom: '#FFB3C7',
+        rose: '#FF95B5',
 
-        // Story categories
-        'cat-adventure': '#D0F0FD',
-        'cat-animals':   '#FDE8D0',
-        'cat-magic':     '#E8D0FD',
-        'cat-nature':    '#D0FDE8',
-        'cat-family':    '#FDD0D0',
+        // Story Categories
+        'cat-adventure': '#DDF4FF',
+        'cat-animals': '#FFF0DB',
+        'cat-magic': '#F1E3FF',
+        'cat-nature': '#DDF9E7',
+        'cat-family': '#FFE2E2',
 
         // Typography
-        ink:           '#3D2C1E',
-        'ink-muted':   '#7A6552',
-        'border-warm': '#E8DED4',
-        'header':      '#511D43',
+        ink: '#4A3A2A',
+        'ink-muted': '#8B7765',
+        'border-warm': '#EFE6DD',
+        header: '#7A4E68',
       },
 
       fontFamily: {
@@ -56,13 +58,13 @@ module.exports = {
       },
 
       boxShadow: {
-        card:   '0 8px 24px rgba(255, 112, 67, 0.12)',
-        button: '0 4px 14px rgba(255, 112, 67, 0.28)',
-        story:  '0 12px 32px rgba(61, 44, 30, 0.08)',
+        card: '0 8px 24px rgba(255, 155, 184, 0.12)',
+        button: '0 4px 14px rgba(255, 155, 184, 0.25)',
+        story: '0 12px 32px rgba(74, 58, 42, 0.08)',
       },
 
       borderRadius: {
-        xl:    '1rem',
+        xl: '1rem',
         '2xl': '1.5rem',
         '3xl': '2rem',
       },
