@@ -59,6 +59,16 @@ const userSchema = new mongoose.Schema({
       enum: ['active', 'inactive', 'cancelled'],
       default: 'active'
     },
+    provider: {
+      type: String,
+      enum: ['stripe', 'paymob'],
+      default: 'paymob'
+    },
+    // Paymob fields
+    paymobOrderId: String,
+    lastTransactionId: String,
+    lastReference: String,
+    // Legacy Stripe fields (kept for existing rows; unused going forward)
     stripeCustomerId: String,
     stripeSubscriptionId: String,
     expiresAt: Date

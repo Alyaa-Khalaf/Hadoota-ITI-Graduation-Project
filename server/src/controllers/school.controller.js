@@ -1,63 +1,29 @@
 import School from '../models/School.js';
-import User from '../models/User.js'; 
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+import User from '../models/User.js';
 
 /**
- * 1️⃣ تسجيل مدرسة جديدة وإنشاء جلسة دفع Stripe
+ * 1️⃣ تسجيل مدرسة جديدة
  * POST /api/schools/register
+ * الدفع يتم لاحقاً عبر بوابة Paymob من صفحة الفواتير (/dashboard/school/billing)
  */
 export const registerSchool = async (req, res, next) => {
   try {
     const { name } = req.body;
-    const adminId = req.user._id; 
+    const adminId = req.user._id;
 
     if (!name) return res.status(400).json({ success: false, message: 'اسم المدرسة مطلوب' });
-
-    // إنشاء عميل في Stripe
-    const stripeCustomer = await stripe.customers.create({
-      name: name,
-      email: req.user.email,
-      metadata: { adminId: adminId.toString() }
-    });
 
     // حفظ المدرسة مع كودها السري التلقائي
     const newSchool = await School.create({
       name,
       adminId,
-      stripeCustomerId: stripeCustomer.id,
-      //subscriptionStatus: 'pending'
-      subscriptionStatus: 'active'
+      subscriptionStatus: 'pending' // تتفعّل بعد الدفع عبر Paymob
     });
 
-    // إنشاء جلسة الدفع السنوية للمدارس
-    const session = await stripe.checkout.sessions.create({
-      customer: stripeCustomer.id,
-      payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: `اشتراك سنوي لمنصة حدوتة - مدرسة ${name}`,
-            description: 'وصول كامل للـ Dashboard وتخصيص المناهج والتقارير للأطفال',
-          },
-          unit_amount: 19900, // 199.00 USD
-          recurring: { interval: 'year' }, 
-        },
-        quantity: 1,
-      }],
-      mode: 'subscription',
-      success_url: `${process.env.CLIENT_URL}/dashboard/school?success=true&schoolId=${newSchool._id}`,
-      cancel_url: `${process.env.CLIENT_URL}/dashboard/school?canceled=true`,
-      metadata: { schoolId: newSchool._id.toString() }
-    });
-
-    // إرجاع الاستجابة كاملة مع رابط الدفع لـ روفيدة في الـ UI
     res.status(201).json({
       success: true,
-      message: 'تم تسجيل المدرسة بنجاح، يرجى إتمام عملية الدفع',
-      data: { school: newSchool, checkoutUrl: session.url }
+      message: 'تم تسجيل المدرسة بنجاح، يرجى إتمام عملية الدفع من صفحة الفواتير',
+      data: { school: newSchool }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
