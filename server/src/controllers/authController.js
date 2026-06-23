@@ -317,7 +317,7 @@ export const googleAuth = async (req, res, next) => {
     let user = await User.findOne({ email });
 
     if (!user) {
-      // مستخدم جديد - اعمله أكونت تلقائي
+      // مستخدم جديد - اعمله حساب
       user = await User.create({
         name,
         email,
@@ -326,10 +326,16 @@ export const googleAuth = async (req, res, next) => {
         password: null,
         role: "user",
       });
-
-      // Send welcome email
       await sendEmail(user.email, welcomeTemplate(user.name));
+    } else if (!user.googleId) {
+      // مستخدم موجود بـ email عادي - اربط حسابه بجوجل
+      user.googleId = googleId;
+      if (!user.avatar || user.avatar === "default-avatar.png") {
+        user.avatar = image;
+      }
+      await user.save({ validateBeforeSave: false });
     }
+    // لو googleId موجود بالفعل - يدخل عادي
 
     // Generate tokens
     const accessToken = generateAccessToken(user);

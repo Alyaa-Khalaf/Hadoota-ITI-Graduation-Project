@@ -25,9 +25,11 @@ const handler = NextAuth({
 
         const data = await res.json();
 
-        if (data.token) {
-          user.backendToken = data.token;
-          user.role = data.role;
+        if (data?.data?.accessToken) {
+          // ← غيرنا من data.token لـ data.data.accessToken
+          user.backendToken = data.data.accessToken;
+          user.backendRefreshToken = data.data.refreshToken; // ← جديد
+          user.role = data.data.user?.role;
         }
 
         return true;
@@ -39,6 +41,7 @@ const handler = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.backendToken = user.backendToken;
+        token.backendRefreshToken = user.backendRefreshToken; // ← جديد
         token.role = user.role;
       }
       return token;
@@ -46,6 +49,7 @@ const handler = NextAuth({
 
     async session({ session, token }) {
       session.backendToken = token.backendToken as string;
+      session.backendRefreshToken = token.backendRefreshToken as string; // ← جديد
       session.user.role = token.role as string;
       return session;
     },
