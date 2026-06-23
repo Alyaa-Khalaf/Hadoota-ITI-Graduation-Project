@@ -40,6 +40,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     const data = await res.json();
+    
+
+console.log("REFRESH STATUS:", res.status);
+console.log("REFRESH DATA:", data);
 
     if (res.ok && data?.data?.accessToken) {
       setAccessToken(data.data.accessToken);
@@ -73,6 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     refreshAccessToken();
   }, [refreshAccessToken]);
+  
 
   return (
     <AuthContext.Provider

@@ -1,0 +1,8 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://agentrouter.org/",
+    "ANTHROPIC_AUTH_TOKEN": "sk-QeZ824HjyaOcxZruTjLkUwIHq5NHGr0pe6YVTPPy2cGbdXDc",
+    "ANTHROPIC_API_KEY": "",
+    "ANTHROPIC_MODEL": "gpt-5.5"
+  }
+}

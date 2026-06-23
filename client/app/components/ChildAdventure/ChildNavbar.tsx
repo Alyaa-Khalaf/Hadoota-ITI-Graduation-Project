@@ -38,33 +38,33 @@ export default function ChildNavbar() {
         {
             label: "الإعدادات",
             icon: Settings,
-            href: "/dashboard",
+            href: "/ParentDashboard/ParentLogin",
         },
     ];
 
     return (
         <>
-            <header
-                dir="rtl"
-                className="
-fixed top-4 left-1/2 -translate-x-1/2
-z-50
-w-[95%] max-w-7xl
+           <header
+  dir="rtl"
+  className="
+    fixed top-4 left-1/2 -translate-x-1/2
+    z-50
+    w-[95%] max-w-7xl
 
-      rounded-full
-      border border-white/20
+    rounded-full
+    border border-white/30
 
-      bg-gradient-to-r
-      from-primary/95
-      via-primary
-      to-primary/95
+    bg-gradient-to-r
+    from-primary
+    to-rose
 
-      backdrop-blur-xl
-      shadow-[0_10px_35px_rgba(0,0,0,0.18)]
+    backdrop-blur-xl
 
-      px-5 py-3
-    "
-            >
+    shadow-[0_10px_35px_rgba(255,107,149,0.35)]
+
+    px-5 py-3
+  "
+>
                 <div className="flex items-center justify-between">
                     {/* Logo */}
                     <Link
@@ -125,13 +125,13 @@ w-[95%] max-w-7xl
 
                 rounded-full
 
-                text-white/90
+                text-white
                 font-bold
 
                 transition-all duration-300
 
-                hover:bg-white/15
-                hover:text-white
+                hover:bg-white
+                hover:text-primary
                 hover:-translate-y-1
               "
                                 >
@@ -186,7 +186,7 @@ w-[95%] max-w-7xl
                 w-3 h-3
                 rounded-full
 
-                bg-green-400
+                bg-meadow
                 border-2 border-white
               "
                                 />
@@ -202,8 +202,8 @@ w-[95%] max-w-7xl
             w-11 h-11
             rounded-full
 
-            bg-white/10
-            border border-white/20
+            bg-white/20
+            border border-white/30
 
             flex items-center justify-center
 
@@ -276,11 +276,11 @@ w-[95%] max-w-7xl
                                 </div>
 
                                 <div>
-                                    <h3 className="font-black text-lg">
+                                    <h3 className="font-black text-lg text-ink">
                                         {child?.name || "بطلنا"}
                                     </h3>
 
-                                    <p className="text-gray-500 text-sm">
+                                    <p className="text-ink-muted text-sm">
                                         جاهز للمغامرة 🚀
                                     </p>
                                 </div>
@@ -304,7 +304,7 @@ w-[95%] max-w-7xl
 
                     font-bold
 
-                    text-gray-700
+                    text-ink
 
                     transition-all duration-200
 
