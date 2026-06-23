@@ -10,7 +10,6 @@ import { API_ORIGIN } from "@/lib/apiConfig";
 
 export default function RegisterForm() {
   const router = useRouter();
-
   const { setAccessToken } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -48,7 +47,8 @@ export default function RegisterForm() {
           headers: {
             "Content-Type": "application/json",
           },
-          credentials: "include",
+          // 🌟 مهم جداً: تجعل الفرونت إيند يستقبل ويرسل الـ Secure Cookies تلقائياً مع السيرفر
+          credentials: "include", 
           body: JSON.stringify({
             name: formData.name,
             email: formData.email,
@@ -64,23 +64,18 @@ export default function RegisterForm() {
       }
 
       const token = data?.data?.accessToken;
-      const refresh = data?.data?.refreshToken;
 
       if (!token) {
         throw new Error("لم يتم استلام التوكن من السيرفر");
       }
 
-      // ✔️ source of truth
+      // ✔️ تغذية الـ Global State الحية (Source of Truth)
       setAccessToken(token);
 
-      // ✔️ persist (important)
-      localStorage.setItem("accessToken", token);
+      // 🔐 تم إزالة الـ LocalStorage تماماً بناءً على معايير الأمان العالية!
+      // السيرفر يقوم الآن بحفظ الـ Refresh Token في الـ httpOnly Cookie تلقائياً بفضل الـ credentials: "include"
 
-      if (refresh) {
-        localStorage.setItem("refreshToken", refresh);
-      }
-
-      router.push("/onboarding");
+      router.push("/childAdventure");
     } catch (err: any) {
       setError(err.message || "تعذر إنشاء الحساب");
     } finally {
@@ -104,7 +99,6 @@ export default function RegisterForm() {
         <label className="block text-sm font-bold mb-1.5">
           اسم الوالد / الوالدة
         </label>
-
         <Input
           type="text"
           placeholder="الاسم الكامل"
@@ -122,7 +116,6 @@ export default function RegisterForm() {
         <label className="block text-sm font-bold mb-1.5">
           البريد الإلكتروني
         </label>
-
         <Input
           type="email"
           placeholder="example@mail.com"
@@ -140,7 +133,6 @@ export default function RegisterForm() {
         <label className="block text-sm font-bold mb-1.5">
           كلمة المرور
         </label>
-
         <Input
           type="password"
           placeholder="••••••••"
@@ -159,7 +151,6 @@ export default function RegisterForm() {
         <label className="block text-sm font-bold mb-1.5">
           تأكيد كلمة المرور
         </label>
-
         <Input
           type="password"
           placeholder="••••••••"

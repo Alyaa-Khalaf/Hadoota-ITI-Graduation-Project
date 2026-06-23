@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -8,9 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
-
-  const { accessToken } = useAuth();
-
+  const { accessToken, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,30 +20,32 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  
+  const navLinkClasses = "hover:text-ink transition-colors duration-200";
 
   return (
     <motion.header
       initial={{ opacity: 0, y: -16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className={`fixed top-0 left-0 right-0 z-50 w-full px-6 py-4 transition-all duration-300 ${
+      dir="rtl"
+      className={`fixed top-0 left-0 right-0 z-50 w-full px-6 transition-all duration-300 ${
         isScrolled
-          ? "bg-white/60 backdrop-blur-lg border-b border-border-warm/20 shadow-sm py-3"
+          ? "bg-white/70 backdrop-blur-xl border-b border-border-warm/20 shadow-sm py-3"
           : "bg-transparent py-5"
       }`}
-      dir="rtl"
     >
       <div className="container mx-auto flex items-center justify-between">
-        
-        {/* logo */}
+        {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 text-2xl font-black text-sky tracking-wide font-sans"
+          className="flex items-center gap-2 text-2xl font-black tracking-wide font-sans group"
         >
-          <span>حدوتة</span>
+          <span className="text-primary group-hover:scale-105 transition-transform">
+            حدوتة
+          </span>
+
           <svg
-            className="w-6 h-6 text-sky"
+            className="w-6 h-6 text-primary group-hover:rotate-12 transition-transform"
             fill="currentColor"
             viewBox="0 0 24 24"
           >
@@ -52,51 +53,65 @@ export default function Navbar() {
           </svg>
         </Link>
 
-        {/* nav */}
-        <nav className="hidden items-center gap-10 text-base font-bold text-ink-muted md:flex font-sans">
-          <Link href="#features" className="hover:text-ink transition">
+        {/* Navigation */}
+        <nav className="hidden md:flex items-center gap-10 text-base font-bold text-ink-muted font-sans">
+          <Link href="#features" className={navLinkClasses}>
             المميزات
           </Link>
-          <Link href="#how-it-works" className="hover:text-ink transition">
+
+          <Link href="#how-it-works" className={navLinkClasses}>
             كيف تعمل
           </Link>
-          <Link href="#testimonials" className="hover:text-ink transition">
+
+          <Link href="#testimonials" className={navLinkClasses}>
             الآراء
           </Link>
-          <Link href="#pricing" className="hover:text-ink transition">
+
+          <Link href="#pricing" className={navLinkClasses}>
             الأسعار
           </Link>
         </nav>
 
-        {/* right side */}
-       <div className="flex items-center gap-5 font-sans">
-  {accessToken ? (
-    <Link href="/childAdventure">
-      <Button
-        variant="primary"
-        className="!py-2.5 !px-6 flex items-center gap-2"
-      >
-        🚀 مغامراتي
-      </Button>
-    </Link>
-  ) : (
-    <>
-      <Link href="/auth/login/">
-        <Button variant="outline" className="!py-2.5 !px-6">
-          تسجيل الدخول
-        </Button>
-      </Link>
+        {/* Actions */}
+        <div className="flex items-center gap-4 font-sans">
+          {accessToken ? (
+            <>
+              <Link href="/childAdventure">
+                <Button
+                  variant="primary"
+                  className='!py-2.5 !px-6 flex items-center gap-2'
+                >
+                  🚀 مغامراتي
+                </Button>
+              </Link>
 
-      <Link href="/auth/register/">
-        <Button variant="primary" className="!py-2.5 !px-6">
-          جرّب مجاناً
-        </Button>
-      </Link>
-    </>
-  )}
-</div>
+              <Button
+                variant="outline"
+                className='!py-2.5 !px-6 flex items-center gap-2'
+                onClick={logout}
+              >
+                تسجيل الخروج
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link href="/auth/login">
+                <Button variant="outline"
+                 className='!py-2.5 !px-6 flex items-center gap-2 border border-primary  hover:bg-primary-wash '>
+                  تسجيل الدخول
+                </Button>
+              </Link>
 
+              <Link href="/auth/register">
+                <Button variant="primary" className='!py-2.5 !px-6 flex items-center gap-2'>
+                  جرّب مجاناً
+                </Button>
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     </motion.header>
   );
 }
+

@@ -12,7 +12,7 @@ import React, {
 interface AuthContextType {
   accessToken: string | null;
   setAccessToken: (token: string | null) => void;
-  refreshToken: () => Promise<void>;
+  refreshAccessToken: () => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
 }
@@ -30,85 +30,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // =========================
   // Refresh Token
   // =========================
-  const refreshToken = useCallback(async () => {
-    try {
-      setIsLoading(true);
+  const refreshAccessToken = useCallback(async () => {
+  try {
+    setIsLoading(true);
 
-      const storedRefreshToken =
-        typeof window !== "undefined"
-          ? localStorage.getItem("refreshToken")
-          : null;
+    const res = await fetch(`${API}/api/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+    });
 
-      if (!storedRefreshToken) {
-        setAccessToken(null);
-        return;
-      }
+    const data = await res.json();
 
-      const res = await fetch(`${API}/api/auth/refresh`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          refreshToken: storedRefreshToken,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data?.data?.accessToken) {
-        setAccessToken(data.data.accessToken);
-
-        // 🔥 مهم: persist refresh token
-        localStorage.setItem(
-          "refreshToken",
-          data.data.refreshToken
-        );
-
-        // (optional but useful)
-        localStorage.setItem(
-          "accessToken",
-          data.data.accessToken
-        );
-      } else {
-        setAccessToken(null);
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("accessToken");
-      }
-    } catch (err) {
+    if (res.ok && data?.data?.accessToken) {
+      setAccessToken(data.data.accessToken);
+    } else {
       setAccessToken(null);
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  } catch {
+    setAccessToken(null);
+  } finally {
+    setIsLoading(false);
+  }
+}, []);
 
   // =========================
   // Logout
   // =========================
   const logout = useCallback(async () => {
-    try {
-      await fetch(`${API}/api/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch {}
+  try {
+    await fetch(`${API}/api/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch {}
 
-    setAccessToken(null);
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("accessToken");
-  }, []);
+  setAccessToken(null);
+}, []);
 
   // =========================
   // Init
   // =========================
   useEffect(() => {
-    refreshToken();
-  }, [refreshToken]);
+    refreshAccessToken();
+  }, [refreshAccessToken]);
 
   return (
     <AuthContext.Provider
       value={{
         accessToken,
         setAccessToken,
-        refreshToken,
+        refreshAccessToken,
         logout,
         isLoading,
       }}

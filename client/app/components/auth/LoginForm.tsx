@@ -44,7 +44,6 @@ export default function LoginForm() {
       }
 
       const token = data?.data?.accessToken;
-      const refresh = data?.data?.refreshToken;
 
       if (!token) {
         throw new Error("Token not found");
@@ -52,14 +51,6 @@ export default function LoginForm() {
 
       // ✔️ المصدر الأساسي للتوكن
       setAccessToken(token);
-
-      // ✔️ نخزن refresh فقط (لأن هو اللي بيتجدد منه)
-      if (refresh) {
-        localStorage.setItem("refreshToken", refresh);
-      }
-
-      // ✔️ optional: عشان refresh بعد reload
-      localStorage.setItem("accessToken", token);
 
       router.push("/childAdventure");
     } catch (err: any) {
