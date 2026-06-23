@@ -1,8 +1,7 @@
 import Testimonial from '../models/Testimonial.js';
+import User from '../models/User.js'; // تأكدي إن اسم الموديل User أو Parent حسب مشروعكم
 
 // @desc    Get all featured testimonials
-// @route   GET /api/testimonials
-// @access  Public
 export const getTestimonials = async (req, res) => {
   try {
     const testimonials = await Testimonial.find({ isFeatured: true }).sort({ createdAt: -1 });
@@ -21,11 +20,9 @@ export const getTestimonials = async (req, res) => {
 };
 
 // @desc    Create a new testimonial
-// @route   POST /api/testimonials
-// @access  Private (يطلب تسجيل دخول)
 export const createTestimonial = async (req, res) => {
   try {
-    // التأكد من وجود بيانات المستخدم القادمة من التوكن
+    // 1. التأكد من وجود بيانات المستخدم في التوكن
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         success: false,
@@ -33,15 +30,25 @@ export const createTestimonial = async (req, res) => {
       });
     }
 
-    // ربط الحساب بالـ id المظبوط اللي قفشناه من الـ Token
-    req.body.user = req.user.id; 
+    const userId = req.user.id;
 
-    // تأكيد اسم الوالد من الـ body أو وضع اسم افتراضي
-    if (!req.body.parentName) {
-      req.body.parentName = "ولي أمر بطل حدوتة";
+    // 2. جلب بيانات ولي الأمر من الداتابيز
+    const databaseUser = await User.findById(userId);
+    
+    if (!databaseUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'حساب المستخدم غير موجود في قاعدة البيانات'
+      });
     }
 
+    // 3. ربط البيانات تلقائياً
+    req.body.user = userId; 
+    req.body.parentName = databaseUser.name; // لقط الاسم الحقيقي تلقائياً (youssef)
+
+    // 4. حفظ التقييم
     const newTestimonial = await Testimonial.create(req.body);
+    
     res.status(201).json({
       success: true,
       data: newTestimonial
