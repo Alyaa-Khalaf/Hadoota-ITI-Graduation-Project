@@ -1,0 +1,6 @@
+export { welcomeTemplate } from './welcome.js'
+export { resetPasswordTemplate } from './resetPassword.js'
+export { weeklyReportTemplate } from './weeklyReport.js'
+export { subscriptionTemplate } from './subscriptionConfirmation.js'
+export { screenTimeAlertTemplate } from './screenTimeAlert.js'
+export { inactivityReminderTemplate } from './inactivityReminder.js'

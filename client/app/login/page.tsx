@@ -1,25 +1,31 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/useAuth'
-import { ROUTES } from '@/utils/constants'
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { ROUTES } from "@/utils/constants";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function LoginPage() {
-  const router = useRouter()
-  const { login, isLoading, error } = useAuth()
-  const [formData, setFormData] = useState({ email: '', password: '' })
+  const router = useRouter();
+  const { login, isLoading, error } = useAuth();
+  const [formData, setFormData] = useState({ email: "", password: "" });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    await login(formData.email, formData.password)
-    router.push(ROUTES.DASHBOARD)
+  e.preventDefault()
+  const success = await login(formData.email, formData.password)
+  if (success) {
+    const role = useAuthStore.getState().user?.role
+    router.push(role === 'admin' ? '/dashboard/admin' : ROUTES.DASHBOARD)
   }
+
+
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
@@ -34,7 +40,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">البريد الإلكتروني</label>
+            <label className="block text-sm font-medium mb-2">
+              البريد الإلكتروني
+            </label>
             <input
               type="email"
               name="email"
@@ -46,13 +54,16 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">كلمة المرور</label>
+            <label className="block text-sm font-medium mb-2">
+              كلمة المرور
+            </label>
             <input
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
               required
+              minLength={8}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -62,17 +73,17 @@ export default function LoginPage() {
             disabled={isLoading}
             className="w-full py-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50"
           >
-            {isLoading ? 'جاري الدخول...' : 'دخول'}
+            {isLoading ? "جاري الدخول..." : "دخول"}
           </button>
         </form>
 
         <p className="text-center mt-4 text-gray-600">
-          ليس لديك حساب؟{' '}
+          ليس لديك حساب؟{" "}
           <Link href={ROUTES.REGISTER} className="text-primary hover:underline">
             إنشاء حساب
           </Link>
         </p>
       </div>
     </div>
-  )
+  );
 }
