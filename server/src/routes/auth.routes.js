@@ -6,7 +6,8 @@ import {
   logout,
   refreshToken,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  googleAuth
 } from '../controllers/authController.js'
 import authMiddleware from '../middleware/auth.js'
 import validate from '../middleware/validate.js'
@@ -47,13 +48,7 @@ const forgotPasswordRules = [
     .isEmail().withMessage('الإيميل غير صحيح')
 ]
 
-// Public routes
-router.post('/register', authLimiter, registerRules, validate, register)
-router.post('/login', authLimiter, loginRules, validate, login)
-router.post('/refresh', refreshToken)
-router.post('/forgot-password', forgotPasswordRules, validate, forgotPassword)
-
-// Reset password validation rules
+// Reset password validation rules   ← انقله هنا
 const resetPasswordRules = [
   body('resetToken')
     .notEmpty().withMessage('الـ Token مطلوب'),
@@ -62,7 +57,13 @@ const resetPasswordRules = [
     .isLength({ min: 8 }).withMessage('الباسورد لا يقل عن 8 أحرف')
 ]
 
+// Public routes
+router.post('/register', authLimiter, registerRules, validate, register)
+router.post('/login', authLimiter, loginRules, validate, login)
+router.post('/refresh', refreshToken)
+router.post('/forgot-password', forgotPasswordRules, validate, forgotPassword)
 router.post('/reset-password', resetPasswordRules, validate, resetPassword)
+router.post('/google', googleAuth)
 
 // Protected routes
 router.post('/logout', authMiddleware, logout)

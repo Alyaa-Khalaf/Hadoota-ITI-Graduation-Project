@@ -1,6 +1,6 @@
 "use client";
 import Button from "../ui/Button";
-import { API_ORIGIN } from "@/lib/apiConfig";
+import { signIn } from "next-auth/react";
 
 interface SocialLoginProps {
   isLoading: boolean;
@@ -10,7 +10,7 @@ export default function SocialLogin({ isLoading }: SocialLoginProps) {
   const handleGoogleLogin = () => {
     if (isLoading) return;
     // هنا بيتم التوجيه لـ API جوجل الخاص بعلياء
-    window.location.href = `${API_ORIGIN}/api/auth/google`;
+    signIn("google", { callbackUrl: "/childAdventure" });
   };
 
   return (

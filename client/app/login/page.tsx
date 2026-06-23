@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/utils/constants";
 import { useAuthStore } from "@/store/useAuthStore";
+import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,14 +18,12 @@ export default function LoginPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
-  const success = await login(formData.email, formData.password)
-  if (success) {
-    const role = useAuthStore.getState().user?.role
-    router.push(role === 'admin' ? '/dashboard/admin' : ROUTES.DASHBOARD)
-  }
-
-
+    e.preventDefault();
+    const success = await login(formData.email, formData.password);
+    if (success) {
+      const role = useAuthStore.getState().user?.role;
+      router.push(role === "admin" ? "/dashboard/admin" : ROUTES.DASHBOARD);
+    }
   };
 
   return (
@@ -76,6 +75,24 @@ export default function LoginPage() {
             {isLoading ? "جاري الدخول..." : "دخول"}
           </button>
         </form>
+
+        <div className="flex items-center my-4">
+          <hr className="flex-grow border-gray-300" />
+          <span className="mx-3 text-gray-400 text-sm">أو</span>
+          <hr className="flex-grow border-gray-300" />
+        </div>
+
+        <button
+          onClick={() => signIn("google", { callbackUrl: ROUTES.DASHBOARD })}
+          className="w-full py-2 px-4 border border-gray-300 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 transition"
+        >
+          <img
+            src="https://www.google.com/favicon.ico"
+            alt="Google"
+            className="w-5 h-5"
+          />
+          <span className="text-gray-700 font-medium">تسجيل الدخول بجوجل</span>
+        </button>
 
         <p className="text-center mt-4 text-gray-600">
           ليس لديك حساب؟{" "}

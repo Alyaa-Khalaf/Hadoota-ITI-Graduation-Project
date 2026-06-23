@@ -297,3 +297,65 @@ export const resetPassword = async (req, res, next) => {
     next(error);
   }
 };
+// @desc    Google OAuth
+// @route   POST /api/auth/google
+// @access  Public
+export const googleAuth = async (req, res, next) => {
+  try {
+    const { email, name, image, googleId } = req.body;
+
+    if (!email || !googleId) {
+      return res.status(400).json({
+        success: false,
+        message: "بيانات جوجل ناقصة",
+        data: null,
+        errors: [],
+      });
+    }
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // مستخدم جديد - اعمله أكونت تلقائي
+      user = await User.create({
+        name,
+        email,
+        avatar: image,
+        googleId,
+        password: null,
+        role: "user",
+      });
+
+      // Send welcome email
+      await sendEmail(user.email, welcomeTemplate(user.name));
+    }
+
+    // Generate tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // Save refresh token
+    user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false });
+
+    res.status(200).json({
+      success: true,
+      message: "تم تسجيل الدخول بجوجل بنجاح",
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+          subscription: user.subscription,
+        },
+        accessToken,
+        refreshToken,
+      },
+      errors: [],
+    });
+  } catch (error) {
+    next(error);
+  }
+};

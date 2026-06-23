@@ -17,6 +17,7 @@
     "cookie-parser": "^1.4.7",
     "lottie-react": "^2.4.1",
     "lucide-react": "^1.20.0",
+    "next-auth": "^4.24.14",
     "recharts": "^3.8.1"
   }
 }
