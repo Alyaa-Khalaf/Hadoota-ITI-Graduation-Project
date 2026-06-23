@@ -38,7 +38,7 @@ export default function ChildNavbar() {
         {
             label: "الإعدادات",
             icon: Settings,
-            href: "/dashboard",
+            href: "/ParentDashboard/ParentLogin",
         },
     ];
 
@@ -52,12 +52,15 @@ export default function ChildNavbar() {
     w-[95%] max-w-7xl
 
     rounded-full
-    border border-white/50
+    border border-white/30
 
-    bg-page-sky
+    bg-gradient-to-r
+    from-primary
+    to-rose
+
     backdrop-blur-xl
 
-    shadow-[0_10px_35px_rgba(0,0,0,0.12)]
+    shadow-[0_10px_35px_rgba(255,107,149,0.35)]
 
     px-5 py-3
   "
@@ -94,7 +97,7 @@ export default function ChildNavbar() {
                         </motion.div>
 
                         <div className="hidden sm:block">
-                            <h2 className="text-primary text-2xl font-black">
+                            <h2 className="text-white text-2xl font-black">
                                 بطل
                             </h2>
 
@@ -122,13 +125,13 @@ export default function ChildNavbar() {
 
                 rounded-full
 
-                text-primary
+                text-white
                 font-bold
 
                 transition-all duration-300
 
-                hover:bg-primary-light
-                hover:text-header
+                hover:bg-white
+                hover:text-primary
                 hover:-translate-y-1
               "
                                 >
@@ -183,7 +186,7 @@ export default function ChildNavbar() {
                 w-3 h-3
                 rounded-full
 
-                bg-green-400
+                bg-meadow
                 border-2 border-white
               "
                                 />
@@ -199,8 +202,8 @@ export default function ChildNavbar() {
             w-11 h-11
             rounded-full
 
-            bg-primary
-            border border-white/20
+            bg-white/20
+            border border-white/30
 
             flex items-center justify-center
 
@@ -273,11 +276,11 @@ export default function ChildNavbar() {
                                 </div>
 
                                 <div>
-                                    <h3 className="font-black text-lg">
+                                    <h3 className="font-black text-lg text-ink">
                                         {child?.name || "بطلنا"}
                                     </h3>
 
-                                    <p className="text-gray-500 text-sm">
+                                    <p className="text-ink-muted text-sm">
                                         جاهز للمغامرة 🚀
                                     </p>
                                 </div>
@@ -301,7 +304,7 @@ export default function ChildNavbar() {
 
                     font-bold
 
-                    text-gray-700
+                    text-ink
 
                     transition-all duration-200
 

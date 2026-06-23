@@ -75,7 +75,7 @@ export default function RegisterForm() {
       // 🔐 تم إزالة الـ LocalStorage تماماً بناءً على معايير الأمان العالية!
       // السيرفر يقوم الآن بحفظ الـ Refresh Token في الـ httpOnly Cookie تلقائياً بفضل الـ credentials: "include"
 
-      router.push("/childAdventure");
+      router.push("/onboarding");
     } catch (err: any) {
       setError(err.message || "تعذر إنشاء الحساب");
     } finally {
