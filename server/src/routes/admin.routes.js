@@ -1,32 +1,80 @@
 import express from 'express';
-// 1. استدعاء الحارس الأساسي (ملف واحد فقط وبدون تكرار)
-import authMiddleware from '../middleware/auth.js'; 
+import authMiddleware from '../middleware/auth.js';
+import { isAdmin } from '../middleware/adminAuth.js';
 
-// 2. استدعاء حارس الأدمن المستقل اللي عملناه
-import { isAdmin } from '../middleware/adminAuth.js'; 
-
-// 3. استدعاء الـ Controllers
-import { 
-  getAdminStats, 
-  getRecentActivity, 
-  seedPlans, 
-  seedKnowledge 
+import {
+  // stats
+  getAdminStats,
+  getRecentActivity,
+  // users
+  listUsers,
+  getUser,
+  createUser,
+  updateUser,
+  deleteUser,
+  // children
+  listChildren,
+  getChild,
+  updateChild,
+  deleteChild,
+  // stories
+  listStories,
+  getStory,
+  updateStory,
+  deleteStory,
+  // schools
+  listSchools,
+  createSchool,
+  updateSchool,
+  deleteSchool,
+  // quizzes
+  listQuizzes,
+  deleteQuiz,
+  // knowledge base
+  listKnowledge,
+  createKnowledge,
+  updateKnowledge,
+  deleteKnowledge,
+  // seeding
+  seedPlans,
+  seedKnowledge,
 } from '../controllers/admin.controller.js';
 
 const router = express.Router();
 
-// 🔒 كل الـ Routes محمية بالبوابتين ورا بعض بالترتيب
+// كل الـ Routes محمية بالبوابتين: تسجيل دخول + صلاحية أدمن
+router.use(authMiddleware, isAdmin);
 
-// 📊 1. جلب إحصائيات الـ Dashboard كاملة
-router.get('/stats', authMiddleware, isAdmin, getAdminStats);
+// STATS
+router.get('/stats', getAdminStats);
+router.get('/recent-activity', getRecentActivity);
 
-// 🔄 2. جلب آخر النشاطات (آخر المستخدمين والقصص)
-router.get('/recent-activity', authMiddleware, isAdmin, getRecentActivity);
+// USERS
+router.route('/users').get(listUsers).post(createUser);
+router.route('/users/:id').get(getUser).put(updateUser).delete(deleteUser);
 
-// 🌱 3. إجراء سريع: زرع خطط الأسعار والاشتراكات
-router.post('/seed/plans', authMiddleware, isAdmin, seedPlans);
+// CHILDREN
+router.get('/children', listChildren);
+router.route('/children/:id').get(getChild).put(updateChild).delete(deleteChild);
 
-// 📚 4. إجراء سريع: زرع بنك المعرفة والتصنيفات للقصص
-router.post('/seed/knowledge', authMiddleware, isAdmin, seedKnowledge);
+// STORIES
+router.get('/stories', listStories);
+router.route('/stories/:id').get(getStory).put(updateStory).delete(deleteStory);
+
+// SCHOOLS
+router.route('/schools').get(listSchools).post(createSchool);
+router.route('/schools/:id').put(updateSchool).delete(deleteSchool);
+
+// QUIZZES
+router.get('/quizzes', listQuizzes);
+router.delete('/quizzes/:id', deleteQuiz);
+
+// KNOWLEDGE BASE
+router.route('/knowledge').get(listKnowledge).post(createKnowledge);
+router.route('/knowledge/:id').put(updateKnowledge).delete(deleteKnowledge);
+
+// SEEDING
+router.post('/seed/plans', seedPlans);
+router.post('/seed/knowledge', seedKnowledge);
 
 export default router;

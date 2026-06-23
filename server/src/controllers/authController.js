@@ -30,16 +30,16 @@ const sendRefreshTokenCookie = (res, token) => {
 // @access  Public
 export const register = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body
+    const { name, email, password } = req.body;
 
     const existingUser = await User.findOne({ email })
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'الإيميل ده موجود بالفعل',
+        message: "الإيميل ده موجود بالفعل",
         data: null,
-        errors: []
-      })
+        errors: [],
+      });
     }
 
     const user = await User.create({ name, email, password })
@@ -55,49 +55,49 @@ export const register = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'تم إنشاء الحساب بنجاح',
+      message: "تم إنشاء الحساب بنجاح",
       data: {
         user: {
           id: user._id,
           name: user.name,
           email: user.email,
           avatar: user.avatar,
-          subscription: user.subscription
+          subscription: user.subscription,
         },
         accessToken // شيلنا الـ refreshToken من الـ JSON عشان الأمان
       },
-      errors: []
-    })
+      errors: [],
+    });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 // @desc    Login
 // @route   POST /api/auth/login
 // @access  Public
 export const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body
+    const { email, password } = req.body;
 
     const user = await User.findOne({ email }).select('+password')
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'الإيميل أو الباسورد غلط',
+        message: "الإيميل أو الباسورد غلط",
         data: null,
-        errors: []
-      })
+        errors: [],
+      });
     }
 
     const isMatch = await user.comparePassword(password)
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: 'الإيميل أو الباسورد غلط',
+        message: "الإيميل أو الباسورد غلط",
         data: null,
-        errors: []
-      })
+        errors: [],
+      });
     }
 
     const accessToken = generateAccessToken(user._id)
@@ -111,23 +111,23 @@ export const login = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'تم تسجيل الدخول بنجاح',
+      message: "تم تسجيل الدخول بنجاح",
       data: {
         user: {
           id: user._id,
           name: user.name,
           email: user.email,
           avatar: user.avatar,
-          subscription: user.subscription
+          subscription: user.subscription,
         },
         accessToken // شيلنا الـ refreshToken من هنا برضه لسلامة البيانات
       },
-      errors: []
-    })
+      errors: [],
+    });
   } catch (error) {
     next(error)
   }
-}
+};
 
 // @desc    Logout
 // @route   POST /api/auth/logout
@@ -145,14 +145,14 @@ export const logout = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'تم تسجيل الخروج بنجاح',
+      message: "تم تسجيل الخروج بنجاح",
       data: null,
-      errors: []
-    })
+      errors: [],
+    });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 // ✅ الكود المعدل والآمن للـ Refresh
 export const refreshToken = async (req, res, next) => {
@@ -173,10 +173,10 @@ export const refreshToken = async (req, res, next) => {
     if (!user || user.refreshToken !== refreshToken) {
       return res.status(401).json({
         success: false,
-        message: 'الـ Refresh Token غير صالح',
+        message: "الـ Refresh Token غير صالح",
         data: null,
-        errors: []
-      })
+        errors: [],
+      });
     }
 
     const newAccessToken = generateAccessToken(user._id)
@@ -190,37 +190,37 @@ export const refreshToken = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'تم تجديد الـ Token بنجاح',
+      message: "تم تجديد الـ Token بنجاح",
       data: {
         accessToken: newAccessToken
       },
-      errors: []
-    })
+      errors: [],
+    });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 // @desc    Forgot Password
 // @route   POST /api/auth/forgot-password
 // @access  Public
 export const forgotPassword = async (req, res, next) => {
   try {
-    const { email } = req.body
+    const { email } = req.body;
 
-    const user = await User.findOne({ email })
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'مفيش حساب بالإيميل ده',
+        message: "مفيش حساب بالإيميل ده",
         data: null,
-        errors: []
-      })
+        errors: [],
+      });
     }
 
     const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '1h'
-    })
+      expiresIn: "1h",
+    });
 
     user.resetPasswordToken = resetToken
     user.resetPasswordExpires = Date.now() + 3600000
@@ -228,12 +228,12 @@ export const forgotPassword = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'تم إرسال رابط إعادة تعيين الباسورد على إيميلك',
+      message: "تم إرسال رابط إعادة تعيين الباسورد على إيميلك",
       data: null,
-      errors: []
-    })
+      errors: [],
+    });
   } catch (error) {
-    next(error)
+    next(error);
   }
 }
 
@@ -242,7 +242,7 @@ export const forgotPassword = async (req, res, next) => {
 // @access  Public
 export const resetPassword = async (req, res, next) => {
   try {
-    const { resetToken, newPassword } = req.body
+    const { resetToken, newPassword } = req.body;
 
     const decoded = jwt.verify(resetToken, process.env.JWT_SECRET)
 
@@ -251,19 +251,19 @@ export const resetPassword = async (req, res, next) => {
     if (!user || user.resetPasswordToken !== resetToken) {
       return res.status(400).json({
         success: false,
-        message: 'الـ Token غير صالح',
+        message: "الـ Token غير صالح",
         data: null,
-        errors: []
-      })
+        errors: [],
+      });
     }
 
     if (user.resetPasswordExpires < Date.now()) {
       return res.status(400).json({
         success: false,
-        message: 'الـ Token منتهي الصلاحية — اطلب رابط جديد',
+        message: "الـ Token منتهي الصلاحية — اطلب رابط جديد",
         data: null,
-        errors: []
-      })
+        errors: [],
+      });
     }
 
     user.password = newPassword
@@ -273,12 +273,12 @@ export const resetPassword = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'تم تغيير الباسورد بنجاح',
+      message: "تم تغيير الباسورد بنجاح",
       data: null,
-      errors: []
-    })
+      errors: [],
+    });
   } catch (error) {
-    next(error)
+    next(error);
   }
 
 }

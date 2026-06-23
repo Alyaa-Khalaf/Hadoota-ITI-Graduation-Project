@@ -2,7 +2,7 @@ import rateLimit from 'express-rate-limit'
 
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: process.env.NODE_ENV === 'production' ? 5 : 1000,
   message: {
     success: false,
     message: 'محاولات كتير جداً — حاول تاني بعد 15 دقيقة',
