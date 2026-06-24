@@ -15,17 +15,21 @@ type NotificationSettings = {
   dailyReminder: ChannelSettings;
 };
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function SettingsPanel() {
-  const { accessToken } = useAuth();
+  const { accessToken, isLoading: authLoading } = useAuth();
 
   const [settings, setSettings] = useState<NotificationSettings | null>(null);
   const [loading, setLoading] = useState(true);
 
   // 📥 fetch settings
   const fetchSettings = async () => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      setLoading(false);
+      setSettings(null);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -38,11 +42,14 @@ export default function SettingsPanel() {
 
       const data = await res.json();
 
-      if (data?.success) {
+      if (res.ok && data?.success) {
         setSettings(data.data);
+      } else {
+        setSettings(null);
       }
     } catch (err) {
       console.error("Settings error:", err);
+      setSettings(null);
     } finally {
       setLoading(false);
     }
@@ -53,7 +60,7 @@ export default function SettingsPanel() {
     type: keyof NotificationSettings,
     channel: keyof ChannelSettings
   ) => {
-    if (!settings) return;
+    if (!settings || !accessToken) return;
 
     const updated = {
       ...settings,
@@ -81,55 +88,57 @@ export default function SettingsPanel() {
   };
 
   useEffect(() => {
-    if (accessToken) {
-      fetchSettings();
-    }
-  }, [accessToken]);
+    if (authLoading) return;
+    fetchSettings();
+  }, [accessToken, authLoading]);
 
   if (loading) {
     return (
-      <div className="text-sm text-gray-500 animate-pulse p-4">
-        Loading settings...
+      <div dir="rtl" className="text-sm text-gray-500 animate-pulse p-4">
+        جارٍ تحميل الإعدادات...
       </div>
     );
   }
 
   if (!settings) {
     return (
-      <div className="text-sm text-gray-400 p-4">
-        No settings found
+      <div dir="rtl" className="text-sm text-gray-400 p-4">
+        لا يوجد إعدادات
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl border p-5 space-y-6">
-
-      <h2 className="font-bold text-sm">Notification Settings</h2>
+    <div dir="rtl" className="bg-white rounded-xl border p-5 space-y-6">
+      <h2 className="font-bold text-sm">إعدادات الإشعارات</h2>
 
       {/* SECTION */}
       {Object.entries(settings).map(([key, value]) => (
         <div key={key} className="space-y-2">
-
           <h3 className="text-xs font-bold text-gray-700">
-            {key}
+            {
+              (
+                {
+                  weeklyReport: "تقرير أسبوعي",
+                  screenTime: "مدة الشاشة",
+                  achievement: "الإنجازات",
+                  dailyReminder: "تذكير يومي",
+                } as Record<string, string>
+              )[key] || key
+            }
           </h3>
 
           <div className="flex gap-4 bg-gray-50 p-3 rounded-lg">
-
             {/* Email */}
             <label className="flex items-center gap-2 text-xs">
               <input
                 type="checkbox"
                 checked={value.email}
                 onChange={() =>
-                  updateSetting(
-                    key as keyof NotificationSettings,
-                    "email"
-                  )
+                  updateSetting(key as keyof NotificationSettings, "email")
                 }
               />
-              Email
+              البريد الإلكتروني
             </label>
 
             {/* Web Push */}
@@ -138,15 +147,11 @@ export default function SettingsPanel() {
                 type="checkbox"
                 checked={value.webPush}
                 onChange={() =>
-                  updateSetting(
-                    key as keyof NotificationSettings,
-                    "webPush"
-                  )
+                  updateSetting(key as keyof NotificationSettings, "webPush")
                 }
               />
-              Web Push
+              إشعارات المتصفح
             </label>
-
           </div>
         </div>
       ))}

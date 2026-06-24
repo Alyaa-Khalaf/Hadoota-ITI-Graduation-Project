@@ -15,7 +15,7 @@ type Props = {
   childId: string;
 };
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function AIReportSection({ childId }: Props) {
   const { accessToken } = useAuth();
@@ -95,8 +95,8 @@ export default function AIReportSection({ childId }: Props) {
 
   if (!childId) {
     return (
-      <div className="text-sm text-gray-400 p-4">
-        اختر طفل لعرض تقرير الـ AI
+      <div dir="rtl" className="text-sm text-gray-400 p-4">
+        اختر طفلاً لعرض تقرير الذكاء الاصطناعي
       </div>
     );
   }
@@ -105,48 +105,48 @@ export default function AIReportSection({ childId }: Props) {
     <div className="bg-white rounded-xl border p-5 space-y-4">
 
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="font-bold text-sm">AI Weekly Report</h2>
+      <div dir="rtl" className="flex justify-between items-center">
+        <h2 className="font-bold text-sm">تقرير الذكاء الاصطناعي الأسبوعي</h2>
 
         <button
           onClick={generateReport}
           disabled={generating}
           className="px-3 py-1 text-xs bg-orange-500 text-white rounded-md"
         >
-          {generating ? "Generating..." : "Generate"}
+          {generating ? "جاري التوليد..." : "توليد التقرير"}
         </button>
       </div>
 
       {/* Loading */}
       {loading ? (
-        <div className="text-sm text-gray-500 animate-pulse">
-          Loading report...
+        <div dir="rtl" className="text-sm text-gray-500 animate-pulse">
+          جارٍ تحميل التقرير...
         </div>
       ) : !report ? (
-        <div className="text-sm text-gray-400">
-          No report available. Generate one.
+        <div dir="rtl" className="text-sm text-gray-400">
+          لا يوجد تقرير متاح. قم بتوليد تقرير.
         </div>
       ) : (
         <div className="space-y-4">
 
           {/* Summary */}
-          <div>
-            <h3 className="text-xs font-bold">Summary</h3>
+          <div dir="rtl">
+            <h3 className="text-xs font-bold">الملخص</h3>
             <p className="text-sm text-gray-600">{report.summary}</p>
           </div>
 
           {/* Insights */}
           {report.aiInsights && (
-            <div>
-              <h3 className="text-xs font-bold">Insights</h3>
+            <div dir="rtl">
+              <h3 className="text-xs font-bold">الاستنتاجات</h3>
               <p className="text-sm text-gray-600">{report.aiInsights}</p>
             </div>
           )}
 
           {/* Recommendations */}
           {report.recommendations?.length > 0 && (
-            <div>
-              <h3 className="text-xs font-bold">Recommendations</h3>
+            <div dir="rtl">
+              <h3 className="text-xs font-bold">التوصيات</h3>
               <ul className="list-disc pr-4 text-sm text-gray-600">
                 {report.recommendations.map((r, i) => (
                   <li key={i}>{r}</li>
@@ -157,8 +157,8 @@ export default function AIReportSection({ childId }: Props) {
 
           {/* Next Topics */}
           {report.nextWeekTopics?.length > 0 && (
-            <div>
-              <h3 className="text-xs font-bold">Next Week Topics</h3>
+            <div dir="rtl">
+              <h3 className="text-xs font-bold">مواضيع الأسبوع القادم</h3>
               <div className="flex flex-wrap gap-2 mt-1">
                 {report.nextWeekTopics.map((t, i) => (
                   <span
@@ -174,7 +174,7 @@ export default function AIReportSection({ childId }: Props) {
 
           {/* Encouragement */}
           {report.encouragementMessage && (
-            <div className="border-t pt-3">
+            <div dir="rtl" className="border-t pt-3">
               <p className="text-sm italic text-orange-600">
                 {report.encouragementMessage}
               </p>
