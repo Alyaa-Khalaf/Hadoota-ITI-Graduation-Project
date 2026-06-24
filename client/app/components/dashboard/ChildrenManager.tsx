@@ -63,9 +63,9 @@ export default function ChildrenManager() {
   const [newLearningLevel, setNewLearningLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
   const [newInterests, setNewInterests] = useState<string[]>([]);
 
-
+// ///////////////////////////////////////////////////
   /* تعليق: قائمة الاهتمامات باللغة العربية المسموح بها والمطابقة للـ Enum */
-  const availableInterests = ["فضاء", "حيوانات", "مغامرات", "تاريخ", "علوم", "دين", "طبيعة", "رياضة"];
+  const availableInterests = ['adventures', 'animals', 'science', 'morals', 'history', 'mysteries', 'space', 'religion', 'nature', 'sports'];
 
   // ========================================================
   // 1️⃣ جلب قائمة الأطفال عند فتح الصفحة (GET Request)

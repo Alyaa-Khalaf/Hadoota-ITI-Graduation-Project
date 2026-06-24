@@ -29,8 +29,8 @@ apiClient.interceptors.response.use(
   (error: AxiosError<{ message?: string; errors?: string[] }>) => {
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('token')
         localStorage.removeItem('accessToken')
+        localStorage.removeItem('token')
         if (!window.location.pathname.includes('/login')) {
           window.location.href = '/login'
         }

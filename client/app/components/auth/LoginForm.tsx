@@ -51,8 +51,10 @@ export default function LoginForm() {
 
       // ✔️ المصدر الأساسي للتوكن
       setAccessToken(token);
+      console.log("TOKEN FROM LOGIN:", token);
 
-      router.push("/childAdventure");
+      // router.push("/childAdventure");
+      router.push("/dashboard/profile");
     } catch (err: any) {
       setError(
         err.message || "حدث خطأ أثناء تسجيل الدخول"

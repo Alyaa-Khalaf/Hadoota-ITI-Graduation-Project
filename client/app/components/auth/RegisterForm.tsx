@@ -76,6 +76,7 @@ export default function RegisterForm() {
       // السيرفر يقوم الآن بحفظ الـ Refresh Token في الـ httpOnly Cookie تلقائياً بفضل الـ credentials: "include"
 
       router.push("/onboarding");
+      // router.push("/dashboard/profile");
     } catch (err: any) {
       setError(err.message || "تعذر إنشاء الحساب");
     } finally {

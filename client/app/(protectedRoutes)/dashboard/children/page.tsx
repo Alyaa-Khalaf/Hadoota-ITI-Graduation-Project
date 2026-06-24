@@ -37,8 +37,9 @@ export default function ChildrenPage() {
   const [learningLevel, setLearningLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
 
+  // ///////////////////////////////////////////////
   /* تعليق: مصفوفة الاهتمامات المعتمدة باللغة العربية داخل الـ Enum الخاص بالباك إيند */
-  const availableInterests = ["فضاء", "حيوانات", "مغامرات", "تاريخ", "علوم", "دين", "طبيعة", "رياضة"];
+  const availableInterests = ['adventures', 'animals', 'science', 'morals', 'history', 'mysteries', 'space', 'religion', 'nature', 'sports'];
 
   // ========================================================
   // 📥 دالة الـ GET: جلب مصفوفة الأطفال الحقيقية بناءً على توكن الأب
@@ -101,7 +102,8 @@ export default function ChildrenPage() {
       age: Number(childAge),
       avatar: childGender === "male" ? "👦" : "👧",
       interests: selectedInterests,
-      learningLevel: learningLevel
+      learningLevel: learningLevel,
+      gender: childGender,
     };
 
     const res = await fetch("http://localhost:5000/api/children", {
@@ -116,6 +118,7 @@ export default function ChildrenPage() {
     if (res.ok) {
       const result: ApiResponse<Child> = await res.json();
 
+      // lazy
       if (result.success) {
         await fetchChildren(); // 👈 أهم تعديل
       }
@@ -132,6 +135,7 @@ export default function ChildrenPage() {
   } catch (err) {
     console.error("خطأ في إضافة الطفل", err);
   }
+  
 };
 
   // ========================================================
