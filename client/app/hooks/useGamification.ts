@@ -1,35 +1,71 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { getGamification } from "@/lib/api/gamification";
-import { useChild } from "./useChild";
 
-export function useGamification() {
-  const { accessToken, isLoading } = useAuth();
-  const { child } = useChild();
+type RewardHistoryItem = {
+  type: string;
+  amount: number;
+  badgeName: string;
+  reason: string;
+  _id: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
-  const [data, setData] = useState<any>(null);
+type GamificationData = {
+  childId: string;
+  stars: number;
+  level: number;
+  badges: string[];
+  rewardHistory: RewardHistoryItem[];
+  totalRewards: number;
+};
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+export function useGamification(childId: string) {
+  const { accessToken, isLoading: authLoading } = useAuth();
+
+  const [gamification, setGamification] = useState<GamificationData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (isLoading || !accessToken || !child?._id) return;
+  const fetchGamification = useCallback(async () => {
+    if (authLoading) return;
 
-      try {
-        setLoading(true);
+    if (!childId || !accessToken) {
+      setLoading(false);
+      setGamification(null);
+      return;
+    }
 
-        const res = await getGamification(child._id, accessToken);
-        setData(res);
-      } catch (err) {
-        console.error("Gamification error:", err);
-      } finally {
-        setLoading(false);
+    try {
+      setLoading(true);
+
+      const res = await fetch(`${API_BASE}/api/gamification/${childId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data?.success) {
+        setGamification(data.data);
+      } else {
+        setGamification(null);
       }
-    };
+    } catch (err) {
+      console.error("Gamification fetch error:", err);
+      setGamification(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [childId, accessToken, authLoading]);
 
-    fetchData();
-  }, [accessToken, isLoading, child?._id]);
+  useEffect(() => {
+    fetchGamification();
+  }, [fetchGamification]);
 
-  return { data, loading };
+  return { gamification, loading, refetch: fetchGamification };
 }

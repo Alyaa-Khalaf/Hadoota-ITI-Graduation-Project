@@ -13,7 +13,9 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { Star, Trophy, Award, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useGamification } from "@/hooks/useGamification";
 
 type WeeklyActivity = {
   name: string;
@@ -33,12 +35,21 @@ type Props = {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const COLORS = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E2"];
 
+// 🏷️ ترجمة أسباب المكافآت الشائعة للعربية (مع fallback للنص الإنجليزي لو السبب مش متوقع)
+const REASON_LABELS: Record<string, string> = {
+  "Quiz Game Reward": "مكافأة اختبار",
+  "Speed Reaction Game": "لعبة سرعة البديهة",
+  "Memory Game": "لعبة الذاكرة",
+};
+
 export default function ChildAnalytics({ childId }: Props) {
   const { accessToken } = useAuth();
 
   const [weeklyActivity, setWeeklyActivity] = useState<WeeklyActivity[]>([]);
   const [topics, setTopics] = useState<TopicDistribution[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const { gamification, loading: gamificationLoading } = useGamification(childId);
 
   useEffect(() => {
     // ⚠️ flag محلي لكل نداء على الـ effect، عشان نعرف لو الطفل تغيّر
@@ -123,7 +134,7 @@ export default function ChildAnalytics({ childId }: Props) {
 
   if (!childId) {
     return (
-      <div dir="rtl" className="p-4 text-sm text-gray-400">
+      <div dir="rtl" className="p-4 text-sm text-ink-muted">
         اختر طفلاً لعرض التحليلات
       </div>
     );
@@ -131,73 +142,164 @@ export default function ChildAnalytics({ childId }: Props) {
 
   if (loading) {
     return (
-      <div dir="rtl" className="p-4 text-sm text-gray-500 animate-pulse">
+      <div dir="rtl" className="p-4 text-sm text-ink-muted animate-pulse">
         جارٍ تحميل البيانات...
       </div>
     );
   }
 
+  // آخر 5 مكافآت، الأحدث أولًا
+  const recentRewards = gamification?.rewardHistory
+    ? [...gamification.rewardHistory]
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+        .slice(0, 5)
+    : [];
+
   return (
-    <div dir="rtl" className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div dir="rtl" className="space-y-6">
 
-      {/* 📈 Weekly Chart */}
-      <div className="h-80 bg-white rounded-xl p-4 border">
-        <h3 className="text-sm font-bold mb-3">
-          نشاط القراءة الأسبوعي
-        </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        {weeklyActivity.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-xs text-gray-400">
-            لا توجد بيانات كافية لعرض الرسم البياني
-          </div>
-        ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={weeklyActivity}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="stories"
-                stroke="#FF7043"
-                strokeWidth={3}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        )}
+        {/* 📈 Weekly Chart */}
+        <div className="h-80 bg-white rounded-2xl p-4 border border-border-warm shadow-sm">
+          <h3 className="text-sm font-bold mb-3 text-ink">
+            نشاط القراءة الأسبوعي
+          </h3>
+
+          {weeklyActivity.length === 0 ? (
+            <div className="h-full flex items-center justify-center text-xs text-ink-muted">
+              لا توجد بيانات كافية لعرض الرسم البياني
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={weeklyActivity}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="stories"
+                  stroke="#FF7043"
+                  strokeWidth={3}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* 🥧 Topics Chart */}
+        <div className="h-80 bg-white rounded-2xl p-4 border border-border-warm shadow-sm">
+          <h3 className="text-sm font-bold mb-3 text-ink">
+            توزيع المواضيع
+          </h3>
+
+          {topics.length === 0 ? (
+            <div className="h-full flex items-center justify-center text-xs text-ink-muted">
+              لا توجد بيانات كافية لعرض الرسم البياني
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={topics}
+                  dataKey="value"
+                  nameKey="name"
+                  outerRadius={90}
+                  label
+                >
+                  {topics.map((t, i) => (
+                    <Cell key={i} fill={t.color || "#8884d8"} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </div>
       </div>
 
-      {/* 🥧 Topics Chart */}
-      <div className="h-80 bg-white rounded-xl p-4 border">
-        <h3 className="text-sm font-bold mb-3">
-          توزيع المواضيع
-        </h3>
+      {/* 🏆 Gamification Section */}
+      {gamificationLoading ? (
+        <div className="h-40 bg-white rounded-2xl border border-border-warm animate-pulse" />
+      ) : !gamification ? (
+        <div className="p-4 text-sm text-ink-muted bg-white rounded-2xl border border-border-warm text-center">
+          لا توجد بيانات إنجازات لهذا الطفل بعد
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-border-warm shadow-sm p-5 space-y-5">
 
-        {topics.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-xs text-gray-400">
-            لا توجد بيانات كافية لعرض الرسم البياني
+          <h3 className="text-sm font-bold text-ink">الإنجازات والمكافآت</h3>
+
+          {/* Stat cards: stars / level / badges */}
+          <div className="grid grid-cols-3 gap-3">
+
+            <div className="rounded-2xl bg-cat-magic p-4 text-center space-y-1">
+              <div className="w-9 h-9 mx-auto rounded-xl bg-sunny/70 flex items-center justify-center">
+                <Star size={18} className="text-ink" fill="currentColor" />
+              </div>
+              <p className="text-lg font-bold text-ink">{gamification.stars}</p>
+              <p className="text-[11px] text-ink-muted">نجمة</p>
+            </div>
+
+            <div className="rounded-2xl bg-cat-adventure p-4 text-center space-y-1">
+              <div className="w-9 h-9 mx-auto rounded-xl bg-sky/70 flex items-center justify-center">
+                <Trophy size={18} className="text-ink" />
+              </div>
+              <p className="text-lg font-bold text-ink">{gamification.level}</p>
+              <p className="text-[11px] text-ink-muted">المستوى</p>
+            </div>
+
+            <div className="rounded-2xl bg-cat-family p-4 text-center space-y-1">
+              <div className="w-9 h-9 mx-auto rounded-xl bg-blossom/70 flex items-center justify-center">
+                <Award size={18} className="text-ink" />
+              </div>
+              <p className="text-lg font-bold text-ink">
+                {gamification.badges?.length || 0}
+              </p>
+              <p className="text-[11px] text-ink-muted">شارة</p>
+            </div>
           </div>
-        ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={topics}
-                dataKey="value"
-                nameKey="name"
-                outerRadius={90}
-                label
-              >
-                {topics.map((t, i) => (
-                  <Cell key={i} fill={t.color || "#8884d8"} />
+
+          {/* Recent rewards */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold text-ink-muted">آخر المكافآت</h4>
+
+            {recentRewards.length === 0 ? (
+              <p className="text-xs text-ink-muted">لا يوجد سجل مكافآت بعد</p>
+            ) : (
+              <ul className="space-y-2">
+                {recentRewards.map((reward) => (
+                  <li
+                    key={reward._id}
+                    className="flex items-center justify-between gap-3 bg-page-warm rounded-xl px-3 py-2"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Sparkles size={14} className="text-primary shrink-0" />
+                      <span className="text-xs text-ink truncate">
+                        {REASON_LABELS[reward.reason] || reward.reason}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs font-bold text-primary flex items-center gap-1">
+                        <Star size={11} fill="currentColor" />
+                        +{reward.amount}
+                      </span>
+                      <span className="text-[10px] text-ink-muted">
+                        {new Date(reward.createdAt).toLocaleDateString("ar-EG")}
+                      </span>
+                    </div>
+                  </li>
                 ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        )}
-      </div>
-
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
