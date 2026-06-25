@@ -170,8 +170,16 @@ export default function ChildAnalytics({ childId }: Props) {
           </h3>
 
           {weeklyActivity.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-xs text-ink-muted">
-              لا توجد بيانات كافية لعرض الرسم البياني
+            <div className="h-full flex flex-col items-center justify-center gap-2 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-cat-adventure flex items-center justify-center text-2xl">
+                📖
+              </div>
+              <p className="text-xs font-bold text-ink">
+                لا توجد قصص مقروءة هذا الأسبوع
+              </p>
+              <p className="text-[11px] text-ink-muted max-w-[200px]">
+                شجّع طفلك على قراءة أول قصة ليبدأ ظهور نشاطه هنا
+              </p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -198,8 +206,16 @@ export default function ChildAnalytics({ childId }: Props) {
           </h3>
 
           {topics.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-xs text-ink-muted">
-              لا توجد بيانات كافية لعرض الرسم البياني
+            <div className="h-full flex flex-col items-center justify-center gap-2 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-cat-magic flex items-center justify-center text-2xl">
+                🧩
+              </div>
+              <p className="text-xs font-bold text-ink">
+                لا توجد مواضيع مسجّلة بعد
+              </p>
+              <p className="text-[11px] text-ink-muted max-w-[200px]">
+                توزيع المواضيع سيظهر هنا بعد قراءة بعض القصص
+              </p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
