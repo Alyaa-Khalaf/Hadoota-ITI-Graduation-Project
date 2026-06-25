@@ -25,6 +25,7 @@ import adminRoutes from './routes/admin.routes.js'
 import personalizationRoutes from './routes/personalizationRoutes.js'
 import mediaRoutes from './routes/mediaRoutes.js'
 import notificationRoutes from './routes/notificationRoutes.js'
+import analyticsRoutes from './routes/analyticsRoutes.js' // ⬅️ كان ناقص بالكامل (تأكد من اسم الملف الحقيقي عندك)
 
 // استيراد الـ Middlewares والـ Models
 import errorHandler from './middleware/errorHandler.js'
@@ -52,6 +53,7 @@ app.use(helmet())
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser()) // ⬅️ كان مستورد بس مش مفعّل بـ app.use، ولازم يكون موجود لو الـ auth بيعتمد على كوكيز
 app.use('/api', generalLimiter)
 
 // =============== GLOBAL ROUTES ===============
@@ -67,6 +69,10 @@ app.use('/api/screentime', screenTimeRoutes)
 app.use('/api/payments', paymentRoutes)
 app.use('/api/schools', schoolRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/personalization', personalizationRoutes) // ⬅️ مستورد وكان مش مربوط
+app.use('/api/media', mediaRoutes)                       // ⬅️ مستورد وكان مش مربوط
+app.use('/api/notifications', notificationRoutes)        // ⬅️ كان ناقص (سبب مشكلة NotificationsPanel/SettingsPanel)
+app.use('/api/analytics', analyticsRoutes)                // ⬅️ كان ناقص بالكامل (سبب 404 في ChildAnalytics)
 
 // Health Check
 app.get('/api/health', (req, res) => {

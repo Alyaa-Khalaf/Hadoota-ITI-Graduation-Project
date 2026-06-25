@@ -68,7 +68,7 @@ export default function ChildNavbar() {
                 <div className="flex items-center justify-between">
                     {/* Logo */}
                     <Link
-                        href="/childAdventure"
+                        href="/landing"
                         className="flex items-center gap-3 shrink-0"
                     >
                         <motion.div
@@ -95,7 +95,7 @@ export default function ChildNavbar() {
                                 strokeWidth={2.5}
                             />
                         </motion.div>
-
+                        
                         <div className="hidden sm:block">
                             <h2 className="text-white text-2xl font-black">
                                 بطل

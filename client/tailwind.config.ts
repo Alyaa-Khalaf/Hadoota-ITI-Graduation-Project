@@ -26,7 +26,7 @@ module.exports = {
         'page-dreamy': '#F8F5FF',
 
         // Primary (Pastel Pink Theme)
-        primary: '#ff6b95',
+        primary: '#d5456e',
         'primary-light': '#FFC2D3',
         'primary-wash': '#FFF3F7',
 

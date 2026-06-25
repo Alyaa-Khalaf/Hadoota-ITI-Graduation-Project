@@ -9,12 +9,18 @@ import React, {
   useCallback,
 } from "react";
 
+interface User {
+  id?: string;
+  name?: string;
+  email?: string;
+}
 interface AuthContextType {
   accessToken: string | null;
   setAccessToken: (token: string | null) => void;
   refreshAccessToken: () => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
+  login: (token: string, newUser: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,8 +30,13 @@ import { API_ORIGIN } from "@/lib/apiConfig";
 const API = API_ORIGIN;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(()=> localStorage.getItem("accessToken"));
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window === "undefined") return null;
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  });
 
   // =========================
   // Refresh Token
@@ -77,6 +88,13 @@ console.log("REFRESH DATA:", data);
   useEffect(() => {
     refreshAccessToken();
   }, [refreshAccessToken]);
+
+    const login = (newToken: string, newUser: User) => {
+    setAccessToken(newToken);
+    setUser(newUser);
+    localStorage.setItem("accessToken", newToken);          // ← هنا الأهم
+    localStorage.setItem("user", JSON.stringify(newUser));
+  };
   
 
   return (
@@ -85,6 +103,7 @@ console.log("REFRESH DATA:", data);
         accessToken,
         setAccessToken,
         refreshAccessToken,
+        login,
         logout,
         isLoading,
       }}

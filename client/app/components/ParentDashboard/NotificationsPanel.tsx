@@ -13,10 +13,10 @@ type Notification = {
 
 type Filter = "all" | "unread" | "read";
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function NotificationsPanel() {
-  const { accessToken } = useAuth();
+  const { accessToken, isLoading: authLoading } = useAuth();
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
@@ -24,7 +24,11 @@ export default function NotificationsPanel() {
 
   // 📥 fetch notifications
   const fetchNotifications = async () => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      setLoading(false);
+      setNotifications([]);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -37,11 +41,14 @@ export default function NotificationsPanel() {
 
       const data = await res.json();
 
-      if (data?.success) {
+      if (res.ok && data?.success) {
         setNotifications(data.data || []);
+      } else {
+        setNotifications([]);
       }
     } catch (err) {
       console.error("Notifications error:", err);
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
@@ -49,10 +56,10 @@ export default function NotificationsPanel() {
 
   // 📌 mark as read
   const markAsRead = async (id: string) => {
+    if (!accessToken) return;
+
     setNotifications((prev) =>
-      prev.map((n) =>
-        n.id === id ? { ...n, isRead: true } : n
-      )
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
     );
 
     try {
@@ -69,6 +76,8 @@ export default function NotificationsPanel() {
 
   // 🗑 delete notification
   const deleteNotification = async (id: string) => {
+    if (!accessToken) return;
+
     setNotifications((prev) => prev.filter((n) => n.id !== id));
 
     try {
@@ -90,41 +99,42 @@ export default function NotificationsPanel() {
     return true;
   });
 
-  // 📥 load on mount
+  // 📥 load on mount / when auth state resolves
   useEffect(() => {
-    if (accessToken) {
-      fetchNotifications();
-    }
-  }, [accessToken]);
+    if (authLoading) return;
+    fetchNotifications();
+  }, [accessToken, authLoading]);
 
   if (loading) {
     return (
-      <div className="text-sm text-gray-500 animate-pulse p-4">
-        Loading notifications...
+      <div dir="rtl" className="text-sm text-gray-500 animate-pulse p-4">
+        جارٍ تحميل الإشعارات...
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl border p-5 space-y-4">
+    <div dir="rtl" className="bg-white rounded-xl border p-5 space-y-4">
 
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="font-bold text-sm">Notifications</h2>
+        <h2 className="font-bold text-sm">الإشعارات</h2>
 
         {/* Filters */}
         <div className="flex gap-2 text-xs">
-          {["all", "unread", "read"].map((f) => (
+          {[
+            { k: "all", l: "الكل" },
+            { k: "unread", l: "غير مقروءة" },
+            { k: "read", l: "مقروءة" },
+          ].map((f) => (
             <button
-              key={f}
-              onClick={() => setFilter(f as Filter)}
+              key={f.k}
+              onClick={() => setFilter(f.k as Filter)}
               className={`px-2 py-1 rounded-md border ${
-                filter === f
-                  ? "bg-orange-500 text-white"
-                  : "text-gray-500"
+                filter === f.k ? "bg-orange-500 text-white" : "text-gray-500"
               }`}
             >
-              {f}
+              {f.l}
             </button>
           ))}
         </div>
@@ -133,9 +143,7 @@ export default function NotificationsPanel() {
       {/* List */}
       <div className="space-y-3">
         {filteredNotifications.length === 0 ? (
-          <p className="text-sm text-gray-400">
-            No notifications found
-          </p>
+          <p className="text-sm text-gray-400">لا توجد إشعارات</p>
         ) : (
           filteredNotifications.map((n) => (
             <div
@@ -149,7 +157,7 @@ export default function NotificationsPanel() {
                 <h3 className="text-sm font-bold">{n.title}</h3>
                 <p className="text-xs text-gray-500">{n.body}</p>
                 <span className="text-[10px] text-gray-400">
-                  {n.createdAt}
+                  {new Date(n.createdAt).toLocaleString()}
                 </span>
               </div>
 
@@ -158,7 +166,7 @@ export default function NotificationsPanel() {
                 onClick={() => deleteNotification(n.id)}
                 className="text-red-500 text-xs"
               >
-                Delete
+                حذف
               </button>
             </div>
           ))

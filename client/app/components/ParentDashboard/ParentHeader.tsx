@@ -2,14 +2,17 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { Bell, Settings, LogOut, LayoutDashboard } from "lucide-react";
-import { useState } from "react";
+import { Bell, Settings, LogOut, LayoutDashboard, Sparkles } from "lucide-react";
+import type { DashboardTab } from "@/(protectedRoutes)/ParentDashboard/page"; // عدّل المسار لو الصفحة في مكان مختلف
 
-export default function ParentHeader() {
+type Props = {
+  activeTab: DashboardTab;
+  setActiveTab: (tab: DashboardTab) => void;
+};
+
+export default function ParentHeader({ activeTab, setActiveTab }: Props) {
   const { setAccessToken, logout } = useAuth();
   const router = useRouter();
-
-  const [activeTab, setActiveTab] = useState("overview");
 
   const handleLogout = async () => {
     try {
@@ -23,61 +26,55 @@ export default function ParentHeader() {
     }
   };
 
+  const navItems: { tab: DashboardTab; label: string; icon: typeof LayoutDashboard }[] = [
+    { tab: "overview", label: "نظرة عامة", icon: LayoutDashboard },
+    { tab: "reports", label: "تقارير الذكاء الاصطناعي", icon: Sparkles },
+    { tab: "notifications", label: "الإشعارات", icon: Bell },
+  ];
+
   return (
-    <header className="w-full bg-white border-b shadow-sm sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+    <header
+      dir="rtl"
+      className="w-full bg-white/90 backdrop-blur-md border-b border-border-warm sticky top-0 z-50"
+    >
+      <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
 
         {/* LEFT - Brand */}
         <div className="flex items-center gap-3">
-          <div className="text-xl">🧸</div>
-          <div>
-            <h1 className="text-lg font-bold text-gray-900">
-              Parent Dashboard
+          <div className="w-10 h-10 rounded-2xl bg-primary-wash flex items-center justify-center text-xl shrink-0">
+            🧸
+          </div>
+          <div className="text-right">
+            <h1 className="text-base font-bold text-ink leading-tight">
+              لوحة تحكم الوالدين
             </h1>
-            <p className="text-xs text-gray-500">
-              Manage children, analytics & AI reports
+            <p className="text-xs text-ink-muted">
+              إدارة الأطفال، التحليلات وتقارير الذكاء الاصطناعي
             </p>
           </div>
         </div>
 
         {/* CENTER - NAVIGATION */}
-        <nav className="hidden md:flex items-center gap-2 bg-gray-50 p-1 rounded-xl">
-
-          <button
-            onClick={() => setActiveTab("overview")}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1
-              ${activeTab === "overview"
-                ? "bg-orange-500 text-white"
-                : "text-gray-600 hover:bg-white"
-              }`}
-          >
-            <LayoutDashboard size={14} />
-            Overview
-          </button>
-
-          <button
-            onClick={() => setActiveTab("reports")}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg
-              ${activeTab === "reports"
-                ? "bg-orange-500 text-white"
-                : "text-gray-600 hover:bg-white"
-              }`}
-          >
-            AI Reports
-          </button>
-
-          <button
-            onClick={() => setActiveTab("notifications")}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1
-              ${activeTab === "notifications"
-                ? "bg-orange-500 text-white"
-                : "text-gray-600 hover:bg-white"
-              }`}
-          >
-            <Bell size={14} />
-            Notifications
-          </button>
-
+        <nav className="hidden md:flex items-center gap-1 bg-page-warm p-1 rounded-2xl">
+          {navItems.map(({ tab, label, icon: Icon }) => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-3 py-1.5 text-xs font-bold rounded-xl flex items-center gap-1.5
+                  transition-all duration-200
+                  ${
+                    isActive
+                      ? "bg-primary text-white shadow-button"
+                      : "text-ink-muted hover:bg-white hover:text-ink"
+                  }`}
+              >
+                <Icon size={14} />
+                {label}
+              </button>
+            );
+          })}
         </nav>
 
         {/* RIGHT - ACTIONS */}
@@ -85,21 +82,47 @@ export default function ParentHeader() {
 
           <button
             onClick={() => router.push("/parent/settings")}
-            className="p-2 rounded-lg hover:bg-gray-100 transition"
+            className="p-2 rounded-xl text-ink-muted hover:bg-page-warm hover:text-ink transition-colors"
+            aria-label="الإعدادات"
           >
             <Settings size={18} />
           </button>
 
           <button
             onClick={handleLogout}
-            className="px-3 py-1.5 text-xs font-bold bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center gap-1"
+            className="px-3 py-1.5 text-xs font-bold bg-rose text-white rounded-xl
+                       hover:bg-rose/90 active:scale-95 transition-all duration-200
+                       flex items-center gap-1.5"
           >
             <LogOut size={14} />
-            Logout
+            تسجيل الخروج
           </button>
 
         </div>
       </div>
+
+      {/* MOBILE NAV - يظهر تحت الهيدر في الشاشات الصغيرة بدل الاختفاء التام */}
+      <nav className="md:hidden flex items-center gap-1 bg-page-warm p-1 mx-4 mb-3 rounded-2xl overflow-x-auto">
+        {navItems.map(({ tab, label, icon: Icon }) => {
+          const isActive = activeTab === tab;
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 px-2 py-1.5 text-[11px] font-bold rounded-xl flex items-center justify-center gap-1
+                whitespace-nowrap transition-all duration-200
+                ${
+                  isActive
+                    ? "bg-primary text-white shadow-button"
+                    : "text-ink-muted"
+                }`}
+            >
+              <Icon size={12} />
+              {label}
+            </button>
+          );
+        })}
+      </nav>
     </header>
   );
 }

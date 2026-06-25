@@ -12,6 +12,7 @@ import { API_ORIGIN } from "@/lib/apiConfig";
 export default function LoginForm() {
   const router = useRouter();
   const { setAccessToken } = useAuth();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -52,6 +53,9 @@ export default function LoginForm() {
       // ✔️ المصدر الأساسي للتوكن
       setAccessToken(token);
       console.log("TOKEN FROM LOGIN:", token);
+      // //////////
+      const user = data?.data?.user;
+      login(token, user);
 
       // router.push("/childAdventure");
       router.push("/dashboard/profile");

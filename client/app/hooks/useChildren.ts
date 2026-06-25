@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 type Child = {
@@ -17,50 +17,51 @@ export function useChildren() {
 
   const { accessToken, isLoading: authLoading } = useAuth();
 
-  useEffect(() => {
-    const fetchChildren = async () => {
-      // لو الأوث لسه بيحمل → استنى
-      if (authLoading) return;
+  const fetchChildren = useCallback(async () => {
+    // لو الأوث لسه بيحمل → استنى
+    if (authLoading) return;
 
-      // لو مفيش توكن → اقفل اللودينج
-      if (!accessToken) {
-        setLoading(false);
-        setChildren([]);
-        return;
-      }
+    // لو مفيش توكن → اقفل اللودينج
+    if (!accessToken) {
+      setLoading(false);
+      setChildren([]);
+      return;
+    }
 
-      try {
-        setLoading(true);
+    try {
+      setLoading(true);
 
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/children`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-
-        const result = await res.json();
-
-        if (result?.success && Array.isArray(result.data)) {
-          setChildren(result.data);
-        } else {
-          setChildren([]);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/children`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         }
-      } catch (error) {
-        console.error("Error fetching children:", error);
-        setChildren([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+      );
 
-    fetchChildren();
+      const result = await res.json();
+
+      if (res.ok && result?.success && Array.isArray(result.data)) {
+        setChildren(result.data);
+      } else {
+        setChildren([]);
+      }
+    } catch (error) {
+      console.error("Error fetching children:", error);
+      setChildren([]);
+    } finally {
+      setLoading(false);
+    }
   }, [accessToken, authLoading]);
+
+  useEffect(() => {
+    fetchChildren();
+  }, [fetchChildren]);
 
   return {
     children,
     loading,
+    refetch: fetchChildren,
   };
 }
