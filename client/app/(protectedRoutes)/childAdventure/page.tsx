@@ -15,7 +15,8 @@ import { useGamification } from '@/hooks/useGamification';
 function ChildAdventure() {
   const { child, loading: childLoading } = useChild();
   const { isLoading: authLoading } = useAuth();
-
+    const {user}=useAuth()
+    console.log(`The parent is ${user?.email}`)
   // 3. التعديل السحري: لو الـ Context لسه بيجيب التوكن، أو الـ Hook لسه بيجيب داتا الطفل ⬅️ استنى ومتعرضش الصفحة لسه
   if (authLoading || childLoading) {
     return (

@@ -2,10 +2,12 @@
 
 import { motion } from "framer-motion";
 import AdventureHeader from "./AdventureHeader";
+import { useChild } from "@/hooks/useChild";
 import { useGamification } from "@/hooks/useGamification";
 
 export default function ChildStats() {
-  const { data, loading } = useGamification();
+  const { child } = useChild();
+  const { gamification, loading } = useGamification(child?._id || "");
 
   if (loading) {
     return (
@@ -15,7 +17,7 @@ export default function ChildStats() {
     );
   }
 
-  if (!data) {
+  if (!gamification) {
     return (
       <div className="text-center py-6">
         لا توجد بيانات
@@ -23,8 +25,8 @@ export default function ChildStats() {
     );
   }
 
-  const stars = data.stars;
-  const level = data.level;
+  const stars = gamification.stars;
+  const level = gamification.level;
 
   const badge =
     stars >= 100

@@ -9,7 +9,11 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { accessToken, logout } = useAuth();
+  const { accessToken,user, logout} = useAuth();
+
+   const [open, setOpen] = useState(false);
+
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -84,14 +88,64 @@ export default function Navbar() {
                   🚀 مغامراتي
                 </Button>
               </Link>
+              
+             <div className="relative">
+      <Button
+        variant="outline"
+        className="!py-2.5 !px-6"
+        onClick={() => setOpen(!open)}
+      >
+        حسابي
+      </Button>
 
-              <Button
-                variant="outline"
-                className='!py-2.5 !px-6 flex items-center gap-2'
-                onClick={logout}
-              >
-                تسجيل الخروج
-              </Button>
+      {open && (
+        <div
+          className="
+            absolute left-0 mt-3 w-72
+            bg-white rounded-2xl
+            shadow-xl border border-gray-100
+            p-5 z-50
+          "
+        >
+          {/* Header */}
+          <div className="pb-4 border-b">
+            <h3 className="font-bold text-gray-900">
+              {user?.name || "Parent"}
+            </h3>
+
+            <p className="text-sm text-gray-500 mt-1">
+              {user?.email}
+            </p>
+          </div>
+
+          {/* Body */}
+          <div className="py-4 space-y-3">
+            <div>
+              <p className="text-xs text-gray-400">الاسم</p>
+              <p className="font-medium">{user?.name}</p>
+            </div>
+
+            <div>
+              <p className="text-xs text-gray-400">البريد الإلكتروني</p>
+              <p className="font-medium">{user?.email}</p>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <button
+            onClick={logout}
+            className="
+              w-full py-2 rounded-xl
+              bg-red-50 text-red-600
+              hover:bg-red-100 transition
+            "
+          >
+            تسجيل الخروج
+          </button>
+        </div>
+      )}
+    </div>
+    
             </>
           ) : (
             <>

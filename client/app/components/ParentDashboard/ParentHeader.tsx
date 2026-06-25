@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { Bell, Settings, LogOut, LayoutDashboard, Sparkles } from "lucide-react";
+import { Bell, Settings, LogOut, LayoutDashboard, Sparkles, ArrowRight } from "lucide-react";
 import type { DashboardTab } from "@/(protectedRoutes)/ParentDashboard/page"; // عدّل المسار لو الصفحة في مكان مختلف
 
 type Props = {
@@ -39,8 +39,10 @@ export default function ParentHeader({ activeTab, setActiveTab }: Props) {
     >
       <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
 
-        {/* LEFT - Brand */}
+        {/* LEFT - Back button + Brand */}
         <div className="flex items-center gap-3">
+          
+
           <div className="w-10 h-10 rounded-2xl bg-primary-wash flex items-center justify-center text-xl shrink-0">
             🧸
           </div>
@@ -98,6 +100,16 @@ export default function ParentHeader({ activeTab, setActiveTab }: Props) {
             تسجيل الخروج
           </button>
 
+
+<button
+            onClick={() => router.push("/childAdventure")}
+            className="flex items-center gap-1 px-2.5 py-2 rounded-xl text-ink-muted
+                       hover:bg-primary hover:text-white transition-colors shrink-0"
+            aria-label="الرجوع لصفحة الطفل"
+          >
+            <ArrowRight size={20} />
+            <span className="hidden sm:inline text-md font-bold">رجوع</span>
+          </button> 
         </div>
       </div>
 

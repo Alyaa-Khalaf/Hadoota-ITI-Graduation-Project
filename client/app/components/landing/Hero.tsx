@@ -185,7 +185,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut", delay: 0.45 }}
-          className="mt-10 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
+          className="mt-10 flex flex-col sm:flex-row items-center  gap-4 w-full sm:w-auto"
         >
           {accessToken ? (
             <>
@@ -194,19 +194,19 @@ export default function Hero() {
                   <Button
                     variant="sky"
                     fullWidth
-                    className="text-lg !py-4 !px-10"
+                    className="text-lg !py-4 !px-10 "
                   >
                     🚀 متابعة رحلة طفلك
                   </Button>
                 </motion.div>
               </Link>
 
-              <Link href="/dashboard">
+              <Link href="/ParentDashboard">
                 <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                   <Button
                     variant="outline"
                     fullWidth
-                    className="text-lg !py-4 !px-10"
+                    className="text-lg !py-4 !px-10 hover:bg-primary hover:text-white border-primary"
                   >
                     لوحة التحكم
                   </Button>

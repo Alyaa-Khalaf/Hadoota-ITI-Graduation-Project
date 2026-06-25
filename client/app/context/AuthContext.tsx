@@ -21,6 +21,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   isLoading: boolean;
   login: (token: string, newUser: User) => void;
+  user: User | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,7 +31,16 @@ import { API_ORIGIN } from "@/lib/apiConfig";
 const API = API_ORIGIN;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [accessToken, setAccessToken] = useState<string | null>(()=> localStorage.getItem("accessToken"));
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+
+    if (token) {
+      setAccessToken(token);
+    }
+  }, []);
+  
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(() => {
     if (typeof window === "undefined") return null;
@@ -42,45 +52,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Refresh Token
   // =========================
   const refreshAccessToken = useCallback(async () => {
-  try {
-    setIsLoading(true);
+    try {
+      setIsLoading(true);
 
-    const res = await fetch(`${API}/api/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-    });
+      const res = await fetch(`${API}/api/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
 
-    const data = await res.json();
-    
+      const data = await res.json();
 
-console.log("REFRESH STATUS:", res.status);
-console.log("REFRESH DATA:", data);
 
-    if (res.ok && data?.data?.accessToken) {
-      setAccessToken(data.data.accessToken);
-    } else {
+      console.log("REFRESH STATUS:", res.status);
+      console.log("REFRESH DATA:", data);
+
+      if (res.ok && data?.data?.accessToken) {
+        setAccessToken(data.data.accessToken);
+      } else {
+        setAccessToken(null);
+      }
+    } catch {
       setAccessToken(null);
+    } finally {
+      setIsLoading(false);
     }
-  } catch {
-    setAccessToken(null);
-  } finally {
-    setIsLoading(false);
-  }
-}, []);
+  }, []);
 
   // =========================
   // Logout
   // =========================
   const logout = useCallback(async () => {
-  try {
-    await fetch(`${API}/api/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
-  } catch {}
+    try {
+      await fetch(`${API}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch { }
 
-  setAccessToken(null);
-}, []);
+    setAccessToken(null);
+  }, []);
 
   // =========================
   // Init
@@ -89,13 +99,13 @@ console.log("REFRESH DATA:", data);
     refreshAccessToken();
   }, [refreshAccessToken]);
 
-    const login = (newToken: string, newUser: User) => {
+  const login = (newToken: string, newUser: User) => {
     setAccessToken(newToken);
     setUser(newUser);
     localStorage.setItem("accessToken", newToken);          // ← هنا الأهم
     localStorage.setItem("user", JSON.stringify(newUser));
   };
-  
+
 
   return (
     <AuthContext.Provider
@@ -106,6 +116,7 @@ console.log("REFRESH DATA:", data);
         login,
         logout,
         isLoading,
+        user
       }}
     >
       {isLoading ? (

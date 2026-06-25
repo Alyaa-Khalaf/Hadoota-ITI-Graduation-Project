@@ -53,9 +53,8 @@ module.exports = {
       },
 
       fontFamily: {
-        sans: ['Cairo', 'sans-serif'],
-        serif: ['Amiri', 'serif'],
-      },
+  sans: ['Noto Kufi Arabic', 'sans-serif'],
+},
 
       boxShadow: {
         card: '0 8px 24px rgba(255, 155, 184, 0.12)',
