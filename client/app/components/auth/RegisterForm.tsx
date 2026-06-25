@@ -71,12 +71,17 @@ export default function RegisterForm() {
 
       // ✔️ تغذية الـ Global State الحية (Source of Truth)
       setAccessToken(token);
+      localStorage.setItem("token", token);  // ← ده اللي كان ناقص
+      const user = data?.data?.user || data?.user;
+      if (user) {
+        localStorage.setItem("user", JSON.stringify(user));
+      }
 
-      // 🔐 تم إزالة الـ LocalStorage تماماً بناءً على معايير الأمان العالية!
       // السيرفر يقوم الآن بحفظ الـ Refresh Token في الـ httpOnly Cookie تلقائياً بفضل الـ credentials: "include"
 
-      router.push("/onboarding");
-      // router.push("/dashboard/profile");
+      setTimeout(() => {
+        router.push("/onboarding");
+      }, 50);
     } catch (err: any) {
       setError(err.message || "تعذر إنشاء الحساب");
     } finally {
