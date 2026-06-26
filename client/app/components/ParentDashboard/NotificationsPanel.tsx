@@ -131,7 +131,7 @@ export default function NotificationsPanel() {
               key={f.k}
               onClick={() => setFilter(f.k as Filter)}
               className={`px-2 py-1 rounded-md border ${
-                filter === f.k ? "bg-orange-500 text-white" : "text-gray-500"
+                filter === f.k ? "bg-primary text-white" : "text-gray-500"
               }`}
             >
               {f.l}

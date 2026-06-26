@@ -1,4 +1,4 @@
-import ParentInfoForm from "../components/dashboard/ParentInfoForm";
+import ParentInfoForm from "../../components/dashboard/ParentInfoForm";
 
 export default function ProfilePage() {
   return (

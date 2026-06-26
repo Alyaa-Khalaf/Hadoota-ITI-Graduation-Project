@@ -111,7 +111,7 @@ export default function AIReportSection({ childId }: Props) {
         <button
           onClick={generateReport}
           disabled={generating}
-          className="px-3 py-1 text-xs bg-orange-500 text-white rounded-md"
+          className="px-3 py-1 text-xs bg-primary text-white rounded-md"
         >
           {generating ? "جاري التوليد..." : "توليد التقرير"}
         </button>
