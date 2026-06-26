@@ -58,7 +58,6 @@ export default function LoginForm() {
       login(token, user);
 
       router.push("/childAdventure");
-      // router.push("/dashboard/profile");
     } catch (err: any) {
       setError(
         err.message || "حدث خطأ أثناء تسجيل الدخول"

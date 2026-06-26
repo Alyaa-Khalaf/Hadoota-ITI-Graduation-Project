@@ -20,6 +20,7 @@ interface AuthContextType {
   refreshAccessToken: () => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
+  updateUser: (user: User) => void;
   login: (token: string, newUser: User) => void;
   user: User | null;
 }
@@ -99,6 +100,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     refreshAccessToken();
   }, [refreshAccessToken]);
 
+  // ==========================
+  // login
+  // ==========================
+
   const login = (newToken: string, newUser: User) => {
     setAccessToken(newToken);
     setUser(newUser);
@@ -106,6 +111,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("user", JSON.stringify(newUser));
   };
 
+  const updateUser = (newUser: User) => {
+  setUser(newUser);
+  localStorage.setItem("user", JSON.stringify(newUser));
+};
 
   return (
     <AuthContext.Provider
@@ -116,7 +125,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         logout,
         isLoading,
-        user
+        user,
+        updateUser
       }}
     >
       {isLoading ? (

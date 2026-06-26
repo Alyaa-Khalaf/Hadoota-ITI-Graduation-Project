@@ -2,16 +2,20 @@
 import { useState, useEffect } from "react";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ParentInfoForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [avatar, setAvatar] = useState("👩");
+  const [avatar, setAvatar] = useState("👨‍💼");
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const { updateUser } = useAuth();
 
   //  جلب بيانات البروفايل (GET) باستخدام accessToken
   
@@ -73,25 +77,57 @@ export default function ParentInfoForm() {
 
     try {
       const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
-      
+      const body = {
+          name,
+          avatar
+      };
       const res = await fetch("http://localhost:5000/api/users/profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({
-          name: name,
-          email: email,
-          avatar: avatar
-        })
+        body: JSON.stringify(body)
       });
 
       const result = await res.json();
 
       if (res.ok && result.success) {
+        updateUser(result.data);
+        if (oldPassword || newPassword) {
+          if (!oldPassword || !newPassword) {
+            setError("يجب إدخال كلمة المرور الحالية والجديدة.");
+            setIsLoading(false);
+            return;
+          }
+
+          const passwordRes = await fetch(
+            "http://localhost:5000/api/users/change-password",
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                oldPassword,
+                newPassword,
+              }),
+            }
+          );
+
+          const passwordResult = await passwordRes.json();
+
+          if (!passwordRes.ok) {
+            setError(passwordResult.message);
+            setIsLoading(false);
+            return;
+          }
+        }
         setSuccessMessage("تم حفظ التغييرات بنجاح! ✅");
         setIsEditing(false);
+        setOldPassword("");
+        setNewPassword("");
       } else {
         setError(result.message || "فشل تحديث البيانات.");
       }
@@ -143,7 +179,7 @@ export default function ParentInfoForm() {
           </div>
           <div>
             <label className="block text-xs font-black text-gray-700 mb-1">البريد الإلكتروني</label>
-            <Input type="email" value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} label="" required disabled={isLoading} />
+            <Input type="email" value={email} label="" disabled />
           </div>
           <div>
             <label className="block text-xs font-black text-gray-700 mb-1">اختر أفاتار</label>
@@ -160,6 +196,33 @@ export default function ParentInfoForm() {
               <option value="👵">👵</option>
               <option value="👴">👴</option>
             </select>
+          </div>
+          <div>
+            <label className="block text-xs font-black text-gray-700 mb-1">
+              كلمة المرور الحالية
+            </label>
+
+            <Input
+              type="password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              label=""
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-black text-gray-700 mb-1">
+              كلمة المرور الجديدة
+            </label>
+
+            <Input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              label=""
+              disabled={isLoading}
+            />
           </div>
           <div className="flex gap-2 justify-end pt-2">
             <Button type="submit" variant="primary" className="!py-2 !px-6 text-xs font-black" disabled={isLoading}>

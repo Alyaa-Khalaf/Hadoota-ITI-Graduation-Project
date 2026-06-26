@@ -15,7 +15,7 @@ export default function LandingPage() {
       <Features />
       <HowItWorks />
       <CTA />
-      <Testimonials />
+      {/* <Testimonials /> */}
       <Pricing />
       <Footer />
     </main>

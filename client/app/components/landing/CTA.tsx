@@ -14,6 +14,7 @@ const featuresList = [
 export default function CTA() {
   return (
     <section
+      id="cta"
       className="
         py-24
         bg-gradient-to-b

@@ -4,16 +4,21 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Button from "../ui/Button";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const { accessToken,user, logout} = useAuth();
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
 
-   const [open, setOpen] = useState(false);
 
-
+  const edit = () => {
+    setOpen(false);
+    router.push("/profile");
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -67,8 +72,8 @@ export default function Navbar() {
             كيف تعمل
           </Link>
 
-          <Link href="#testimonials" className={navLinkClasses}>
-            الآراء
+          <Link href="#cta" className={navLinkClasses}>
+           داشبورد الاب
           </Link>
 
           <Link href="#pricing" className={navLinkClasses}>
@@ -130,12 +135,18 @@ export default function Navbar() {
               <p className="font-medium">{user?.email}</p>
             </div>
           </div>
-
-          {/* Footer */}
+          {/* edit button */}
+          <button
+          onClick={edit}
+          className="w-full py-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition"
+          >
+              تعديل الحساب
+          </button>
+            {/* Footer */}
           <button
             onClick={logout}
             className="
-              w-full py-2 rounded-xl
+              w-full mt-4 py-2 rounded-xl
               bg-red-50 text-red-600
               hover:bg-red-100 transition
             "
