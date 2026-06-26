@@ -6,8 +6,13 @@ import { sendSuccess, sendError } from "../utils/apiResponse.js";
 
 // GET /api/users/profile
 export const getUserProfile = async (req, res) => {
+  // console.log("req.user =", req.user);
+
+  const user = await User.findById(req.user.id);
+  // console.log("user =", user);
   try {
-    return sendSuccess(res, 200, "Profile fetched successfully", req.user);
+    // change req.user to user
+    return sendSuccess(res, 200, "Profile fetched successfully", user);
   } catch (error) {
     return sendError(res, 500, "Server error", [error.message]);
   }
