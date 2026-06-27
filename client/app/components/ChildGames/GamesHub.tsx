@@ -36,13 +36,13 @@ const games = [
   },
   {
     id: "speed",
-    title: "سرعة التفاعل",
+    title: "الالوان",
     emoji: "⚡",
     description: "اختار بسرعة واربح نقاط",
     color: "bg-[#AFA9EC]",
     textColor: "text-[#3C3489]",
     subColor: "text-[#534AB7]",
-    href: "/games/SpeedReactionGame",
+    href: "/games/ColorsGame",
   },
 ];
 
