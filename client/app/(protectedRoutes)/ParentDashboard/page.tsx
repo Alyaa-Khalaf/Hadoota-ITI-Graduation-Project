@@ -59,7 +59,7 @@ export default function ParentDashboard() {
           <div className="space-y-6">
             {!selectedChildId ? (
               <div className="p-6 text-sm text-gray-400 text-center bg-white rounded-xl border">
-                اختر طفلاً أولاً من تبويب "نظرة عامة"
+               ` اختر طفلاً أولاً من تبويب نظرة عامة`
               </div>
             ) : (
               <AIReportSection childId={selectedChildId} />

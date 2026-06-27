@@ -29,12 +29,7 @@ export default function LoginPage() {
           {/* الفورم الذكي للـ Login */}
           <LoginForm />
 
-          <div className="text-center mt-8 pt-5 border-t border-border-warm/40 text-sm font-bold text-ink-muted">
-            ليس لديك حساب؟{" "}
-            <Link href="/auth/register" className="text-primary font-black hover:underline">
-              أنشئ حساباً الآن
-            </Link>
-          </div>
+          
         </Card>
       </motion.div>
     </div>
