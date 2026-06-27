@@ -2,7 +2,7 @@ import User from '../models/User.js'
 import { sendEmail } from '../services/emailService.js'
 import { subscriptionTemplate } from '../services/notifications/templates/subscriptionConfirmation.js'
 import { createIntention, buildCheckoutUrl, verifyHmac } from '../services/paymobService.js'
-import { recordPaymobTransaction } from '../services/transactionService.js'
+import { recordPaymobTransaction, recordPendingCheckout } from '../services/transactionService.js'
 
 // Plan definitions — Paymob is one-time payment, so each plan has an
 // amount (in EGP) and a duration after which the subscription expires.
@@ -63,6 +63,13 @@ export const createCheckout = async (req, res, next) => {
     user.subscription.provider = 'paymob'
     user.subscription.lastReference = reference
     await user.save({ validateBeforeSave: false })
+
+    await recordPendingCheckout({
+      userId,
+      plan,
+      reference,
+      amount: selectedPlan.amount,
+    })
 
     const url = buildCheckoutUrl(clientSecret)
 

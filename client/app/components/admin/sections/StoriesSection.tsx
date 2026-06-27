@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Flag, FlagOff } from "lucide-react";
 import DataTable, { Column } from "../DataTable";
+import DetailModal from "../DetailModal";
 import ConfirmDialog from "../ConfirmDialog";
+import { storyDetailFields } from "../adminDetails";
 import { useCrudSection } from "@/hooks/useCrudSection";
 import { getApiErrorMessage } from "@/utils/api";
 import * as admin from "@/services/adminService";
@@ -14,6 +16,12 @@ const STATUS_LABELS: Record<string, string> = {
   generating: "قيد التوليد",
   failed: "فشلت",
 };
+
+const STATUS_OPTIONS = [
+  { value: "completed", label: "مكتملة" },
+  { value: "generating", label: "قيد التوليد" },
+  { value: "failed", label: "فشلت" },
+];
 
 function FlagButton({ story, busy, onToggle }: { story: AdminStory; busy: boolean; onToggle: (s: AdminStory) => void }) {
   const flagged = story.safetyCheck?.flagged;
@@ -30,13 +38,27 @@ function FlagButton({ story, busy, onToggle }: { story: AdminStory; busy: boolea
 }
 
 export default function StoriesSection() {
-  const { rows, page, totalPages, total, loading, error, setPage, setSearch, reload, remove } =
+  const { rows, page, totalPages, total, loading, error, filters, setPage, setSearch, setFilter, reload, remove } =
     useCrudSection<AdminStory>({ fetcher: admin.listStories, remover: admin.deleteStory });
 
   const [toDelete, setToDelete] = useState<AdminStory | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [busyId, setBusyId] = useState("");
   const [actionError, setActionError] = useState("");
+  const [detail, setDetail] = useState<AdminStory | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  const openDetails = async (s: AdminStory) => {
+    setDetailLoading(true);
+    try {
+      const full = await admin.getStory(s._id);
+      setDetail(full);
+    } catch {
+      setDetail(s);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
   const toggleFlag = async (story: AdminStory) => {
     setBusyId(story._id);
@@ -87,8 +109,33 @@ export default function StoriesSection() {
         total={total}
         onPageChange={setPage}
         onSearch={setSearch}
+        filters={[
+          {
+            key: "status",
+            label: "الحالة",
+            value: filters.status ?? "",
+            options: STATUS_OPTIONS,
+            onChange: (v) => setFilter("status", v),
+          },
+          {
+            key: "flagged",
+            label: "التبليغ",
+            value: filters.flagged ?? "",
+            options: [{ value: "true", label: "مبلّغ عنها فقط" }],
+            onChange: (v) => setFilter("flagged", v),
+          },
+        ]}
+        onView={openDetails}
         onDelete={(s) => setToDelete(s)}
         rowKey={(s) => s._id}
+      />
+
+      <DetailModal
+        open={Boolean(detail)}
+        title={detail?.title ?? "تفاصيل الحدوتة"}
+        fields={detail ? storyDetailFields(detail) : []}
+        loading={detailLoading}
+        onClose={() => setDetail(null)}
       />
 
       <ConfirmDialog

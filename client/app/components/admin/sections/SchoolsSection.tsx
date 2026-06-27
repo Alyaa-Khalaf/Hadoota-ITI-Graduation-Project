@@ -2,8 +2,10 @@
 
 import { useCallback, useState } from "react";
 import DataTable, { Column } from "../DataTable";
+import DetailModal from "../DetailModal";
 import FormModal, { FormField } from "../FormModal";
 import ConfirmDialog from "../ConfirmDialog";
+import { schoolDetailFields } from "../adminDetails";
 import { useCrudSection } from "@/hooks/useCrudSection";
 import { getApiErrorMessage } from "@/utils/api";
 import * as admin from "@/services/adminService";
@@ -31,7 +33,7 @@ const FIELDS: FormField[] = [
 ];
 
 export default function SchoolsSection() {
-  const { rows, page, totalPages, total, loading, error, setPage, setSearch, reload, remove } =
+  const { rows, page, totalPages, total, loading, error, filters, setPage, setSearch, setFilter, reload, remove } =
     useCrudSection<AdminSchool>({ fetcher: admin.listSchools, remover: admin.deleteSchool });
 
   const [formOpen, setFormOpen] = useState(false);
@@ -39,9 +41,9 @@ export default function SchoolsSection() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
-
   const [toDelete, setToDelete] = useState<AdminSchool | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [detail, setDetail] = useState<AdminSchool | null>(null);
 
   const openCreate = () => {
     setEditing(null);
@@ -116,11 +118,26 @@ export default function SchoolsSection() {
         total={total}
         onPageChange={setPage}
         onSearch={setSearch}
+        filters={[{
+          key: "subscriptionStatus",
+          label: "حالة الاشتراك",
+          value: filters.subscriptionStatus ?? "",
+          options: STATUS_OPTIONS,
+          onChange: (v) => setFilter("subscriptionStatus", v),
+        }]}
         onCreate={openCreate}
         createLabel="مدرسة جديدة"
+        onView={setDetail}
         onEdit={openEdit}
         onDelete={(s) => setToDelete(s)}
         rowKey={(s) => s._id}
+      />
+
+      <DetailModal
+        open={Boolean(detail)}
+        title={detail?.name ?? "تفاصيل المدرسة"}
+        fields={detail ? schoolDetailFields(detail) : []}
+        onClose={() => setDetail(null)}
       />
 
       <FormModal

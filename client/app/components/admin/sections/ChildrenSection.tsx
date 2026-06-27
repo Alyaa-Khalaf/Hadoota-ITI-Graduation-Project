@@ -2,12 +2,19 @@
 
 import { useCallback, useState } from "react";
 import DataTable, { Column } from "../DataTable";
+import DetailModal from "../DetailModal";
 import FormModal, { FormField } from "../FormModal";
 import ConfirmDialog from "../ConfirmDialog";
+import { childDetailFields } from "../adminDetails";
 import { useCrudSection } from "@/hooks/useCrudSection";
 import { getApiErrorMessage } from "@/utils/api";
 import * as admin from "@/services/adminService";
 import type { AdminChild } from "@/services/adminService";
+
+const GENDER_OPTIONS = [
+  { value: "male", label: "ذكر" },
+  { value: "female", label: "أنثى" },
+];
 
 const EDIT_FIELDS: FormField[] = [
   { name: "name", label: "الاسم", required: true },
@@ -24,7 +31,7 @@ const EDIT_FIELDS: FormField[] = [
 ];
 
 export default function ChildrenSection() {
-  const { rows, page, totalPages, total, loading, error, setPage, setSearch, reload, remove } =
+  const { rows, page, totalPages, total, loading, error, filters, setPage, setSearch, setFilter, reload, remove } =
     useCrudSection<AdminChild>({ fetcher: admin.listChildren, remover: admin.deleteChild });
 
   const [formOpen, setFormOpen] = useState(false);
@@ -32,9 +39,22 @@ export default function ChildrenSection() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
-
   const [toDelete, setToDelete] = useState<AdminChild | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [detail, setDetail] = useState<AdminChild | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  const openDetails = async (ch: AdminChild) => {
+    setDetailLoading(true);
+    try {
+      const full = await admin.getChild(ch._id);
+      setDetail(full);
+    } catch {
+      setDetail(ch);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
   const openEdit = (ch: AdminChild) => {
     setEditing(ch);
@@ -105,9 +125,25 @@ export default function ChildrenSection() {
         total={total}
         onPageChange={setPage}
         onSearch={setSearch}
+        filters={[{
+          key: "gender",
+          label: "النوع",
+          value: filters.gender ?? "",
+          options: GENDER_OPTIONS,
+          onChange: (v) => setFilter("gender", v),
+        }]}
+        onView={openDetails}
         onEdit={openEdit}
         onDelete={(ch) => setToDelete(ch)}
         rowKey={(ch) => ch._id}
+      />
+
+      <DetailModal
+        open={Boolean(detail)}
+        title={detail?.name ?? "تفاصيل الطفل"}
+        fields={detail ? childDetailFields(detail) : []}
+        loading={detailLoading}
+        onClose={() => setDetail(null)}
       />
 
       <FormModal

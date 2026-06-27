@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import DataTable, { Column } from "../DataTable";
+import DetailModal from "../DetailModal";
 import ConfirmDialog from "../ConfirmDialog";
+import { quizDetailFields } from "../adminDetails";
 import { useCrudSection } from "@/hooks/useCrudSection";
 import * as admin from "@/services/adminService";
 import type { AdminQuiz } from "@/services/adminService";
@@ -13,6 +15,7 @@ export default function QuizzesSection() {
 
   const [toDelete, setToDelete] = useState<AdminQuiz | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [detail, setDetail] = useState<AdminQuiz | null>(null);
 
   const confirmDelete = async () => {
     if (!toDelete) return;
@@ -44,8 +47,16 @@ export default function QuizzesSection() {
         totalPages={totalPages}
         total={total}
         onPageChange={setPage}
+        onView={setDetail}
         onDelete={(q) => setToDelete(q)}
         rowKey={(q) => q._id}
+      />
+
+      <DetailModal
+        open={Boolean(detail)}
+        title="تفاصيل الاختبار"
+        fields={detail ? quizDetailFields(detail) : []}
+        onClose={() => setDetail(null)}
       />
 
       <ConfirmDialog

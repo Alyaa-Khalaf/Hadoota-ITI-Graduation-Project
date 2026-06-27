@@ -2,8 +2,10 @@
 
 import { useCallback, useState } from "react";
 import DataTable, { Column } from "../DataTable";
+import DetailModal from "../DetailModal";
 import FormModal, { FormField } from "../FormModal";
 import ConfirmDialog from "../ConfirmDialog";
+import { userDetailFields } from "../adminDetails";
 import { useCrudSection } from "@/hooks/useCrudSection";
 import { getApiErrorMessage } from "@/utils/api";
 import * as admin from "@/services/adminService";
@@ -37,7 +39,7 @@ const EDIT_FIELDS: FormField[] = [
 ];
 
 export default function UsersSection() {
-  const { rows, page, totalPages, total, loading, error, setPage, setSearch, reload, remove } =
+  const { rows, page, totalPages, total, loading, error, filters, setPage, setSearch, setFilter, reload, remove } =
     useCrudSection<AdminUser>({ fetcher: admin.listUsers, remover: admin.deleteUser });
 
   const [formOpen, setFormOpen] = useState(false);
@@ -45,9 +47,22 @@ export default function UsersSection() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
-
   const [toDelete, setToDelete] = useState<AdminUser | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [detail, setDetail] = useState<AdminUser | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  const openDetails = async (u: AdminUser) => {
+    setDetailLoading(true);
+    try {
+      const full = await admin.getUser(u._id);
+      setDetail(full);
+    } catch {
+      setDetail(u);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
   const openCreate = () => {
     setEditing(null);
@@ -127,11 +142,27 @@ export default function UsersSection() {
         total={total}
         onPageChange={setPage}
         onSearch={setSearch}
+        filters={[{
+          key: "role",
+          label: "الدور",
+          value: filters.role ?? "",
+          options: ROLE_OPTIONS,
+          onChange: (v) => setFilter("role", v),
+        }]}
         onCreate={openCreate}
         createLabel="مستخدم جديد"
+        onView={openDetails}
         onEdit={openEdit}
         onDelete={(u) => setToDelete(u)}
         rowKey={(u) => u._id}
+      />
+
+      <DetailModal
+        open={Boolean(detail)}
+        title={detail?.name ?? "تفاصيل المستخدم"}
+        fields={detail ? userDetailFields(detail) : []}
+        loading={detailLoading}
+        onClose={() => setDetail(null)}
       />
 
       <FormModal

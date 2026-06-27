@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { getApiErrorMessage } from "@/utils/api";
-import type { Paginated } from "@/services/adminService";
+import type { ListParams, Paginated } from "@/services/adminService";
 
 interface UseCrudArgs<T> {
-  fetcher: (params: { page: number; search?: string }) => Promise<Paginated<T>>;
+  fetcher: (params: ListParams) => Promise<Paginated<T>>;
   remover?: (id: string) => Promise<unknown>;
 }
 
@@ -15,14 +15,24 @@ export function useCrudSection<T>({ fetcher, remover }: UseCrudArgs<T>) {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
+  const [filters, setFiltersState] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const setFilter = useCallback((key: string, value: string) => {
+    setFiltersState((prev) => ({ ...prev, [key]: value }));
+    setPage(1);
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const data = await fetcher({ page, search: search || undefined });
+      const params: ListParams = { page, search: search || undefined };
+      for (const [key, value] of Object.entries(filters)) {
+        if (value) params[key] = value;
+      }
+      const data = await fetcher(params);
       setRows(data.items);
       setTotalPages(data.totalPages);
       setTotal(data.total);
@@ -31,7 +41,7 @@ export function useCrudSection<T>({ fetcher, remover }: UseCrudArgs<T>) {
     } finally {
       setLoading(false);
     }
-  }, [fetcher, page, search]);
+  }, [fetcher, page, search, filters]);
 
   useEffect(() => {
     load();
@@ -47,7 +57,17 @@ export function useCrudSection<T>({ fetcher, remover }: UseCrudArgs<T>) {
   );
 
   return {
-    rows, page, totalPages, total, loading, error,
-    setPage, setSearch, reload: load, remove,
+    rows,
+    page,
+    totalPages,
+    total,
+    loading,
+    error,
+    filters,
+    setPage,
+    setSearch,
+    setFilter,
+    reload: load,
+    remove,
   };
 }

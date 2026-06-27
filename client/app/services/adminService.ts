@@ -155,10 +155,12 @@ export const createUser = (body: Partial<AdminUser> & { password: string }) =>
 export const updateUser = (id: string, body: Partial<AdminUser>) =>
   unwrap<AdminUser>(apiClient.put(`/admin/users/${id}`, body));
 export const deleteUser = (id: string) => apiClient.delete(`/admin/users/${id}`);
+export const getUser = (id: string) => unwrap<AdminUser>(apiClient.get(`/admin/users/${id}`));
 
 // Children
 export const listChildren = (params?: ListParams) =>
   unwrap<Paginated<AdminChild>>(apiClient.get("/admin/children", { params }));
+export const getChild = (id: string) => unwrap<AdminChild>(apiClient.get(`/admin/children/${id}`));
 export const updateChild = (id: string, body: Partial<AdminChild>) =>
   unwrap<AdminChild>(apiClient.put(`/admin/children/${id}`, body));
 export const deleteChild = (id: string) => apiClient.delete(`/admin/children/${id}`);
@@ -166,6 +168,7 @@ export const deleteChild = (id: string) => apiClient.delete(`/admin/children/${i
 // Stories
 export const listStories = (params?: ListParams) =>
   unwrap<Paginated<AdminStory>>(apiClient.get("/admin/stories", { params }));
+export const getStory = (id: string) => unwrap<AdminStory>(apiClient.get(`/admin/stories/${id}`));
 export const updateStory = (id: string, body: Partial<AdminStory>) =>
   unwrap<AdminStory>(apiClient.put(`/admin/stories/${id}`, body));
 export const deleteStory = (id: string) => apiClient.delete(`/admin/stories/${id}`);
@@ -187,6 +190,8 @@ export const deleteQuiz = (id: string) => apiClient.delete(`/admin/quizzes/${id}
 // Knowledge Base
 export const listKnowledge = (params?: ListParams) =>
   unwrap<Paginated<AdminKnowledge>>(apiClient.get("/admin/knowledge", { params }));
+export const getKnowledgeCategories = () =>
+  unwrap<string[]>(apiClient.get("/admin/knowledge/categories"));
 export const createKnowledge = (body: Partial<AdminKnowledge>) =>
   unwrap<AdminKnowledge>(apiClient.post("/admin/knowledge", body));
 export const updateKnowledge = (id: string, body: Partial<AdminKnowledge>) =>
@@ -196,4 +201,8 @@ export const deleteKnowledge = (id: string) => apiClient.delete(`/admin/knowledg
 // Transactions
 export const listTransactions = (params?: ListParams) =>
   unwrap<Paginated<AdminTransaction>>(apiClient.get("/admin/transactions", { params }));
+export const getTransaction = (id: string) =>
+  unwrap<AdminTransaction>(apiClient.get(`/admin/transactions/${id}`));
+export const syncTransactions = () =>
+  unwrap<{ synced: number }>(apiClient.post("/admin/transactions/sync"));
 

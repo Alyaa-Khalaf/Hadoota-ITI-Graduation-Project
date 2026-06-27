@@ -1,9 +1,11 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import DataTable, { Column } from "../DataTable";
+import DetailModal from "../DetailModal";
 import FormModal, { FormField } from "../FormModal";
 import ConfirmDialog from "../ConfirmDialog";
+import { knowledgeDetailFields } from "../adminDetails";
 import { useCrudSection } from "@/hooks/useCrudSection";
 import { getApiErrorMessage } from "@/utils/api";
 import * as admin from "@/services/adminService";
@@ -28,17 +30,22 @@ const FIELDS: FormField[] = [
 ];
 
 export default function KnowledgeSection() {
-  const { rows, page, totalPages, total, loading, error, setPage, setSearch, reload, remove } =
+  const { rows, page, totalPages, total, loading, error, filters, setPage, setSearch, setFilter, reload, remove } =
     useCrudSection<AdminKnowledge>({ fetcher: admin.listKnowledge, remover: admin.deleteKnowledge });
 
+  const [categories, setCategories] = useState<string[]>([]);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<AdminKnowledge | null>(null);
   const [values, setValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
-
   const [toDelete, setToDelete] = useState<AdminKnowledge | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [detail, setDetail] = useState<AdminKnowledge | null>(null);
+
+  useEffect(() => {
+    admin.getKnowledgeCategories().then(setCategories).catch(() => {});
+  }, []);
 
   const openCreate = () => {
     setEditing(null);
@@ -81,6 +88,8 @@ export default function KnowledgeSection() {
         await admin.createKnowledge(body);
       }
       setFormOpen(false);
+      const cats = await admin.getKnowledgeCategories();
+      setCategories(cats);
       await reload();
     } catch (err) {
       setFormError(getApiErrorMessage(err, "تعذر حفظ المعلومة"));
@@ -99,6 +108,8 @@ export default function KnowledgeSection() {
       setDeleting(false);
     }
   };
+
+  const categoryOptions = categories.map((c) => ({ value: c, label: c }));
 
   const columns: Column<AdminKnowledge>[] = [
     { key: "title", header: "العنوان", render: (k) => <span className="font-bold">{k.title}</span> },
@@ -122,11 +133,26 @@ export default function KnowledgeSection() {
         total={total}
         onPageChange={setPage}
         onSearch={setSearch}
+        filters={[{
+          key: "category",
+          label: "التصنيف",
+          value: filters.category ?? "",
+          options: categoryOptions,
+          onChange: (v) => setFilter("category", v),
+        }]}
         onCreate={openCreate}
         createLabel="معلومة جديدة"
+        onView={setDetail}
         onEdit={openEdit}
         onDelete={(k) => setToDelete(k)}
         rowKey={(k) => k._id}
+      />
+
+      <DetailModal
+        open={Boolean(detail)}
+        title={detail?.title ?? "تفاصيل المعلومة"}
+        fields={detail ? knowledgeDetailFields(detail) : []}
+        onClose={() => setDetail(null)}
       />
 
       <FormModal

@@ -1,12 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Pencil, Trash2, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Search, Pencil, Trash2, ChevronLeft, ChevronRight, Plus, Eye } from "lucide-react";
 
 export interface Column<T> {
   key: string;
   header: string;
   render?: (row: T) => React.ReactNode;
+}
+
+export interface TableFilter {
+  key: string;
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (value: string) => void;
 }
 
 interface DataTableProps<T> {
@@ -18,6 +26,8 @@ interface DataTableProps<T> {
   total: number;
   onPageChange: (page: number) => void;
   onSearch?: (q: string) => void;
+  filters?: TableFilter[];
+  onView?: (row: T) => void;
   onEdit?: (row: T) => void;
   onDelete?: (row: T) => void;
   onCreate?: () => void;
@@ -29,30 +39,57 @@ interface DataTableProps<T> {
 export default function DataTable<T>(props: DataTableProps<T>) {
   const {
     columns, rows, loading = false, page, totalPages, total,
-    onPageChange, onSearch, onEdit, onDelete, onCreate,
+    onPageChange, onSearch, filters = [], onView, onEdit, onDelete, onCreate,
     createLabel = "إضافة جديد", rowKey, emptyText = "لا توجد بيانات حالياً",
   } = props;
   const [query, setQuery] = useState("");
-  const hasActions = Boolean(onEdit || onDelete);
+  const hasActions = Boolean(onView || onEdit || onDelete);
   const colSpan = columns.length + (hasActions ? 1 : 0);
   const prevDisabled = page < 2;
   const nextDisabled = page === totalPages || page > totalPages;
 
   return (
     <div className="bg-white rounded-3xl border border-[#E8DED4] shadow-sm overflow-hidden">
-      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-4 border-b border-[#E8DED4]">
-        {onSearch && (
-          <form onSubmit={(e) => { e.preventDefault(); onSearch(query); }} className="relative flex-1 max-w-xs">
-            <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A6552]" />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="بحث..." className="w-full pr-9 pl-3 py-2 rounded-2xl border border-[#E8DED4] text-sm bg-[#FFFBF0] focus:outline-none focus:ring-2 focus:ring-[#FF7043]/40" />
-          </form>
-        )}
-        {onCreate && (
-          <button onClick={onCreate} className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#FF7043] text-white font-bold text-sm hover:bg-[#E65F33] transition shrink-0">
-            <Plus size={16} /> {createLabel}
-          </button>
+      <div className="flex flex-col gap-3 p-4 border-b border-[#E8DED4]">
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+          {onSearch && (
+            <form onSubmit={(e) => { e.preventDefault(); onSearch(query); }} className="relative flex-1 max-w-xs">
+              <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A6552]" />
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="بحث..." className="w-full pr-9 pl-3 py-2 rounded-2xl border border-[#E8DED4] text-sm bg-[#FFFBF0] focus:outline-none focus:ring-2 focus:ring-[#FF7043]/40" />
+            </form>
+          )}
+          {onCreate && (
+            <button onClick={onCreate} className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#FF7043] text-white font-bold text-sm hover:bg-[#E65F33] transition shrink-0">
+              <Plus size={16} /> {createLabel}
+            </button>
+          )}
+        </div>
+
+        {filters.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {filters.map((filter) => (
+              <div key={filter.key} className="flex items-center gap-2">
+                <label className="text-xs font-bold text-[#7A6552] whitespace-nowrap">
+                  {filter.label}:
+                </label>
+                <select
+                  value={filter.value}
+                  onChange={(e) => filter.onChange(e.target.value)}
+                  className="px-3 py-1.5 rounded-xl border border-[#E8DED4] text-xs font-bold bg-[#FFFBF0] text-[#3D2C1E] focus:outline-none focus:ring-2 focus:ring-[#FF7043]/40"
+                >
+                  <option value="">الكل</option>
+                  {filter.options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
         )}
       </div>
+
       <div className="overflow-x-auto">
         <table className="w-full text-right">
           <thead>
@@ -77,6 +114,11 @@ export default function DataTable<T>(props: DataTableProps<T>) {
                   {hasActions && (
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
+                        {onView && (
+                          <button onClick={() => onView(row)} className="p-1.5 rounded-lg text-[#7A6552] hover:bg-[#FFF5E6] transition" title="التفاصيل">
+                            <Eye size={16} />
+                          </button>
+                        )}
                         {onEdit && <button onClick={() => onEdit(row)} className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition" title="تعديل"><Pencil size={16} /></button>}
                         {onDelete && <button onClick={() => onDelete(row)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition" title="حذف"><Trash2 size={16} /></button>}
                       </div>

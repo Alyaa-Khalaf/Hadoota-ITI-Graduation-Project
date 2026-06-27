@@ -8,6 +8,7 @@ import QuizSubmission from '../models/quizSubmissionModel.js';
 import Gamification from '../models/gamificationModel.js';
 import Transaction from '../models/Transaction.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
+import { syncTransactionsFromUsers } from '../services/transactionService.js';
 
 // ============================================================
 // Helpers
@@ -244,9 +245,10 @@ export const deleteUser = async (req, res) => {
 export const listChildren = async (req, res) => {
   try {
     const { page, limit, skip } = getPaging(req);
-    const { search } = req.query;
+    const { search, gender } = req.query;
 
     const filter = {};
+    if (gender) filter.gender = gender;
     if (search) filter.name = { $regex: search, $options: 'i' };
 
     const [items, total] = await Promise.all([
@@ -405,9 +407,10 @@ export const deleteStory = async (req, res) => {
 export const listSchools = async (req, res) => {
   try {
     const { page, limit, skip } = getPaging(req);
-    const { search } = req.query;
+    const { search, subscriptionStatus } = req.query;
 
     const filter = {};
+    if (subscriptionStatus) filter.subscriptionStatus = subscriptionStatus;
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
@@ -599,13 +602,34 @@ export const deleteKnowledge = async (req, res) => {
 // 💳 TRANSACTIONS
 // ============================================================
 
+const shapeTransaction = (t) => ({
+  _id: t._id,
+  user: t.userId
+    ? { _id: t.userId._id, name: t.userId.name, email: t.userId.email, role: t.userId.role }
+    : null,
+  school: t.schoolId
+    ? { _id: t.schoolId._id, name: t.schoolId.name, code: t.schoolId.code }
+    : null,
+  amount: t.amount,
+  currency: t.currency,
+  plan: t.plan,
+  status: t.status,
+  description: t.description,
+  provider: t.provider,
+  paymobTransactionId: t.paymobTransactionId,
+  paymobOrderId: t.paymobOrderId,
+  reference: t.reference,
+  createdAt: t.createdAt,
+});
+
 export const listTransactions = async (req, res) => {
   try {
     const { page, limit, skip } = getPaging(req);
-    const { search, status } = req.query;
+    const { search, status, plan } = req.query;
 
     const filter = {};
     if (status) filter.status = status;
+    if (plan) filter.plan = plan;
 
     if (search) {
       const users = await User.find({
@@ -637,29 +661,42 @@ export const listTransactions = async (req, res) => {
       Transaction.countDocuments(filter),
     ]);
 
-    const shaped = items.map((t) => ({
-      _id: t._id,
-      user: t.userId
-        ? { _id: t.userId._id, name: t.userId.name, email: t.userId.email, role: t.userId.role }
-        : null,
-      school: t.schoolId
-        ? { _id: t.schoolId._id, name: t.schoolId.name, code: t.schoolId.code }
-        : null,
-      amount: t.amount,
-      currency: t.currency,
-      plan: t.plan,
-      status: t.status,
-      description: t.description,
-      provider: t.provider,
-      paymobTransactionId: t.paymobTransactionId,
-      paymobOrderId: t.paymobOrderId,
-      reference: t.reference,
-      createdAt: t.createdAt,
-    }));
+    const shaped = items.map(shapeTransaction);
 
     return sendSuccess(res, 200, 'تم جلب المعاملات', paginated(shaped, total, page, limit));
   } catch (error) {
     return sendError(res, 500, 'فشل جلب المعاملات', [error.message]);
+  }
+};
+
+export const getTransaction = async (req, res) => {
+  try {
+    const t = await Transaction.findById(req.params.id)
+      .populate('userId', 'name email role')
+      .populate('schoolId', 'name code')
+      .lean();
+    if (!t) return sendError(res, 404, 'المعاملة غير موجودة');
+    return sendSuccess(res, 200, 'تم جلب المعاملة', shapeTransaction(t));
+  } catch (error) {
+    return sendError(res, 500, 'فشل جلب المعاملة', [error.message]);
+  }
+};
+
+export const syncTransactions = async (req, res) => {
+  try {
+    const synced = await syncTransactionsFromUsers();
+    return sendSuccess(res, 200, 'تمت مزامنة المعاملات من سجلات الدفع', { synced });
+  } catch (error) {
+    return sendError(res, 500, 'فشل مزامنة المعاملات', [error.message]);
+  }
+};
+
+export const getKnowledgeCategories = async (req, res) => {
+  try {
+    const categories = await KnowledgeBase.distinct('category');
+    return sendSuccess(res, 200, 'تم جلب التصنيفات', categories.filter(Boolean).sort());
+  } catch (error) {
+    return sendError(res, 500, 'فشل جلب التصنيفات', [error.message]);
   }
 };
 

@@ -48,6 +48,7 @@ const transactionSchema = new mongoose.Schema(
 )
 
 transactionSchema.index({ paymobTransactionId: 1 }, { unique: true, sparse: true })
+transactionSchema.index({ reference: 1 }, { unique: true, sparse: true })
 transactionSchema.index({ stripeInvoiceId: 1 }, { unique: true, sparse: true })
 transactionSchema.index({ stripeSessionId: 1 }, { unique: true, sparse: true })
 transactionSchema.index({ userId: 1, createdAt: -1 })

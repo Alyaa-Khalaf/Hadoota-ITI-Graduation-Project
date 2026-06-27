@@ -37,6 +37,9 @@ import {
   deleteKnowledge,
   // transactions
   listTransactions,
+  getTransaction,
+  syncTransactions,
+  getKnowledgeCategories,
   // seeding
   seedPlans,
   seedKnowledge,
@@ -72,11 +75,14 @@ router.get('/quizzes', listQuizzes);
 router.delete('/quizzes/:id', deleteQuiz);
 
 // KNOWLEDGE BASE
+router.get('/knowledge/categories', getKnowledgeCategories);
 router.route('/knowledge').get(listKnowledge).post(createKnowledge);
 router.route('/knowledge/:id').put(updateKnowledge).delete(deleteKnowledge);
 
 // TRANSACTIONS
 router.get('/transactions', listTransactions);
+router.post('/transactions/sync', syncTransactions);
+router.get('/transactions/:id', getTransaction);
 
 // SEEDING
 router.post('/seed/plans', seedPlans);
