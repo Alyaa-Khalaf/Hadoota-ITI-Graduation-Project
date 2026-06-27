@@ -6,6 +6,7 @@ import Quiz from '../models/Quiz.js';
 import KnowledgeBase from '../models/KnowledgeBase.js';
 import QuizSubmission from '../models/quizSubmissionModel.js';
 import Gamification from '../models/gamificationModel.js';
+import Transaction from '../models/Transaction.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
 
 // ============================================================
@@ -591,6 +592,74 @@ export const deleteKnowledge = async (req, res) => {
     return sendSuccess(res, 200, 'تم حذف المعرفة');
   } catch (error) {
     return sendError(res, 500, 'فشل حذف المعرفة', [error.message]);
+  }
+};
+
+// ============================================================
+// 💳 TRANSACTIONS
+// ============================================================
+
+export const listTransactions = async (req, res) => {
+  try {
+    const { page, limit, skip } = getPaging(req);
+    const { search, status } = req.query;
+
+    const filter = {};
+    if (status) filter.status = status;
+
+    if (search) {
+      const users = await User.find({
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } },
+        ],
+      }).select('_id');
+
+      const schools = await School.find({
+        name: { $regex: search, $options: 'i' },
+      }).select('_id');
+
+      filter.$or = [
+        { userId: { $in: users.map((u) => u._id) } },
+        { schoolId: { $in: schools.map((s) => s._id) } },
+        { description: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const [items, total] = await Promise.all([
+      Transaction.find(filter)
+        .populate('userId', 'name email role')
+        .populate('schoolId', 'name code')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Transaction.countDocuments(filter),
+    ]);
+
+    const shaped = items.map((t) => ({
+      _id: t._id,
+      user: t.userId
+        ? { _id: t.userId._id, name: t.userId.name, email: t.userId.email, role: t.userId.role }
+        : null,
+      school: t.schoolId
+        ? { _id: t.schoolId._id, name: t.schoolId.name, code: t.schoolId.code }
+        : null,
+      amount: t.amount,
+      currency: t.currency,
+      plan: t.plan,
+      status: t.status,
+      description: t.description,
+      provider: t.provider,
+      paymobTransactionId: t.paymobTransactionId,
+      paymobOrderId: t.paymobOrderId,
+      reference: t.reference,
+      createdAt: t.createdAt,
+    }));
+
+    return sendSuccess(res, 200, 'تم جلب المعاملات', paginated(shaped, total, page, limit));
+  } catch (error) {
+    return sendError(res, 500, 'فشل جلب المعاملات', [error.message]);
   }
 };
 

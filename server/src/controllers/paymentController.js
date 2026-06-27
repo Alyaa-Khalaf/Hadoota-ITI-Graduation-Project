@@ -2,6 +2,7 @@ import User from '../models/User.js'
 import { sendEmail } from '../services/emailService.js'
 import { subscriptionTemplate } from '../services/notifications/templates/subscriptionConfirmation.js'
 import { createIntention, buildCheckoutUrl, verifyHmac } from '../services/paymobService.js'
+import { recordPaymobTransaction } from '../services/transactionService.js'
 
 // Plan definitions — Paymob is one-time payment, so each plan has an
 // amount (in EGP) and a duration after which the subscription expires.
@@ -111,8 +112,6 @@ export const handleCallback = async (req, res) => {
       return res.status(200).json({ received: true, verified: false })
     }
 
-    // Only act on a successful, fully-captured payment.
-    const isSuccess = obj.success === true && obj.error_occured === false
     const extras = obj.payment_key_claims?.extra || obj.order?.extras || {}
     const reference = obj.order?.merchant_order_id
 
@@ -125,7 +124,10 @@ export const handleCallback = async (req, res) => {
       plan = plan || refPlan
     }
 
+    const isSuccess = obj.success === true && obj.error_occured === false
+
     if (!isSuccess) {
+      await recordPaymobTransaction({ obj, userId, plan, status: 'failed' })
       console.log(`Paymob callback: transaction ${obj.id} not successful (success=${obj.success})`)
       return res.status(200).json({ received: true })
     }
@@ -153,6 +155,7 @@ export const handleCallback = async (req, res) => {
     if (reference) user.subscription.lastReference = reference
 
     await user.save({ validateBeforeSave: false })
+    await recordPaymobTransaction({ obj, userId, plan, status: 'succeeded' })
 
     const renewalDate = expiresAt.toLocaleDateString('ar-EG')
     try {

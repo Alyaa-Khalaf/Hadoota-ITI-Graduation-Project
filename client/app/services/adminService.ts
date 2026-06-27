@@ -96,6 +96,22 @@ export interface AdminKnowledge {
   createdAt: string;
 }
 
+export interface AdminTransaction {
+  _id: string;
+  user?: { _id: string; name: string; email: string; role?: string } | null;
+  school?: { _id: string; name: string; code: string } | null;
+  amount: number;
+  currency: string;
+  plan?: string | null;
+  status: "succeeded" | "failed" | "pending" | "refunded";
+  description?: string;
+  provider?: "paymob" | "stripe";
+  paymobTransactionId?: string;
+  paymobOrderId?: string;
+  reference?: string;
+  createdAt: string;
+}
+
 export interface AdminStats {
   cards: {
     totalUsers: number;
@@ -177,4 +193,7 @@ export const updateKnowledge = (id: string, body: Partial<AdminKnowledge>) =>
   unwrap<AdminKnowledge>(apiClient.put(`/admin/knowledge/${id}`, body));
 export const deleteKnowledge = (id: string) => apiClient.delete(`/admin/knowledge/${id}`);
 
+// Transactions
+export const listTransactions = (params?: ListParams) =>
+  unwrap<Paginated<AdminTransaction>>(apiClient.get("/admin/transactions", { params }));
 
