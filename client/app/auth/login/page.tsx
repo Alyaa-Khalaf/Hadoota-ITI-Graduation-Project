@@ -1,4 +1,5 @@
 "use client";
+import { Suspense } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Card from "../../components/ui/Card";
@@ -27,7 +28,9 @@ export default function LoginPage() {
           </div>
 
           {/* الفورم الذكي للـ Login */}
-          <LoginForm />
+          <Suspense fallback={null}>
+            <LoginForm />
+          </Suspense>
 
           <div className="text-center mt-8 pt-5 border-t border-border-warm/40 text-sm font-bold text-ink-muted">
             ليس لديك حساب؟{" "}

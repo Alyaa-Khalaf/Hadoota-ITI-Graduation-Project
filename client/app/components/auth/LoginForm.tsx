@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
@@ -11,6 +11,7 @@ import { API_ORIGIN } from "@/lib/apiConfig";
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { setAccessToken } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -20,6 +21,13 @@ export default function LoginForm() {
 
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // عرض خطأ منع دخول الأدمن عبر جوجل القادم من NextAuth
+  useEffect(() => {
+    if (searchParams.get("error") === "AdminGoogleBlocked") {
+      setError("لا يمكن لحساب الأدمن الدخول عبر جوجل، استخدم البريد وكلمة المرور");
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +69,16 @@ export default function LoginForm() {
       // ✔️ optional: عشان refresh بعد reload
       localStorage.setItem("accessToken", token);
 
-      router.push("/childAdventure");
+      // ✔️ توجيه حسب الدور: الأدمن للوحة التحكم، غيره للمغامرة
+      let role: string | null = null;
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        role = payload?.role ?? null;
+      } catch {
+        role = null;
+      }
+
+      router.push(role === "admin" ? "/dashboard/admin" : "/childAdventure");
     } catch (err: any) {
       setError(
         err.message || "حدث خطأ أثناء تسجيل الدخول"
