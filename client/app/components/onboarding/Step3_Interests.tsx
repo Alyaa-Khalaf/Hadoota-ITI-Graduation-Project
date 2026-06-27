@@ -5,6 +5,8 @@ import { useOnboardingStore } from "@/store/onboardingStore";
 import { useRouter } from "next/navigation";
 // 1. استيراد الـ useAuth عشان نسحب التوكن
 import { useAuth } from "@/context/AuthContext";
+// 2. استيراد useSelectedChild عشان نحدّث الطفل النشط فورًا بعد إنشائه
+import { useSelectedChild } from "@/context/childContext";
 
 const INTERESTS = [
   { id: "adventures", label: "مغامرات", icon: "🚀" },
@@ -22,8 +24,11 @@ interface Props {
 export default function Step3_Interests({ onPrev }: Props) {
   const router = useRouter();
 
-  // 2. سحب الـ accessToken من الـ Context
+  // سحب الـ accessToken من الـ Context
   const { accessToken } = useAuth();
+
+  // سحب setSelectedChild عشان نحدّث الطفل النشط فورًا بعد الإنشاء
+  const { setSelectedChild } = useSelectedChild();
 
   const child = useOnboardingStore((s) => s.child);
   const setChild = useOnboardingStore((s) => s.setChild);
@@ -44,7 +49,7 @@ export default function Step3_Interests({ onPrev }: Props) {
       console.log("TOKEN FROM CONTEXT:", accessToken);
       console.log("API:", process.env.NEXT_PUBLIC_API_URL);
 
-      // 3. التعديل هنا: نتحقق من وجود التوكن القادم من الـ Context
+      // التحقق من وجود التوكن القادم من الـ Context
       if (!accessToken) {
         alert("يجب تسجيل الدخول أولاً أو انتهاء تحميل الجلسة");
         return;
@@ -79,7 +84,7 @@ export default function Step3_Interests({ onPrev }: Props) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            // 4. نمرر التوكن الآمن هنا
+            // نمرر التوكن الآمن هنا
             Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify(payload),
@@ -92,6 +97,15 @@ export default function Step3_Interests({ onPrev }: Props) {
 
       if (!res.ok) {
         throw new Error(data.message || "حدث خطأ أثناء إنشاء ملف الطفل");
+      }
+
+      // 🆕 نحدّث الطفل النشط فورًا في الـ state المحلي ببيانات الطفل اللي
+      // رجعت من السيرفر، بدل ما نستنى لحد ما /childAdventure تسأل السيرفر
+      // من جديد (وده ما كان بيحصل إلا بعد refresh كامل للصفحة).
+      // ده كمان بيبعت POST /api/children/active تلقائيًا (موجود جوه
+      // setSelectedChild نفسها) ليثبت الاختيار في الداتابيز.
+      if (data?.data) {
+        setSelectedChild(data.data);
       }
 
       reset();

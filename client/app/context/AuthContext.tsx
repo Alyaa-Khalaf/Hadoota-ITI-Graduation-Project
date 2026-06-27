@@ -31,17 +31,11 @@ import { API_ORIGIN } from "@/lib/apiConfig";
 
 const API = API_ORIGIN;
 
+// لو السيرفر ما ردّش خلال المدة دي، نوقف شاشة التحميل بدل ما تفضل معلقة للأبد
+const REFRESH_TIMEOUT_MS = 8000;
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-
-    if (token) {
-      setAccessToken(token);
-    }
-  }, []);
-  
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(() => {
     if (typeof window === "undefined") return null;
@@ -56,23 +50,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
 
+      // ⏱ حماية ضد تعليق الشاشة للأبد لو السيرفر بطيء أو واقع
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), REFRESH_TIMEOUT_MS);
+
       const res = await fetch(`${API}/api/auth/refresh`, {
         method: "POST",
         credentials: "include",
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const data = await res.json();
 
-
-      console.log("REFRESH STATUS:", res.status);
-      console.log("REFRESH DATA:", data);
-
       if (res.ok && data?.data?.accessToken) {
         setAccessToken(data.data.accessToken);
+
+        // لو السيرفر رجّع بيانات يوزر محدثة مع التوكن، نحدّث الـ user كمان
+        // (بدل ما نسيب user القديم في localStorage بدون تأكيد)
+        if (data?.data?.user) {
+          setUser(data.data.user);
+          localStorage.setItem("user", JSON.stringify(data.data.user));
+        }
       } else {
         setAccessToken(null);
       }
-    } catch {
+    } catch (err) {
+      console.error("Refresh token failed:", err);
       setAccessToken(null);
     } finally {
       setIsLoading(false);
@@ -88,14 +93,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         method: "POST",
         credentials: "include",
       });
-    } catch { }
+    } catch (err) {
+      console.error("Logout request failed:", err);
+    }
 
     setAccessToken(null);
+    setUser(null);
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
   }, []);
 
   // =========================
   // Init
   // =========================
+  // ⚠️ شلت الإفيكت القديم اللي كان يقرا accessToken من localStorage مباشرة.
+  // كان ده كود ميت فعليًا: الإفيكت ده كان يحصل في نفس اللحظة تقريبًا مع
+  // refreshAccessToken()، اللي بيجيب التوكن من الكوكي عبر السيرفر مش من
+  // localStorage، فكانت قيمته دايمًا تتستبدل فورًا. localStorage هنا
+  // مستخدم بس كمصدر تخزين للعرض الأولي السريع لـ "user" (نقطة 6 تحت)،
+  // وليس لـ accessToken الذي مصدر الحقيقة الوحيد له هو السيرفر/الكوكي.
   useEffect(() => {
     refreshAccessToken();
   }, [refreshAccessToken]);
@@ -103,18 +119,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // ==========================
   // login
   // ==========================
-
   const login = (newToken: string, newUser: User) => {
     setAccessToken(newToken);
     setUser(newUser);
-    localStorage.setItem("accessToken", newToken);          // ← هنا الأهم
+    localStorage.setItem("accessToken", newToken);
     localStorage.setItem("user", JSON.stringify(newUser));
   };
 
   const updateUser = (newUser: User) => {
-  setUser(newUser);
-  localStorage.setItem("user", JSON.stringify(newUser));
-};
+    setUser(newUser);
+    localStorage.setItem("user", JSON.stringify(newUser));
+  };
 
   return (
     <AuthContext.Provider
@@ -126,7 +141,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         logout,
         isLoading,
         user,
-        updateUser
+        updateUser,
       }}
     >
       {isLoading ? (

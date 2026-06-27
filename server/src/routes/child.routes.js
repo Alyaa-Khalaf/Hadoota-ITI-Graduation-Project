@@ -6,6 +6,8 @@ import {
   getChildren,
   updateChild,
   deleteChild,
+  setActiveChild,
+  getActiveChild,
 } from "../controllers/childController.js";
 import authMiddleware from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
@@ -43,6 +45,25 @@ router.post(
 
 // 2️⃣ جلب كل أطفال الأب الحالي
 router.get("/", getChildren);
+
+// 🆕 6️⃣ تحديد / جلب "الطفل النشط" حالياً للأب
+// ⚠️ لازم يكونوا قبل "/:id" في الترتيب، وإلا Express هيحاول يفسّر
+// "active" كقيمة لـ :id ويوصل لـ getChild بالغلط (وهيفشل على isMongoId)
+router.post(
+  "/active",
+  [
+    body("childId")
+      .trim()
+      .notEmpty()
+      .withMessage("معرف الطفل مطلوب")
+      .isMongoId()
+      .withMessage("معرف الطفل غير صحيح"),
+  ],
+  validate,
+  setActiveChild,
+);
+
+router.get("/active", getActiveChild);
 
 // 3️⃣ جلب بيانات طفل محدد بواسطة الـ ID
 router.get(

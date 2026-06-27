@@ -11,9 +11,11 @@ import { useChild } from '@/hooks/useChild';
 import { useAuth } from '@/context/AuthContext';
 import React from 'react'
 import { useGamification } from '@/hooks/useGamification';
+import { useSelectedChild } from '@/context/childContext';
 
 function ChildAdventure() {
-  const { child, loading: childLoading } = useChild();
+  const {child, loading: childLoading } = useChild();
+   const {selectedChild}=useSelectedChild()
   const { isLoading: authLoading } = useAuth();
     const {user}=useAuth()
     console.log(`The parent is ${user?.email}`)
@@ -28,7 +30,7 @@ function ChildAdventure() {
     );
   }
 
-  console.log("CHILD DATA IN PAGE:", child);
+  console.log("CHILD DATA IN PAGE:", selectedChild);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -37,7 +39,7 @@ function ChildAdventure() {
 
       <div className="relative z-10 p-6">
         {/* دلوقتي الـ child.name مستحيل يضيع لو الطفل مسجل فعلاً */}
-        <WelcomeHero name={child?.name || "بطل"} />
+        <WelcomeHero name={selectedChild?.name || "بطل"} />
        
  <ChildStats />
 

@@ -57,7 +57,7 @@ export default function LoginForm() {
       const user = data?.data?.user;
       login(token, user);
 
-      router.push("/childAdventure");
+      router.push("ChildrenChoosen");
     } catch (err: any) {
       setError(
         err.message || "حدث خطأ أثناء تسجيل الدخول"

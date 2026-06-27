@@ -4,6 +4,7 @@ import ParentHeader from "@/components/ParentDashboard/ParentHeader";
 import ChildrenList from "@/components/ParentDashboard/ChildrenList";
 import { useState, useEffect } from "react";
 import { useChildren } from "@/hooks/useChildren";
+import { useSelectedChild } from "@/context/childContext";
 import ChildAnalytics from "@/components/ParentDashboard/ChildAnalytics ";
 import AIReportSection from "@/components/ParentDashboard/AIReportSection";
 import NotificationsPanel from "@/components/ParentDashboard/NotificationsPanel";
@@ -15,6 +16,7 @@ export default function ParentDashboard() {
   const [selectedChildId, setSelectedChildId] = useState("");
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
   const { children, loading, refetch } = useChildren();
+  const { selectedChild } = useSelectedChild();
   const [showAddChild, setShowAddChild] = useState(false);
   const handleChildAdded = async (childId: string) => {
   await refetch();
@@ -22,12 +24,18 @@ export default function ParentDashboard() {
   setSelectedChildId(childId);
   setShowAddChild(false);
 };
-  // Auto-select first child when children load
+  // لو الأب سبق واختار طفل (من صفحة TheChildren مثلاً)، نبدأ بنفس الطفل ده
+  // بدل أول طفل في القائمة دايمًا. لو مفيش طفل مختار من قبل (selectedChild
+  // فاضي)، نرجع للسلوك القديم: نختار أول طفل تلقائيًا.
   useEffect(() => {
-    if (!loading && children.length > 0 && !selectedChildId) {
+    if (loading || selectedChildId) return;
+
+    if (selectedChild?._id) {
+      setSelectedChildId(selectedChild._id);
+    } else if (children.length > 0) {
       setSelectedChildId(children[0]._id);
     }
-  }, [children, loading, selectedChildId]);
+  }, [children, loading, selectedChildId, selectedChild]);
 
   return (
     <div dir="rtl">
@@ -51,7 +59,7 @@ export default function ParentDashboard() {
           <div className="space-y-6">
             {!selectedChildId ? (
               <div className="p-6 text-sm text-gray-400 text-center bg-white rounded-xl border">
-                `اختر طفلاً أولاً من تبويب نظرة عامة`
+                اختر طفلاً أولاً من تبويب "نظرة عامة"
               </div>
             ) : (
               <AIReportSection childId={selectedChildId} />

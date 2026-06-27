@@ -48,6 +48,13 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // 🆕 الطفل النشط حاليًا لهذا الأب — يُحفظ بشكل دائم في الداتابيز
+  // عشان يفضل ثابت بعد الـ refresh أو تسجيل الدخول من جهاز/متصفح تاني
+  activeChildId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Child',
+    default: null
+  },
   subscription: {
     plan: {
       type: String,

@@ -1,4 +1,5 @@
 import Child from '../models/Child.js';
+import User from '../models/User.js';
 
 // 1️⃣ جلب كل أطفال الأب المسجل حالياً فقط
 export const getChildren = async (req, res, next) => {
@@ -35,6 +36,11 @@ export const createChild = async (req, res, next) => {
       });
     }
 
+    // 🔍 نتحقق هل هذا أول طفل للأب قبل الإنشاء، عشان نعرف نحدده
+    // كـ "نشط" تلقائيًا بعد كده لو كان الوحيد (يغطي حالة بعد التسجيل
+    // مباشرة، حيث الأب عادة بيكون عنده طفل واحد بس ومفيش خطوة اختيار)
+    const existingChildrenCount = await Child.countDocuments({ parentId });
+
     const child = await Child.create({
       parentId,
       name,
@@ -49,6 +55,12 @@ export const createChild = async (req, res, next) => {
         difficultyLevel: 'easy'
       }
     });
+
+    // 🆕 لو ده أول طفل للأب (مكانش عنده أي طفل قبل كده)، نحدده تلقائيًا
+    // كـ "الطفل النشط" بدون ما الأب يحتاج يضغط أي اختيار
+    if (existingChildrenCount === 0) {
+      await User.findByIdAndUpdate(parentId, { activeChildId: child._id });
+    }
 
     res.status(201).json({
       success: true,
@@ -138,6 +150,89 @@ export const deleteChild = async (req, res, next) => {
       success: true,
       message: 'تم حذف الطفل بنجاح',
       data: null,
+      errors: []
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 6️⃣ تحديد "الطفل النشط" حالياً للأب (يُحفظ بشكل دائم في الداتابيز)
+export const setActiveChild = async (req, res, next) => {
+  try {
+    const { childId } = req.body;
+    const userId = req.user?.id || req.user?._id;
+
+    if (!childId) {
+      return res.status(400).json({
+        success: false,
+        message: 'childId is required',
+        data: null,
+        errors: []
+      });
+    }
+
+    // 🔒 نتأكد إن الطفل ده فعلاً ابن هذا الأب قبل ما نحفظه كـ "نشط"،
+    // عشان ما نسمحش لأب يحط طفل أب تاني كـ active child بتاعه
+    const child = await Child.findById(childId);
+    if (!child || child.parentId.toString() !== userId.toString()) {
+      return res.status(401).json({
+        success: false,
+        message: 'غير مصرح أو الطفل غير موجود',
+        data: null,
+        errors: []
+      });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { activeChildId: childId },
+      { new: true }
+    ).select('activeChildId');
+
+    res.status(200).json({
+      success: true,
+      message: 'تم تحديد الطفل النشط بنجاح',
+      data: { activeChildId: updatedUser.activeChildId },
+      errors: []
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 7️⃣ جلب "الطفل النشط" حالياً للأب (بيانات الطفل كاملة، أو null لو مفيش)
+export const getActiveChild = async (req, res, next) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+
+    const user = await User.findById(userId).select('activeChildId');
+
+    if (!user?.activeChildId) {
+      return res.status(200).json({
+        success: true,
+        message: 'لا يوجد طفل نشط محدد',
+        data: null,
+        errors: []
+      });
+    }
+
+    const child = await Child.findById(user.activeChildId);
+
+    // لو الطفل المحفوظ كـ "نشط" تم حذفه بعدين، نرجّع null بدل ما نرمي error
+    if (!child) {
+      return res.status(200).json({
+        success: true,
+        message: 'الطفل النشط المحفوظ غير موجود',
+        data: null,
+        errors: []
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'تم الحصول على الطفل النشط بنجاح',
+      data: child,
       errors: []
     });
   } catch (error) {

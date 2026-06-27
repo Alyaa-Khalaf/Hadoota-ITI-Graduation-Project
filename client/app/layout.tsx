@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 // @ts-ignore
 import "./globals.css";
 import { AuthProvider } from "./context/AuthContext";
+import { ChildProvider } from "./context/childContext";
 
 
 export const metadata = {
@@ -22,7 +23,9 @@ export default function RootLayout(
     <html lang="ar" dir="rtl">
       <body>
         <AuthProvider>
+            <ChildProvider>
           {children}
+          </ChildProvider>
         </AuthProvider>
         </body>
     </html>
