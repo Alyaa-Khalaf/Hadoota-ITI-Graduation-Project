@@ -1,46 +1,75 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useChild } from "./useChild";
+import { useSelectedChild } from "@/context/childContext";
 
-export function useRecentStories() {
-  const { accessToken, isLoading } = useAuth();
-  const { child } = useChild();
+export type Story = {
+  _id: string;
+  title: string;
+  character: string;
+  topic: string;
+  moralLesson?: string;
+  status: "generating" | "completed" | "failed";
+  isFavorite?: boolean;
+  createdAt: string;
+  completedAt?: string;
+  educationalValue?: string;
+  safetyCheck?: {
+    safe: boolean;
+    flagged: boolean;
+    reason?: string;
+  };
+};
 
-  const [stories, setStories] = useState<any[]>([]);
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+export function useStoryHistory() {
+  const { accessToken, isLoading: authLoading } = useAuth();
+  const { selectedChild, loadingSelectedChild } = useSelectedChild();
+
+  const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchStories = async () => {
-      if (isLoading || !accessToken || !child?._id) return;
+  const fetchStories = useCallback(async () => {
+    if (authLoading || loadingSelectedChild) return;
 
-      try {
-        setLoading(true);
+    if (!accessToken || !selectedChild?._id) {
+      setLoading(false);
+      setStories([]);
+      return;
+    }
 
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/stories/history/${child._id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
+    try {
+      setLoading(true);
 
-        const data = await res.json();
-
-        if (res.ok) {
-          setStories(data.data.stories || []);
+      const res = await fetch(
+        `${API_BASE}/api/stories/history/${selectedChild._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         }
-      } catch (err) {
-        console.error("Failed to fetch stories:", err);
-      } finally {
-        setLoading(false);
+      );
+
+      const data = await res.json();
+
+      if (res.ok && data?.success) {
+        setStories(data?.data?.stories || []);
+      } else {
+        setStories([]);
       }
-    };
+    } catch (err) {
+      console.error("Failed to fetch stories:", err);
+      setStories([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [accessToken, authLoading, selectedChild?._id, loadingSelectedChild]);
 
+  useEffect(() => {
     fetchStories();
-  }, [accessToken, isLoading, child?._id]);
+  }, [fetchStories]);
 
-  return { stories, loading };
+  return { stories, loading, refetch: fetchStories };
 }

@@ -3,11 +3,11 @@
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import AdventureHeader from "./AdventureHeader";
-import { useRecentStories } from "@/hooks/useRecentStories";
+import { useStoryHistory } from "@/hooks/useRecentStories";
 
 export default function RecentStories() {
   const router = useRouter();
-  const { stories, loading } = useRecentStories();
+  const { stories, loading } = useStoryHistory();
 
   if (loading) {
     return (
