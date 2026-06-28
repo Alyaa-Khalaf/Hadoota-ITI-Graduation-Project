@@ -9,17 +9,18 @@ type Badge = {
 };
 
 export default function Achievements() {
-  const { data, loading } = useGamification();
+  const childId = "demo-child";
+  const { gamification, loading } = useGamification(childId);
 
   if (loading) {
     return <div className="text-center py-6">⏳ Loading achievements...</div>;
   }
 
-  if (!data) {
+  if (!gamification) {
     return <div className="text-center py-6">لا توجد بيانات</div>;
   }
 
-  const badges: Badge[] = data.badges || [];
+  const badges: Badge[] = gamification.badges?.map((name) => ({ name })) || [];
 
   const achievements = badges.map((achievement, index) => ({
     id: index + 1,

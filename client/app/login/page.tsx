@@ -22,7 +22,7 @@ export default function LoginPage() {
     const success = await login(formData.email, formData.password);
     if (success) {
       const role = useAuthStore.getState().user?.role;
-      router.push(role === "admin" ? "/dashboard/admin" : ROUTES.DASHBOARD);
+      router.push(role === "parent" ? ROUTES.DASHBOARD : ROUTES.DASHBOARD);
     }
   };
 

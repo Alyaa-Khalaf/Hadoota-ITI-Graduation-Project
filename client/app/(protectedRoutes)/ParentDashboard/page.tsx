@@ -14,14 +14,7 @@ export type DashboardTab = "overview" | "reports" | "notifications";
 export default function ParentDashboard() {
   const [selectedChildId, setSelectedChildId] = useState("");
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
-  const { children, loading, refetch } = useChildren();
-  const [showAddChild, setShowAddChild] = useState(false);
-  const handleChildAdded = async (childId: string) => {
-  await refetch();
-
-  setSelectedChildId(childId);
-  setShowAddChild(false);
-};
+  const { children, loading } = useChildren();
   // Auto-select first child when children load
   useEffect(() => {
     if (!loading && children.length > 0 && !selectedChildId) {

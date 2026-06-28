@@ -3,6 +3,7 @@ import { create } from "zustand";
 type Child = {
   name: string;
   age: string;
+  gender?: string;
   interests: string[];
   avatar: string;
 };

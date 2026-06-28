@@ -5,10 +5,9 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line,
   PieChart, Pie, Cell 
 } from "recharts";
-import { 
-  Baby, Bell, BarChart3, BookOpen, Clock, 
-  Brain, CheckCircle2, Sliders, Sparkles, Lightbulb, Heart,
-  Check, Trash2, ShieldAlert, Trophy, Mail, Globe
+import {
+  Baby, Bell, BarChart3, CheckCircle2, Sliders, Sparkles, Lightbulb, Heart,
+  Trash2, Mail, Globe
 } from "lucide-react";
 import { io } from "socket.io-client";
 

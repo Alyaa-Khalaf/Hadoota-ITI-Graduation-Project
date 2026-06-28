@@ -1,27 +1,6 @@
 "use client";
 
-import { SessionProvider, useSession } from "next-auth/react";
-import { useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
-
-function GoogleTokenSync() {
-  const { data: session, status } = useSession();
-  const { setAccessToken } = useAuth();
-
-  useEffect(() => {
-    if (status === "authenticated" && session?.backendToken) {
-      // حط الـ tokens في localStorage عشان AuthContext يشوفهم
-      localStorage.setItem("accessToken", session.backendToken);
-      if (session.backendRefreshToken) {
-        localStorage.setItem("refreshToken", session.backendRefreshToken);
-      }
-      // حدّث الـ AuthContext مباشرة
-      setAccessToken(session.backendToken);
-    }
-  }, [status, session]);
-
-  return null;
-}
+import { SessionProvider } from "next-auth/react";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return <SessionProvider>{children}</SessionProvider>;

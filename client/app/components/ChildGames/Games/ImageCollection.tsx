@@ -36,7 +36,6 @@ export default function PuzzleGame() {
   const { accessToken } = useAuth();
 
   const [image, setImage] = useState(IMAGES[0]);
-  const [pieces, setPieces] = useState<Piece[]>([]);
   // board[slotIndex] = id القطعة الموضوعة في هذا المكان، أو null لو فاضي
   const [board, setBoard] = useState<(number | null)[]>(
     Array(TOTAL_PIECES).fill(null)
@@ -74,8 +73,6 @@ export default function PuzzleGame() {
     board.length === TOTAL_PIECES &&
     board.every((pieceId, slotIndex) => pieceId === slotIndex);
 
-  const piecesById = (id: number) =>
-    [...tray, ...pieces].find((p) => p.id === id);
 
   const allPiecesMap = useRef<Map<number, Piece>>(new Map());
   useEffect(() => {

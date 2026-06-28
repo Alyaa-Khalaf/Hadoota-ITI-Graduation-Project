@@ -105,7 +105,7 @@ function getToken(): string | null {
 
 // ─── Component ──────────────────────────────────────────
 
-export default function ParentDashboard() {
+export default function ParentDashboard(_props: { className?: string }) {
   const [children, setChildren] = useState<ChildOverview[]>([]);
   const [selectedChildId, setSelectedChildId] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
@@ -437,7 +437,7 @@ function EmptyState({ message }: { message: string }) {
 
 function ChartCard({ title, subtitle, children: content, className }: { title: string; subtitle?: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className={`rounded-2xl border border-gray-100 bg-white p-5 shadow-sm ${className ?? ""}`}>
       <div className="mb-4">
         <h3 className="text-sm font-bold text-gray-800">{title}</h3>
         {subtitle && <p className="text-[11px] text-gray-400 mt-0.5">{subtitle}</p>}

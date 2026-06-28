@@ -10,7 +10,6 @@ import { useChild } from '@/hooks/useChild';
 // 1. استيراد useAuth
 import { useAuth } from '@/context/AuthContext';
 import React from 'react'
-import { useGamification } from '@/hooks/useGamification';
 
 function ChildAdventure() {
   const { child, loading: childLoading } = useChild();

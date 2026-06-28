@@ -1,5 +1,12 @@
 import apiClient from "@/utils/api";
-import { User, ApiResponse } from "@/types";
+import { User } from "@/types";
+
+type ApiResponse<T> = {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+};
 
 export const authService = {
   login: async (

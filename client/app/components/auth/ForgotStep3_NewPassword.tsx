@@ -10,7 +10,7 @@ interface Step3Props {
   email: string;
 }
 
-export default function ForgotStep3_NewPassword({ onNext, onPrev, email }: Step3Props) {
+export default function ForgotStep3_NewPassword({ onNext, onPrev }: Step3Props) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");

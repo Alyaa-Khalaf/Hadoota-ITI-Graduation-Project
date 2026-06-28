@@ -22,7 +22,6 @@ export default function StoryTitles() {
   const searchParams = useSearchParams()
 
   const { child } = useChild() // ✅ الجديد
-  const childId = child?._id
 
   const character = searchParams.get("character") || ""
 

@@ -37,13 +37,12 @@ type Testimonial = {
 };
 
 export default function Testimonials() {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [testimonials] = useState<Testimonial[]>([]);
 
   useEffect(() => {
-    const fetchTestimonials = async () => {
+    void (async () => {
       try {
-        setLoading(true);
+        // no-op placeholder
 
         // استبدل ده بالـ endpoint الحقيقي لاحقاً
         // const res = await fetch("/api/testimonials");
@@ -53,11 +52,9 @@ export default function Testimonials() {
       } catch (error) {
         console.error("Failed to fetch testimonials", error);
       } finally {
-        setLoading(false);
+        // no-op placeholder
       }
-    };
-
-    // fetchTestimonials();
+    })();
   }, []);
 
   return (
@@ -112,9 +109,7 @@ export default function Testimonials() {
                   </div>
 
                   <div className="mb-5">
-                    <Badge variant={ "sky"}>
-                      "{t.title}"
-                    </Badge>
+                    <Badge variant={"sky"}>{t.title}</Badge>
                   </div>
 
                   <p className="text-sm font-bold leading-relaxed text-ink-muted">

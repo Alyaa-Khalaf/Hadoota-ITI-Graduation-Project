@@ -22,8 +22,8 @@ function MagicStorybook() {
   });
   const ref = useRef(null);
 
-  function handleMouseMove(e) {
-    const rect = ref.current?.getBoundingClientRect();
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = (ref.current as HTMLDivElement | null)?.getBoundingClientRect();
     if (!rect) return;
     mouseX.set(e.clientX - rect.left - rect.width / 2);
     mouseY.set(e.clientY - rect.top - rect.height / 2);
@@ -298,7 +298,7 @@ export default function Hero() {
               whileHover={{ y: -3, scale: 1.03 }}
               transition={{ type: "spring", stiffness: 300, damping: 15 }}
             >
-              <Badge variant={b.variant}>{b.label}</Badge>
+              <Badge variant={b.variant as "sky" | "sunny" | "dreamy" | "dark"}>{b.label}</Badge>
             </motion.div>
           ))}
         </motion.div>

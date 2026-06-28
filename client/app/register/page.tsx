@@ -30,10 +30,8 @@ export default function RegisterPage() {
       alert('كلمة المرور يجب أن تكون 8 أحرف على الأقل')
       return
     }
-    const success = await register(formData.name, formData.email, formData.password)
-    if (success) {
-      router.push(ROUTES.DASHBOARD)
-    }
+    await register(formData.name, formData.email, formData.password)
+    router.push(ROUTES.DASHBOARD)
   }
 
   return (

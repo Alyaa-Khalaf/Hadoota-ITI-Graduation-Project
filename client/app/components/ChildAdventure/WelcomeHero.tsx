@@ -1,8 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Button from "../ui/Button";
-import Link from "next/dist/client/link";
+import Link from "next/link";
 
 type WelcomeHeroProps = {
   name: string;

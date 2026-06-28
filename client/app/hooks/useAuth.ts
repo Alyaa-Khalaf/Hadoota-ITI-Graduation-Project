@@ -16,7 +16,7 @@ export const useAuth = () => {
   } = useAuthStore();
 
   const login = useCallback(
-    async (email, password) => {
+    async (email: string, password: string) => {
       setLoading(true);
       setError(null);
       try {
@@ -49,7 +49,7 @@ export const useAuth = () => {
       try {
         const response = await authService.register(name, email, password);
         if (response.success && response.data) {
-          setUser(response.data);
+          setUser(response.data.user);
         } else {
           setError(response.error || "Registration failed");
         }

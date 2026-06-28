@@ -29,7 +29,7 @@ const characters: (Characters & { value: string })[] = [
 
 export default function ChildCharactres() {
   const router = useRouter()
-  const { child } = useChild()
+  useChild()
 
   const [selected, setSelected] =
     useState<(Characters & { value: string }) | null>(null)

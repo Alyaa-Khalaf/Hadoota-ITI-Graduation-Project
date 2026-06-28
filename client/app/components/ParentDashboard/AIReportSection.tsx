@@ -156,11 +156,11 @@ export default function AIReportSection({ childId }: Props) {
           )}
 
           {/* Next Topics */}
-          {report.nextWeekTopics?.length > 0 && (
+          {(report.nextWeekTopics?.length ?? 0) > 0 && (
             <div dir="rtl">
               <h3 className="text-xs font-bold">مواضيع الأسبوع القادم</h3>
               <div className="flex flex-wrap gap-2 mt-1">
-                {report.nextWeekTopics.map((t, i) => (
+                {(report.nextWeekTopics ?? []).map((t, i) => (
                   <span
                     key={i}
                     className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-md"
