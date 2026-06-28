@@ -9,12 +9,22 @@ import Lottie from "lottie-react"
 import lion from "@/animation/Lion.json"
 import princess from "@/animation/Creative Women.json"
 import knight from "@/animation/Shield of wings.json"
-
+import robot from "@/animation/robot.json"
+import dragon from "@/animation/dragon.json"
+import astronaut from "@/animation/astronaut.json"
+import superman from "@/animation/superman.json"
+import cat from "@/animation/cat.json"
 /* الشخصيات المسموحة */
 const characters: (Characters & { value: string })[] = [
   { id: 1, name: "أسد", animation: lion, value: "أسد" },
   { id: 2, name: "أميرة", animation: princess, value: "أميرة" },
   { id: 3, name: "رحالة", animation: knight, value: "رحالة" },
+  { id: 4, name: "روبوت", animation: robot, value: "روبوت" },
+  { id: 5, name: "التنين ", animation: dragon, value: "تنين" },
+  { id: 6, name: "رائد الفضاء", animation: astronaut, value: "رائد فضاء" },
+  { id: 7, name: "البطل الخارق", animation:superman , value: "البطل الخارق" },
+  { id: 8, name: "قطة لطيفة", animation: cat,  value: "قطة لطيفة" },
+
 ]
 
 export default function ChildCharactres() {

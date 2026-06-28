@@ -12,9 +12,14 @@ const authMiddleware = (req, res, next) => {
         errors: []
       })
     }
-
+    // change the req.user to accept id and _id
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    req.user = decoded
+    req.user = {
+      ...decoded,
+      _id: decoded.id,
+    };
+    // console.log(decoded);
+    // req.user = decoded
     next()
   } catch (error) {
     return res.status(401).json({

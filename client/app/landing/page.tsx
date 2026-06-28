@@ -9,13 +9,13 @@ import Testimonials from "../components/landing/Testimonials";
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-story-bg text-ink" dir="rtl">
+    <main className="min-h-screen text-ink" dir="rtl">
       <Navbar />
       <Hero />
       <Features />
       <HowItWorks />
       <CTA />
-      <Testimonials />
+      {/* <Testimonials /> */}
       <Pricing />
       <Footer />
     </main>

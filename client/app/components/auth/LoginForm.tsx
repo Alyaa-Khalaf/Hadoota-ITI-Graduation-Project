@@ -13,6 +13,7 @@ export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setAccessToken } = useAuth();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -52,7 +53,6 @@ export default function LoginForm() {
       }
 
       const token = data?.data?.accessToken;
-      const refresh = data?.data?.refreshToken;
 
       if (!token) {
         throw new Error("Token not found");
@@ -60,14 +60,10 @@ export default function LoginForm() {
 
       // ✔️ المصدر الأساسي للتوكن
       setAccessToken(token);
-
-      // ✔️ نخزن refresh فقط (لأن هو اللي بيتجدد منه)
-      if (refresh) {
-        localStorage.setItem("refreshToken", refresh);
-      }
-
-      // ✔️ optional: عشان refresh بعد reload
-      localStorage.setItem("accessToken", token);
+      console.log("TOKEN FROM LOGIN:", token);
+      // //////////
+      const user = data?.data?.user;
+      login(token, user);
 
       // ✔️ توجيه حسب الدور: الأدمن للوحة التحكم، غيره للمغامرة
       let role: string | null = null;

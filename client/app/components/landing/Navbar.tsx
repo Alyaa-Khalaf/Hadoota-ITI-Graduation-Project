@@ -1,16 +1,24 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Button from "../ui/Button";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { accessToken,user, logout} = useAuth();
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
 
-  const { accessToken } = useAuth();
 
+  const edit = () => {
+    setOpen(false);
+    router.push("/profile");
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,30 +29,32 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  
+  const navLinkClasses = "hover:text-ink transition-colors duration-200";
 
   return (
     <motion.header
       initial={{ opacity: 0, y: -16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className={`fixed top-0 left-0 right-0 z-50 w-full px-6 py-4 transition-all duration-300 ${
+      dir="rtl"
+      className={`fixed top-0 left-0 right-0 z-50 w-full px-6 transition-all duration-300 ${
         isScrolled
-          ? "bg-white/60 backdrop-blur-lg border-b border-border-warm/20 shadow-sm py-3"
+          ? "bg-white/70 backdrop-blur-xl border-b border-border-warm/20 shadow-sm py-3"
           : "bg-transparent py-5"
       }`}
-      dir="rtl"
     >
       <div className="container mx-auto flex items-center justify-between">
-        
-        {/* logo */}
+        {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 text-2xl font-black text-sky tracking-wide font-sans"
+          className="flex items-center gap-2 text-2xl font-black tracking-wide font-sans group"
         >
-          <span>حدوتة</span>
+          <span className="text-primary group-hover:scale-105 transition-transform">
+            حدوتة
+          </span>
+
           <svg
-            className="w-6 h-6 text-sky"
+            className="w-6 h-6 text-primary group-hover:rotate-12 transition-transform"
             fill="currentColor"
             viewBox="0 0 24 24"
           >
@@ -52,51 +62,121 @@ export default function Navbar() {
           </svg>
         </Link>
 
-        {/* nav */}
-        <nav className="hidden items-center gap-10 text-base font-bold text-ink-muted md:flex font-sans">
-          <Link href="#features" className="hover:text-ink transition">
+        {/* Navigation */}
+        <nav className="hidden md:flex items-center gap-10 text-base font-bold text-ink-muted font-sans">
+          <Link href="#features" className={navLinkClasses}>
             المميزات
           </Link>
-          <Link href="#how-it-works" className="hover:text-ink transition">
+
+          <Link href="#how-it-works" className={navLinkClasses}>
             كيف تعمل
           </Link>
-          <Link href="#testimonials" className="hover:text-ink transition">
-            الآراء
+
+          <Link href="#cta" className={navLinkClasses}>
+           داشبورد الاب
           </Link>
-          <Link href="#pricing" className="hover:text-ink transition">
+
+          <Link href="#pricing" className={navLinkClasses}>
             الأسعار
           </Link>
         </nav>
 
-        {/* right side */}
-       <div className="flex items-center gap-5 font-sans">
-  {accessToken ? (
-    <Link href="/childAdventure">
+        {/* Actions */}
+        <div className="flex items-center gap-4 font-sans">
+          {accessToken ? (
+            <>
+              <Link href="/childAdventure">
+                <Button
+                  variant="primary"
+                  className='!py-2.5 !px-6 flex items-center gap-2'
+                >
+                  🚀 مغامراتي
+                </Button>
+              </Link>
+              
+             <div className="relative">
       <Button
-        variant="primary"
-        className="!py-2.5 !px-6 flex items-center gap-2"
+        variant="outline"
+        className="!py-2.5 !px-6"
+        onClick={() => setOpen(!open)}
       >
-        🚀 مغامراتي
+        حسابي
       </Button>
-    </Link>
-  ) : (
-    <>
-      <Link href="/auth/login/">
-        <Button variant="outline" className="!py-2.5 !px-6">
-          تسجيل الدخول
-        </Button>
-      </Link>
 
-      <Link href="/auth/register/">
-        <Button variant="primary" className="!py-2.5 !px-6">
-          جرّب مجاناً
-        </Button>
-      </Link>
-    </>
-  )}
-</div>
+      {open && (
+        <div
+          className="
+            absolute left-0 mt-3 w-72
+            bg-white rounded-2xl
+            shadow-xl border border-gray-100
+            p-5 z-50
+          "
+        >
+          {/* Header */}
+          <div className="pb-4 border-b">
+            <h3 className="font-bold text-gray-900">
+              {user?.name || "Parent"}
+            </h3>
 
+            <p className="text-sm text-gray-500 mt-1">
+              {user?.email}
+            </p>
+          </div>
+
+          {/* Body */}
+          <div className="py-4 space-y-3">
+            <div>
+              <p className="text-xs text-gray-400">الاسم</p>
+              <p className="font-medium">{user?.name}</p>
+            </div>
+
+            <div>
+              <p className="text-xs text-gray-400">البريد الإلكتروني</p>
+              <p className="font-medium">{user?.email}</p>
+            </div>
+          </div>
+          {/* edit button */}
+          <button
+          onClick={edit}
+          className="w-full py-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition"
+          >
+              تعديل الحساب
+          </button>
+            {/* Footer */}
+          <button
+            onClick={logout}
+            className="
+              w-full mt-4 py-2 rounded-xl
+              bg-red-50 text-red-600
+              hover:bg-red-100 transition
+            "
+          >
+            تسجيل الخروج
+          </button>
+        </div>
+      )}
+    </div>
+    
+            </>
+          ) : (
+            <>
+              <Link href="/auth/login">
+                <Button variant="outline"
+                 className='!py-2.5 !px-6 flex items-center gap-2 border border-primary  hover:bg-primary-wash '>
+                  تسجيل الدخول
+                </Button>
+              </Link>
+
+              <Link href="/auth/register">
+                <Button variant="primary" className='!py-2.5 !px-6 flex items-center gap-2'>
+                  جرّب مجاناً
+                </Button>
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     </motion.header>
   );
 }
+

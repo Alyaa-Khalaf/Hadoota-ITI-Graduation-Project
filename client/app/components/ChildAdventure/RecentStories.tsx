@@ -3,41 +3,27 @@
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import AdventureHeader from "./AdventureHeader";
-
-interface Story {
-  id: number;
-  title: string;
-  emoji: string;
-  date: string;
-  progress?: number;
-}
+import { useRecentStories } from "@/hooks/useRecentStories";
 
 export default function RecentStories() {
   const router = useRouter();
+  const { stories, loading } = useRecentStories();
 
-  const stories: Story[] = [
-    {
-      id: 1,
-      title: "مغامرة في الفضاء",
-      emoji: "🚀",
-      date: "منذ يوم",
-      progress: 80,
-    },
-    {
-      id: 2,
-      title: "الأسد الشجاع",
-      emoji: "🦁",
-      date: "منذ 3 أيام",
-      progress: 40,
-    },
-    {
-      id: 3,
-      title: "مدينة البحار",
-      emoji: "🌊",
-      date: "منذ أسبوع",
-      progress: 100,
-    },
-  ];
+  if (loading) {
+    return (
+      <div className="text-center py-6">
+        ⏳ جاري تحميل الحواديت...
+      </div>
+    );
+  }
+
+  if (!stories.length) {
+    return (
+      <div className="text-center py-6">
+        لا توجد حواديت بعد 📚
+      </div>
+    );
+  }
 
   return (
     <section className="mt-8">
@@ -47,9 +33,9 @@ export default function RecentStories() {
       />
 
       <div className="mt-6 space-y-4">
-        {stories.map((story, index) => (
+        {stories.map((story: any, index: number) => (
           <motion.div
-            key={story.id}
+            key={story._id}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.1 }}
@@ -66,7 +52,7 @@ export default function RecentStories() {
           >
             <div className="flex items-center gap-4">
               <span className="text-4xl">
-                {story.emoji}
+                📖
               </span>
 
               <div>
@@ -75,14 +61,14 @@ export default function RecentStories() {
                 </h3>
 
                 <p className="text-sm text-ink-mute">
-                  {story.date}
+                  {story.topic}
                 </p>
 
                 <div className="w-36 h-2 rounded-full bg-white/50 mt-3 overflow-hidden">
                   <div
                     className="h-full rounded-full bg-primary transition-all"
                     style={{
-                      width: `${story.progress ?? 0}%`,
+                      width: `${story.progress ?? 100}%`,
                     }}
                   />
                 </div>
@@ -91,7 +77,7 @@ export default function RecentStories() {
 
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => router.push(`/stories/${story.id}`)}
+              onClick={() => router.push(`/stories/${story._id}`)}
               className="
                 px-4 py-2
                 rounded-2xl

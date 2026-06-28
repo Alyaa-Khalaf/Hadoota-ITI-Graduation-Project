@@ -37,27 +37,17 @@ export default function AchievementCard({
         }
       `}
     >
-      <div className="text-4xl mb-3">
-        {icon}
-      </div>
+      <div className="text-4xl mb-3">{icon}</div>
 
-      <h3 className="text-lg font-bold text-ink">
-        {title}
-      </h3>
+      <h3 className="text-lg font-bold text-ink">{title}</h3>
 
-      <p className="mt-1 text-sm text-ink-mute">
-        {description}
-      </p>
+      <p className="mt-1 text-sm text-ink-mute">{description}</p>
 
       <div className="mt-3 text-sm font-bold">
         {unlocked ? (
-          <span className="text-primary">
-            مفتوح ✨
-          </span>
+          <span className="text-primary">مفتوح ✨</span>
         ) : (
-          <span className="text-ink-mute">
-            مغلق 🔒
-          </span>
+          <span className="text-ink-mute">مغلق 🔒</span>
         )}
       </div>
     </motion.div>

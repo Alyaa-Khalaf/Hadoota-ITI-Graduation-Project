@@ -9,12 +9,20 @@ import React, {
   useCallback,
 } from "react";
 
+interface User {
+  id?: string;
+  name?: string;
+  email?: string;
+}
 interface AuthContextType {
   accessToken: string | null;
   setAccessToken: (token: string | null) => void;
-  refreshToken: () => Promise<void>;
+  refreshAccessToken: () => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
+  updateUser: (user: User) => void;
+  login: (token: string, newUser: User) => void;
+  user: User | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,55 +33,46 @@ const API = API_ORIGIN;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+
+    if (token) {
+      setAccessToken(token);
+    }
+  }, []);
+  
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window === "undefined") return null;
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  });
 
   // =========================
   // Refresh Token
   // =========================
-  const refreshToken = useCallback(async () => {
+  const refreshAccessToken = useCallback(async () => {
     try {
       setIsLoading(true);
 
-      const storedRefreshToken =
-        typeof window !== "undefined"
-          ? localStorage.getItem("refreshToken")
-          : null;
-
-      if (!storedRefreshToken) {
-        setAccessToken(null);
-        return;
-      }
-
       const res = await fetch(`${API}/api/auth/refresh`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          refreshToken: storedRefreshToken,
-        }),
+        credentials: "include",
       });
 
       const data = await res.json();
 
+
+      console.log("REFRESH STATUS:", res.status);
+      console.log("REFRESH DATA:", data);
+
       if (res.ok && data?.data?.accessToken) {
         setAccessToken(data.data.accessToken);
-
-        // 🔥 مهم: persist refresh token
-        localStorage.setItem(
-          "refreshToken",
-          data.data.refreshToken
-        );
-
-        // (optional but useful)
-        localStorage.setItem(
-          "accessToken",
-          data.data.accessToken
-        );
       } else {
         setAccessToken(null);
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("accessToken");
       }
-    } catch (err) {
+    } catch {
       setAccessToken(null);
     } finally {
       setIsLoading(false);
@@ -89,28 +88,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         method: "POST",
         credentials: "include",
       });
-    } catch {}
+    } catch { }
 
     setAccessToken(null);
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("accessToken");
   }, []);
 
   // =========================
   // Init
   // =========================
   useEffect(() => {
-    refreshToken();
-  }, [refreshToken]);
+    refreshAccessToken();
+  }, [refreshAccessToken]);
+
+  // ==========================
+  // login
+  // ==========================
+
+  const login = (newToken: string, newUser: User) => {
+    setAccessToken(newToken);
+    setUser(newUser);
+    localStorage.setItem("accessToken", newToken);          // ← هنا الأهم
+    localStorage.setItem("user", JSON.stringify(newUser));
+  };
+
+  const updateUser = (newUser: User) => {
+  setUser(newUser);
+  localStorage.setItem("user", JSON.stringify(newUser));
+};
 
   return (
     <AuthContext.Provider
       value={{
         accessToken,
         setAccessToken,
-        refreshToken,
+        refreshAccessToken,
+        login,
         logout,
         isLoading,
+        user,
+        updateUser
       }}
     >
       {isLoading ? (

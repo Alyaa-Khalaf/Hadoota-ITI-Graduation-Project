@@ -1,7 +1,7 @@
 "use client";
+
 import { motion } from "framer-motion";
 import Link from "next/link";
-// استيراد المكونات الموحدة بالمسار النسبي الصحيح
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
 
@@ -13,68 +13,122 @@ const featuresList = [
 
 export default function CTA() {
   return (
-    <section className="bg-gradient-to-r from-primary to-sky py-24 text-white" dir="rtl">
+    <section
+      id="cta"
+      className="
+        py-24
+        bg-gradient-to-b
+        from-page-warm
+        via-page-dreamy/30
+        to-white
+      "
+      dir="rtl"
+    >
       <div className="container mx-auto max-w-7xl px-6 grid gap-12 lg:grid-cols-[1fr_1.1fr] items-center">
-        
-        {/* الجزء الأيمن: كارت الـ Mockup الشفاف التوضيحي للوحة التحكم */}
-        <motion.div 
+
+        {/* Mockup */}
+        <motion.div
           initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="relative rounded-3xl border border-white/20 bg-white/10 p-8 shadow-xl backdrop-blur-md min-h-[350px] flex flex-col justify-between"
+          className="
+            relative
+            rounded-3xl
+            border
+            border-primary/10
+            bg-white
+            p-8
+            shadow-story
+            min-h-[350px]
+            flex
+            flex-col
+            justify-between
+          "
         >
-          {/* محاكاة الهيكل الداخلي اللطيف */}
-          <div className="rounded-2xl bg-white/10 p-6 border border-white/10">
-            <div className="h-4 w-28 rounded bg-white/30 mb-3" />
-            <div className="h-3 w-full rounded bg-white/20 mb-2" />
-            <div className="h-3 w-3/4 rounded bg-white/20" />
+          {/* Header Card */}
+          <div className="rounded-2xl bg-primary-wash p-6 border border-primary/10">
+            <div className="h-4 w-28 rounded bg-primary/20 mb-3" />
+            <div className="h-3 w-full rounded bg-primary/10 mb-2" />
+            <div className="h-3 w-3/4 rounded bg-primary/10" />
           </div>
 
+          {/* Stats */}
           <div className="grid grid-cols-2 gap-4 mt-6">
-            <div className="rounded-2xl bg-white/10 p-5 border border-white/10">
-              <div className="h-3 w-16 rounded bg-white/30 mb-3" />
-              <div className="h-5 w-24 rounded bg-white/40" />
+            <div className="rounded-2xl bg-sky/5 p-5 border border-sky/10">
+              <div className="h-3 w-16 rounded bg-sky/20 mb-3" />
+              <div className="h-5 w-24 rounded bg-sky/30" />
             </div>
-            <div className="rounded-2xl bg-white/10 p-5 border border-white/10">
-              <div className="h-3 w-16 rounded bg-white/30 mb-3" />
-              <div className="h-5 w-24 rounded bg-white/40" />
+
+            <div className="rounded-2xl bg-blossom/5 p-5 border border-blossom/10">
+              <div className="h-3 w-16 rounded bg-blossom/20 mb-3" />
+              <div className="h-5 w-24 rounded bg-blossom/30" />
+            </div>
+          </div>
+
+          {/* Progress */}
+          <div className="mt-6 rounded-2xl bg-page-dreamy/50 p-5 border border-border-warm">
+            <div className="h-3 w-24 rounded bg-primary/20 mb-4" />
+            <div className="h-3 w-full rounded-full bg-primary/10 overflow-hidden">
+              <div className="h-full w-[75%] rounded-full bg-primary" />
             </div>
           </div>
         </motion.div>
 
-        {/* الجزء الأيسر: النصوص والزرار والقائمة المنسقة */}
+        {/* Content */}
         <div className="space-y-8 font-sans">
           
-          {/* البادج العلوي موروث من الـ UI بالاستايل الداكن الشفاف المتناسق مع التدرج */}
           <div>
-            <Badge variant="dark">👪 لوحة الأهل</Badge>
+            <Badge variant="sky">
+              👪 لوحة الأهل
+            </Badge>
           </div>
 
-          {/* العنوان الرئيسي العريض */}
-          <h2 className="text-4xl font-black leading-tight md:text-5xl tracking-tight text-white">
+          <h2 className="text-4xl font-black leading-tight tracking-tight text-header md:text-5xl">
             راحة بال تامة للآباء
           </h2>
 
-          <p className="max-w-xl text-base font-bold leading-relaxed text-white/90 md:text-lg">
-            لوحة متكاملة تمنحك رؤية واضحة لتطور طفلك اللغوي، وتتيح لك إدارة أوقات الاستخدام واختيار التوجهات التعليمية المناسبة له بسهولة.
+          <p className="max-w-xl text-base font-bold leading-relaxed text-ink-muted md:text-lg">
+            لوحة متكاملة تمنحك رؤية واضحة لتطور طفلك اللغوي،
+            وتتيح لك إدارة أوقات الاستخدام واختيار التوجهات
+            التعليمية المناسبة له بسهولة.
           </p>
 
-          {/* القائمة العمودية الذكية */}
           <div className="space-y-4">
             {featuresList.map((item, index) => (
-              <div key={index} className="flex items-center gap-3 text-base font-bold text-white/95">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-xs font-black text-white">
+              <div
+                key={index}
+                className="flex items-center gap-3 text-base font-bold text-ink"
+              >
+                <span
+                  className="
+                    flex
+                    h-7
+                    w-7
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-primary/10
+                    text-primary
+                    text-xs
+                    font-black
+                    shrink-0
+                  "
+                >
                   ✓
                 </span>
+
                 <p>{item}</p>
               </div>
             ))}
           </div>
 
-          {/* زر التوجيه موروث بذكاء من الـ UI بستايل story-bg المباين للخط الغامق ink */}
           <div className="pt-4">
             <Link href="/auth/register">
-              <Button variant="story-bg" className="text-base !py-4 !px-10">
+              <Button
+                variant="primary"
+                className="text-base !py-4 !px-10"
+              >
                 استكشف لوحة الآباء
               </Button>
             </Link>
