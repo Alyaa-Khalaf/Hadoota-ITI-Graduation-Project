@@ -20,10 +20,10 @@ const characters: (Characters & { value: string })[] = [
   { id: 2, name: "أميرة", animation: princess, value: "أميرة" },
   { id: 3, name: "رحالة", animation: knight, value: "رحالة" },
   { id: 4, name: "روبوت", animation: robot, value: "روبوت" },
-  { id: 5, name: "التنين ", animation: dragon, value: "تنين" },
+  { id: 5, name: "التنين", animation: dragon, value: "تنين" },
   { id: 6, name: "رائد الفضاء", animation: astronaut, value: "رائد فضاء" },
-  { id: 7, name: "البطل الخارق", animation:superman , value: "البطل الخارق" },
-  { id: 8, name: "قطة لطيفة", animation: cat,  value: "قطة لطيفة" },
+  { id: 7, name: "البطل الخارق", animation: superman, value: "البطل الخارق" },
+  { id: 8, name: "قطة لطيفة", animation: cat, value: "قطة لطيفة" },
 
 ]
 

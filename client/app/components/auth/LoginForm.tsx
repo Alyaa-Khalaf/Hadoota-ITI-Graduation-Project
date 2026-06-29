@@ -53,17 +53,25 @@ export default function LoginForm() {
       }
 
       const token = data?.data?.accessToken;
+      const refreshToken = data?.data?.refreshToken;
 
       if (!token) {
         throw new Error("Token not found");
       }
 
-      // ✔️ المصدر الأساسي للتوكن
-      setAccessToken(token);
-      console.log("TOKEN FROM LOGIN:", token);
-      // //////////
       const user = data?.data?.user;
-      login(token, user);
+      if (user) {
+        login(token, user, refreshToken);
+      } else {
+        setAccessToken(token);
+        localStorage.setItem("accessToken", token);
+        localStorage.setItem("token", token);
+        if (refreshToken) {
+          localStorage.setItem("refreshToken", refreshToken);
+        }
+      }
+
+      console.log("TOKEN FROM LOGIN:", token);
 
       // ✔️ توجيه حسب الدور: الأدمن للوحة التحكم، غيره للمغامرة
       let role: string | null = null;

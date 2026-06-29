@@ -10,7 +10,7 @@ import { API_ORIGIN } from "@/lib/apiConfig";
 
 export default function RegisterForm() {
   const router = useRouter();
-  const { setAccessToken } = useAuth();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -69,15 +69,18 @@ export default function RegisterForm() {
         throw new Error("لم يتم استلام التوكن من السيرفر");
       }
 
-      // ✔️ تغذية الـ Global State الحية (Source of Truth)
-      setAccessToken(token);
-      localStorage.setItem("token", token);  // ← ده اللي كان ناقص
+      const refreshToken = data?.data?.refreshToken;
       const user = data?.data?.user || data?.user;
-      if (user) {
-        localStorage.setItem("user", JSON.stringify(user));
-      }
 
-      // السيرفر يقوم الآن بحفظ الـ Refresh Token في الـ httpOnly Cookie تلقائياً بفضل الـ credentials: "include"
+      if (user) {
+        login(token, user, refreshToken);
+      } else {
+        localStorage.setItem("accessToken", token);
+        localStorage.setItem("token", token);
+        if (refreshToken) {
+          localStorage.setItem("refreshToken", refreshToken);
+        }
+      }
 
       setTimeout(() => {
         router.push("/onboarding");

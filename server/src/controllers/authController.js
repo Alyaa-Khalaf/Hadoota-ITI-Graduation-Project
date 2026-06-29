@@ -5,19 +5,27 @@ import { resetPasswordTemplate } from "../services/notifications/templates/reset
 import { welcomeTemplate } from "../services/notifications/templates/welcome.js";
 
 // Generate Access Token (15 Minutes)
-const generateAccessToken = (user) => {
-  return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-    expiresIn: "15m",
+// Accepts either a user object or a user id string.
+const generateAccessToken = (userOrId) => {
+  const id = typeof userOrId === 'string' || typeof userOrId === 'number'
+    ? userOrId
+    : userOrId && userOrId._id ? userOrId._id : undefined;
+  const role = userOrId && typeof userOrId === 'object' ? userOrId.role : undefined;
+  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
+    expiresIn: '15m',
   });
 };
 
 // Generate Refresh Token (30 Days)
-const generateRefreshToken = (user) => {
-  return jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_REFRESH_SECRET,
-    { expiresIn: "30d" },
-  );
+// Accepts either a user object or a user id string.
+const generateRefreshToken = (userOrId) => {
+  const id = typeof userOrId === 'string' || typeof userOrId === 'number'
+    ? userOrId
+    : userOrId && userOrId._id ? userOrId._id : undefined;
+  const role = userOrId && typeof userOrId === 'object' ? userOrId.role : undefined;
+  return jwt.sign({ id, role }, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: '30d',
+  });
 };
 
 // @desc    Register
@@ -47,6 +55,20 @@ export const register = async (req, res, next) => {
     // Save refresh token
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      path: "/",
+    };
+
+    res.cookie("accessToken", accessToken, {
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+    res.cookie("refreshToken", refreshToken, cookieOptions);
 
     // Send welcome email
     await sendEmail(user.email, welcomeTemplate(user.name));
@@ -109,6 +131,20 @@ export const login = async (req, res, next) => {
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      path: "/",
+    };
+
+    res.cookie("accessToken", accessToken, {
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000,
+    });
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+
     res.status(200).json({
       success: true,
       message: "تم تسجيل الدخول بنجاح",
@@ -145,6 +181,9 @@ export const logout = async (req, res, next) => {
     // Clear refresh token
     await User.findByIdAndUpdate(req.user.id, { refreshToken: null });
 
+    res.clearCookie("accessToken", { path: "/" });
+    res.clearCookie("refreshToken", { path: "/" });
+
     res.status(200).json({
       success: true,
       message: "تم تسجيل الخروج بنجاح",
@@ -161,7 +200,10 @@ export const logout = async (req, res, next) => {
 // @access  Public
 export const refreshToken = async (req, res, next) => {
   try {
-    const { refreshToken } = req.body;
+    let refreshToken = req.body.refreshToken;
+    if (!refreshToken && req.cookies) {
+      refreshToken = req.cookies.refreshToken;
+    }
 
     if (!refreshToken) {
       return res.status(401).json({
@@ -187,12 +229,26 @@ export const refreshToken = async (req, res, next) => {
     }
 
     // Generate new tokens
-    const newAccessToken = generateAccessToken(user);
-    const newRefreshToken = generateRefreshToken(user);
+    const newAccessToken = generateAccessToken(user._id);
+    const newRefreshToken = generateRefreshToken(user._id);
 
     // Save new refresh token
     user.refreshToken = newRefreshToken;
     await user.save({ validateBeforeSave: false });
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      path: "/",
+    };
+
+    res.cookie("accessToken", newAccessToken, {
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000,
+    });
+    res.cookie("refreshToken", newRefreshToken, cookieOptions);
 
     res.status(200).json({
       success: true,
@@ -254,34 +310,41 @@ export const resetPassword = async (req, res, next) => {
   try {
     const { resetToken, newPassword } = req.body;
 
+    if (!resetToken || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'البيانات غير مكتملة',
+        data: null,
+        errors: [],
+      });
+    }
+
     // Verify reset token
     const decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
 
     // Find user
     const user = await User.findById(decoded.id).select(
-      "+resetPasswordToken +resetPasswordExpires",
+      '+resetPasswordToken +resetPasswordExpires'
     );
 
     if (!user || user.resetPasswordToken !== resetToken) {
       return res.status(400).json({
         success: false,
-        message: "الـ Token غير صالح",
+        message: 'الـ Token غير صالح',
         data: null,
         errors: [],
       });
     }
 
-    // Check if token expired
     if (user.resetPasswordExpires < Date.now()) {
       return res.status(400).json({
         success: false,
-        message: "الـ Token منتهي الصلاحية — اطلب رابط جديد",
+        message: 'الـ Token منتهي الصلاحية — اطلب رابط جديد',
         data: null,
         errors: [],
       });
     }
 
-    // Update password
     user.password = newPassword;
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
@@ -289,7 +352,7 @@ export const resetPassword = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "تم تغيير الباسورد بنجاح",
+      message: 'تم تغيير الباسورد بنجاح',
       data: null,
       errors: [],
     });
@@ -297,6 +360,7 @@ export const resetPassword = async (req, res, next) => {
     next(error);
   }
 };
+
 // @desc    Google OAuth
 // @route   POST /api/auth/google
 // @access  Public
@@ -345,9 +409,23 @@ export const googleAuth = async (req, res, next) => {
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      path: '/',
+    };
+
+    res.cookie('accessToken', accessToken, {
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000,
+    });
+    res.cookie('refreshToken', refreshToken, cookieOptions);
+
     res.status(200).json({
       success: true,
-      message: "تم تسجيل الدخول بجوجل بنجاح",
+      message: 'تم تسجيل الدخول بجوجل بنجاح',
       data: {
         user: {
           id: user._id,

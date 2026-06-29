@@ -40,9 +40,11 @@ export async function middleware(req: NextRequest) {
 
   const isAuthenticated = Boolean(nextAuthToken || accessToken);
 
-  // Unauthenticated users on protected pages → login (admin uses client RoleGuard for localStorage JWT)
+  // Unauthenticated users on protected pages → prefer client-side redirect
+  // During development we avoid server-side redirects so the client can read localStorage tokens
   if (isProtected && !isAuthenticated && !isAdminRoute) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    // Allow the request to proceed; client-side `ProtectedLayout` will redirect unauthenticated users.
+    return NextResponse.next();
   }
 
   // Non-admin users must not access admin dashboard

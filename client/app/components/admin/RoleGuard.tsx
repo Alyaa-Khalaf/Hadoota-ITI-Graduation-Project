@@ -26,7 +26,7 @@ export default function RoleGuard({ children }: { children: React.ReactNode }) {
     if (role === "admin") {
       setAllowed(true);
     } else {
-      router.replace("/login");
+      router.replace("/auth/login");
     }
     setChecked(true);
   }, [router]);

@@ -56,19 +56,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
 
+      const refreshToken =
+        typeof window !== "undefined"
+          ? localStorage.getItem("refreshToken")
+          : null;
+
+      if (!refreshToken) {
+        setAccessToken(null);
+        return;
+      }
+
       const res = await fetch(`${API}/api/auth/refresh`, {
         method: "POST",
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refreshToken }),
       });
 
       const data = await res.json();
-
 
       console.log("REFRESH STATUS:", res.status);
       console.log("REFRESH DATA:", data);
 
       if (res.ok && data?.data?.accessToken) {
         setAccessToken(data.data.accessToken);
+        if (data.data.refreshToken) {
+          localStorage.setItem('refreshToken', data.data.refreshToken);
+        }
       } else {
         setAccessToken(null);
       }
@@ -104,11 +120,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // login
   // ==========================
 
-  const login = (newToken: string, newUser: User) => {
+  const login = (newToken: string, newUser: User, refreshToken?: string) => {
     setAccessToken(newToken);
     setUser(newUser);
-    localStorage.setItem("accessToken", newToken);          // ← هنا الأهم
+    localStorage.setItem("accessToken", newToken);
+    localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(newUser));
+    if (refreshToken) {
+      localStorage.setItem("refreshToken", refreshToken);
+    }
   };
 
   const updateUser = (newUser: User) => {

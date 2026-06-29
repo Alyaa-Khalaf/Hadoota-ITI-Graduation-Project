@@ -8,7 +8,16 @@ export const generateStoryValidation = [
   body('character')
     .trim()
     .notEmpty().withMessage('الشخصية مطلوبة')
-    .isIn(['أسد', 'أميرة', 'رحالة']).withMessage('الشخصية يجب أن تكون: أسد، أميرة، أو رحالة'),
+    .isIn([
+      'أسد',
+      'أميرة',
+      'رحالة',
+      'روبوت',
+      'تنين',
+      'رائد فضاء',
+      'البطل الخارق',
+      'قطة لطيفة'
+    ]).withMessage('الشخصية غير صحيحة'),
   body('topic')
     .trim()
     .notEmpty().withMessage('الموضوع مطلوب')
