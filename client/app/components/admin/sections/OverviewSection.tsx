@@ -51,7 +51,7 @@ export default function OverviewSection() {
         <StatCard icon={FileQuestion} label="الاختبارات" value={c.totalQuizzes} accent="text-[#4D96FF]" delay={0.2} />
         <StatCard icon={BrainCircuit} label="بنك المعرفة" value={c.totalKnowledge} accent="text-[#C77DFF]" delay={0.25} />
         <StatCard icon={Flag} label="حواديت مبلّغ عنها" value={c.flaggedStories} accent="text-red-500" delay={0.3} />
-        <StatCard icon={Wallet} label="الإيرادات (USD)" value={c.totalRevenue} accent="text-[#FF7043]" delay={0.35} />
+        <StatCard icon={Wallet} label="الإيرادات (ج.م)" value={c.totalRevenue} accent="text-[#FF7043]" delay={0.35} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

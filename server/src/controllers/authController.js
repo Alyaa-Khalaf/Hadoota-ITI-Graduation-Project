@@ -50,8 +50,8 @@ export const register = async (req, res, next) => {
     const user = await User.create({ name, email, password });
 
     // Generate tokens
-    const accessToken = generateAccessToken(user._id);
-    const refreshToken = generateRefreshToken(user._id);
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
     // Save refresh token
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
@@ -124,8 +124,8 @@ export const login = async (req, res, next) => {
     }
 
     // Generate tokens
-    const accessToken = generateAccessToken(user._id);
-    const refreshToken = generateRefreshToken(user._id);
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
     // Save refresh token
     user.refreshToken = refreshToken;
@@ -229,8 +229,8 @@ export const refreshToken = async (req, res, next) => {
     }
 
     // Generate new tokens
-    const newAccessToken = generateAccessToken(user._id);
-    const newRefreshToken = generateRefreshToken(user._id);
+    const newAccessToken = generateAccessToken(user);
+    const newRefreshToken = generateRefreshToken(user);
 
     // Save new refresh token
     user.refreshToken = newRefreshToken;
@@ -402,8 +402,8 @@ export const googleAuth = async (req, res, next) => {
     // لو googleId موجود بالفعل - يدخل عادي
 
     // Generate tokens
-    const accessToken = generateAccessToken(user._id);
-    const refreshToken = generateRefreshToken(user._id);
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
     // Save refresh token
     user.refreshToken = refreshToken;

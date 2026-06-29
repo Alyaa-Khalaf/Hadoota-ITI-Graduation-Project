@@ -4,7 +4,7 @@ import ParentHeader from "@/components/ParentDashboard/ParentHeader";
 import ChildrenList from "@/components/ParentDashboard/ChildrenList";
 import { useState, useEffect } from "react";
 import { useChildren } from "@/hooks/useChildren";
-import ChildAnalytics from "@/components/ParentDashboard/ChildAnalytics ";
+import ChildAnalytics from "@/components/ParentDashboard/ChildAnalytics";
 import AIReportSection from "@/components/ParentDashboard/AIReportSection";
 import NotificationsPanel from "@/components/ParentDashboard/NotificationsPanel";
 import SettingsPanel from "@/components/ParentDashboard/SettingsPanel";

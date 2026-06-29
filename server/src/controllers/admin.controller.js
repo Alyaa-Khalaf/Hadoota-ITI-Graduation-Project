@@ -55,6 +55,7 @@ export const getAdminStats = async (req, res) => {
       totalQuizzes,
       totalKnowledge,
       activeSubscriptions,
+      revenueAgg,
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ role: 'student' }),
@@ -69,9 +70,14 @@ export const getAdminStats = async (req, res) => {
       Quiz.countDocuments(),
       KnowledgeBase.countDocuments(),
       School.countDocuments({ subscriptionStatus: 'active' }),
+      // الإيرادات الفعلية: مجموع مبالغ المعاملات الناجحة (بالجنيه المصري)
+      Transaction.aggregate([
+        { $match: { status: 'succeeded' } },
+        { $group: { _id: null, total: { $sum: '$amount' } } },
+      ]),
     ]);
 
-    const totalRevenue = activeSubscriptions * 199;
+    const totalRevenue = revenueAgg[0]?.total || 0;
 
     return sendSuccess(res, 200, 'تم جلب الإحصائيات بنجاح', {
       cards: {
