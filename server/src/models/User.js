@@ -56,9 +56,14 @@ const userSchema = new mongoose.Schema(
     },
     subscription: {
       plan: {
+        // كان enum ثابت — اتحوّل لـ String عشان الأدمن يقدر يضيف خطط جديدة بأي slug
         type: String,
-        enum: ["free", "pro", "family", "schools"],
         default: "free",
+      },
+      planId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Plan",
+        default: null,
       },
       status: {
         type: String,

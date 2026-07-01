@@ -7,6 +7,7 @@ import type {
   AdminQuiz,
   AdminKnowledge,
   AdminTransaction,
+  AdminPlan,
 } from "@/services/adminService";
 
 const ROLE_LABELS: Record<string, string> = {
@@ -120,6 +121,29 @@ export function knowledgeDetailFields(k: AdminKnowledge): DetailField[] {
     { label: "نشط", value: k.isActive === false ? "لا" : "نعم" },
     { label: "المحتوى", value: <span className="whitespace-pre-wrap">{k.content}</span> },
     { label: "تاريخ الإضافة", value: fmtDate(k.createdAt) },
+  ];
+}
+
+const AUDIENCE_LABELS: Record<string, string> = {
+  parent: "أولياء الأمور",
+  school: "المدارس",
+  all: "الكل",
+};
+
+export function planDetailFields(p: AdminPlan): DetailField[] {
+  return [
+    { label: "الاسم", value: p.name },
+    { label: "المعرّف (slug)", value: p.slug },
+    { label: "السعر", value: fmtMoney(p.price, p.currency) },
+    { label: "المدة (أيام)", value: String(p.durationDays) },
+    { label: "الجمهور", value: AUDIENCE_LABELS[p.audience] ?? p.audience },
+    { label: "البادج", value: p.badge || "—" },
+    { label: "مميزة", value: p.highlight ? "نعم" : "لا" },
+    { label: "نشطة", value: p.isActive === false ? "لا" : "نعم" },
+    { label: "الترتيب", value: String(p.sortOrder ?? 0) },
+    { label: "الوصف", value: p.description || "—" },
+    { label: "المميزات", value: p.features?.join("، ") || "—" },
+    { label: "تاريخ الإنشاء", value: fmtDate(p.createdAt) },
   ];
 }
 

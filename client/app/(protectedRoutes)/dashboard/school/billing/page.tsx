@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { API_BASE } from "@/lib/apiConfig";
+import { useAuth } from "@/context/AuthContext";
+import { fetchWithAuthRetry, getUsableAccessToken } from "@/utils/authFetch";
 
 interface Subscription {
   plan: "free" | "pro" | "family" | "schools";
@@ -11,6 +13,7 @@ interface Subscription {
 }
 
 export default function BillingPage() {
+  const { accessToken, refreshAccessToken } = useAuth();
   const [sub, setSub] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -28,10 +31,15 @@ export default function BillingPage() {
 
   const fetchStatus = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
-      const res = await fetch(`${API_BASE}/payments/status`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const token = await getUsableAccessToken(accessToken, refreshAccessToken);
+      if (!token) return;
+
+      const res = await fetchWithAuthRetry(
+        `${API_BASE}/payments/status`,
+        { headers: {} },
+        token,
+        refreshAccessToken
+      );
       const result = await res.json();
       if (res.ok && result.success) setSub(result.data);
     } catch {
@@ -43,21 +51,30 @@ export default function BillingPage() {
 
   useEffect(() => {
     fetchStatus();
-  }, []);
+  }, [accessToken, refreshAccessToken]);
 
   const handleSubscribe = async () => {
     setIsCheckingOut(true);
     setNotice(null);
     try {
-      const token = localStorage.getItem("accessToken");
-      const res = await fetch(`${API_BASE}/payments/create-checkout`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const token = await getUsableAccessToken(accessToken, refreshAccessToken);
+      if (!token) {
+        setNotice({ type: "error", text: "انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى." });
+        return;
+      }
+
+      const res = await fetchWithAuthRetry(
+        `${API_BASE}/payments/create-checkout`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ plan: "schools" }),
         },
-        body: JSON.stringify({ plan: "schools" }),
-      });
+        token,
+        refreshAccessToken
+      );
       const result = await res.json();
       if (res.ok && result.data?.url) {
         window.location.href = result.data.url; // → Paymob Unified Checkout

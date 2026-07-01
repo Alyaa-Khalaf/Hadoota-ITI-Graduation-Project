@@ -40,6 +40,12 @@ import {
   getTransaction,
   syncTransactions,
   getKnowledgeCategories,
+  // plans
+  listPlans,
+  getPlan,
+  createPlan,
+  updatePlan,
+  deletePlan,
   // seeding
   seedPlans,
   seedKnowledge,
@@ -83,6 +89,10 @@ router.route('/knowledge/:id').put(updateKnowledge).delete(deleteKnowledge);
 router.get('/transactions', listTransactions);
 router.post('/transactions/sync', syncTransactions);
 router.get('/transactions/:id', getTransaction);
+
+// PLANS
+router.route('/plans').get(listPlans).post(createPlan);
+router.route('/plans/:id').get(getPlan).put(updatePlan).delete(deletePlan);
 
 // SEEDING
 router.post('/seed/plans', seedPlans);

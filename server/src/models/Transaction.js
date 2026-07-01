@@ -1,26 +1,23 @@
-import mongoose from 'mongoose'
+import mongoose from "mongoose";
 
 const transactionSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       default: null,
     },
     schoolId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'School',
+      ref: "School",
       default: null,
     },
     provider: {
       type: String,
-      enum: ['paymob', 'stripe'],
-      default: 'paymob',
+      enum: ["paymob", "stripe"],
+      default: "paymob",
     },
-    paymobTransactionId: {
-      type: String,
-      default: null,
-    },
+    paymobTransactionId: { type: String, unique: true, sparse: true },
     paymobOrderId: String,
     reference: String,
     // Legacy Stripe fields (kept for old rows)
@@ -34,25 +31,28 @@ const transactionSchema = new mongoose.Schema(
     },
     currency: {
       type: String,
-      default: 'egp',
+      default: "egp",
     },
     plan: String,
     status: {
       type: String,
-      enum: ['succeeded', 'failed', 'pending', 'refunded'],
-      default: 'succeeded',
+      enum: ["succeeded", "failed", "pending", "refunded"],
+      default: "succeeded",
     },
     description: String,
   },
-  { timestamps: true }
-)
+  { timestamps: true },
+);
 
-transactionSchema.index({ paymobTransactionId: 1 }, { unique: true, sparse: true })
-transactionSchema.index({ reference: 1 }, { unique: true, sparse: true })
-transactionSchema.index({ stripeInvoiceId: 1 }, { unique: true, sparse: true })
-transactionSchema.index({ stripeSessionId: 1 }, { unique: true, sparse: true })
-transactionSchema.index({ userId: 1, createdAt: -1 })
-transactionSchema.index({ createdAt: -1 })
+transactionSchema.index(
+  { paymobTransactionId: 1 },
+  { unique: true, sparse: true },
+);
+transactionSchema.index({ reference: 1 }, { unique: true, sparse: true });
+transactionSchema.index({ stripeInvoiceId: 1 }, { unique: true, sparse: true });
+transactionSchema.index({ stripeSessionId: 1 }, { unique: true, sparse: true });
+transactionSchema.index({ userId: 1, createdAt: -1 });
+transactionSchema.index({ createdAt: -1 });
 
-const Transaction = mongoose.model('Transaction', transactionSchema)
-export default Transaction
+const Transaction = mongoose.model("Transaction", transactionSchema);
+export default Transaction;

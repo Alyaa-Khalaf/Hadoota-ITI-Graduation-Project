@@ -5,6 +5,7 @@ import Step1_Welcome from "@/components/onboarding/Step1_Welcome";
 import Step2_ChildInfo from "@/components/onboarding/Step2_ChildInfo";
 import Step3_Interests from "@/components/onboarding/Step3_Interests";
 import StepIndicator from "@/components/onboarding/StepIndicator";
+import HomeButton from "@/components/ui/HomeButton";
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -27,6 +28,7 @@ export default function OnboardingPage() {
       className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#FAF6F0]"
       dir="rtl"
     >
+      <HomeButton href="/" />
       <StepIndicator
   currentStep={currentStep}
   totalSteps={3}

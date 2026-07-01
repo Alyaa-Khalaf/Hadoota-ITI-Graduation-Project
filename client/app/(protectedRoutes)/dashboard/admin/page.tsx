@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import {
-  LayoutDashboard, Users, Baby, BookOpen, School, FileQuestion, BrainCircuit, CreditCard,
+  LayoutDashboard, Users, Baby, BookOpen, School, FileQuestion, BrainCircuit, CreditCard, Tag,
 } from "lucide-react";
 
 import RoleGuard from "@/components/admin/RoleGuard";
@@ -17,6 +17,7 @@ import SchoolsSection from "@/components/admin/sections/SchoolsSection";
 import QuizzesSection from "@/components/admin/sections/QuizzesSection";
 import KnowledgeSection from "@/components/admin/sections/KnowledgeSection";
 import TransactionsSection from "@/components/admin/sections/TransactionsSection";
+import PlansSection from "@/components/admin/sections/PlansSection";
 
 const SECTIONS: AdminSection[] = [
   { key: "overview", label: "نظرة عامة", icon: LayoutDashboard },
@@ -26,6 +27,7 @@ const SECTIONS: AdminSection[] = [
   { key: "schools", label: "المدارس", icon: School },
   { key: "quizzes", label: "الاختبارات", icon: FileQuestion },
   { key: "transactions", label: "المعاملات", icon: CreditCard },
+  { key: "plans", label: "الخطط", icon: Tag },
   { key: "knowledge", label: "بنك المعرفة", icon: BrainCircuit },
 ];
 
@@ -43,6 +45,8 @@ function renderSection(key: string) {
       return <QuizzesSection />;
     case "transactions":
       return <TransactionsSection />;
+    case "plans":
+      return <PlansSection />;
     case "knowledge":
       return <KnowledgeSection />;
     default:

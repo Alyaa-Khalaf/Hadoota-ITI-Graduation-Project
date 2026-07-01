@@ -1,12 +1,7 @@
 import User from '../models/User.js'
 import School from '../models/School.js'
 import Transaction from '../models/Transaction.js'
-
-const PLAN_AMOUNTS = {
-  pro: 149,
-  family: 249,
-  schools: 4999,
-}
+import Plan from '../models/Plan.js'
 
 export const upsertTransaction = async (payload) => {
   const filter = payload.paymobTransactionId
@@ -84,11 +79,15 @@ export const syncTransactionsFromUsers = async () => {
       { 'subscription.lastTransactionId': { $exists: true, $ne: null } },
       { 'subscription.lastReference': { $exists: true, $ne: null } },
       {
-        'subscription.plan': { $in: ['pro', 'family', 'schools'] },
         'subscription.provider': 'paymob',
+        'subscription.plan': { $nin: [null, 'free'] },
       },
     ],
   }).select('subscription email name')
+
+  // خريطة أسعار الخطط من قاعدة البيانات { slug: price }
+  const plans = await Plan.find().select('slug price').lean()
+  const planAmounts = Object.fromEntries(plans.map((p) => [p.slug, p.price]))
 
   let synced = 0
 
@@ -97,7 +96,7 @@ export const syncTransactionsFromUsers = async () => {
     const plan = sub.plan
     if (!plan || plan === 'free') continue
 
-    const amount = PLAN_AMOUNTS[plan] || 0
+    const amount = planAmounts[plan] || 0
     const txnId = sub.lastTransactionId
     const reference = sub.lastReference
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 export default function ProtectedLayout({
@@ -11,18 +11,20 @@ export default function ProtectedLayout({
 }) {
   const { accessToken, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const canViewWithoutAuth = pathname === "/dashboard/subscription";
 
   useEffect(() => {
-    if (!isLoading && !accessToken) {
+    if (!isLoading && !accessToken && !canViewWithoutAuth) {
       router.replace("/auth/login");
     }
-  }, [accessToken, isLoading, router]);
+  }, [accessToken, canViewWithoutAuth, isLoading, router]);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (!accessToken) {
+  if (!accessToken && !canViewWithoutAuth) {
     return null;
   }
 

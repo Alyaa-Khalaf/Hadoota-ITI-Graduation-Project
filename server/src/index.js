@@ -20,6 +20,7 @@ import progressRoutes from './routes/progress.routes.js'
 import parentAgentRoutes from './routes/parentAgent.routes.js'
 import screenTimeRoutes from './routes/screenTime.routes.js'
 import paymentRoutes from './routes/payment.routes.js'
+import planRoutes from './routes/plan.routes.js'
 import schoolRoutes from './routes/school.routes.js'
 import adminRoutes from './routes/admin.routes.js'
 import personalizationRoutes from './routes/personalizationRoutes.js'
@@ -67,6 +68,7 @@ app.use('/api/progress', progressRoutes)
 app.use('/api/parent-agent', parentAgentRoutes)
 app.use('/api/screentime', screenTimeRoutes)
 app.use('/api/payments', paymentRoutes)
+app.use('/api/plans', planRoutes)
 app.use('/api/schools', schoolRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/personalization', personalizationRoutes) // ⬅️ مستورد وكان مش مربوط

@@ -7,6 +7,7 @@ import KnowledgeBase from '../models/KnowledgeBase.js';
 import QuizSubmission from '../models/quizSubmissionModel.js';
 import Gamification from '../models/gamificationModel.js';
 import Transaction from '../models/Transaction.js';
+import Plan from '../models/Plan.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
 import { syncTransactionsFromUsers } from '../services/transactionService.js';
 
@@ -707,17 +708,155 @@ export const getKnowledgeCategories = async (req, res) => {
 };
 
 // ============================================================
+// 💳 PLANS CRUD (خطط الاشتراك التي يديرها الأدمن)
+// ============================================================
+
+export const listPlans = async (req, res) => {
+  try {
+    const { page, limit, skip } = getPaging(req);
+    const { search, audience, isActive } = req.query;
+
+    const filter = {};
+    if (audience) filter.audience = audience;
+    if (isActive === 'true') filter.isActive = true;
+    if (isActive === 'false') filter.isActive = false;
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { slug: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const [items, total] = await Promise.all([
+      Plan.find(filter).sort({ sortOrder: 1, price: 1 }).skip(skip).limit(limit).lean(),
+      Plan.countDocuments(filter),
+    ]);
+
+    return sendSuccess(res, 200, 'تم جلب الخطط', paginated(items, total, page, limit));
+  } catch (error) {
+    return sendError(res, 500, 'فشل جلب الخطط', [error.message]);
+  }
+};
+
+export const getPlan = async (req, res) => {
+  try {
+    const plan = await Plan.findById(req.params.id).lean();
+    if (!plan) return sendError(res, 404, 'الخطة غير موجودة');
+    return sendSuccess(res, 200, 'تم جلب الخطة', plan);
+  } catch (error) {
+    return sendError(res, 500, 'فشل جلب الخطة', [error.message]);
+  }
+};
+
+export const createPlan = async (req, res) => {
+  try {
+    const { slug, name, price, durationDays } = req.body;
+    if (!slug || !name || price === undefined || durationDays === undefined) {
+      return sendError(res, 400, 'الـ slug والاسم والسعر والمدة مطلوبين');
+    }
+
+    const normalizedSlug = String(slug).toLowerCase().trim();
+    const exists = await Plan.findOne({ slug: normalizedSlug });
+    if (exists) return sendError(res, 409, 'يوجد خطة بنفس الـ slug بالفعل');
+
+    const plan = await Plan.create({ ...req.body, slug: normalizedSlug });
+    return sendSuccess(res, 201, 'تم إنشاء الخطة', plan);
+  } catch (error) {
+    return sendError(res, 500, 'فشل إنشاء الخطة', [error.message]);
+  }
+};
+
+export const updatePlan = async (req, res) => {
+  try {
+    const allowed = [
+      'name', 'description', 'price', 'currency', 'durationDays',
+      'features', 'badge', 'highlight', 'audience', 'isActive', 'sortOrder',
+    ];
+    const update = {};
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) update[key] = req.body[key];
+    }
+
+    // السماح بتعديل الـ slug مع التحقق من عدم التكرار
+    if (req.body.slug !== undefined) {
+      const normalizedSlug = String(req.body.slug).toLowerCase().trim();
+      const clash = await Plan.findOne({ slug: normalizedSlug, _id: { $ne: req.params.id } });
+      if (clash) return sendError(res, 409, 'يوجد خطة بنفس الـ slug بالفعل');
+      update.slug = normalizedSlug;
+    }
+
+    const plan = await Plan.findByIdAndUpdate(req.params.id, update, {
+      new: true,
+      runValidators: true,
+    });
+    if (!plan) return sendError(res, 404, 'الخطة غير موجودة');
+    return sendSuccess(res, 200, 'تم تحديث الخطة', plan);
+  } catch (error) {
+    return sendError(res, 500, 'فشل تحديث الخطة', [error.message]);
+  }
+};
+
+export const deletePlan = async (req, res) => {
+  try {
+    const planId = req.params.id;
+    const plan = await Plan.findById(planId);
+    if (!plan) return sendError(res, 404, 'الخطة غير موجودة');
+
+    // منع الحذف لو فيه مستخدمين مشتركين في الخطة دي — يُفضّل التعطيل بدل الحذف
+    const subscribers = await User.countDocuments({ 'subscription.planId': planId });
+    if (subscribers > 0) {
+      return sendError(
+        res,
+        400,
+        `لا يمكن حذف الخطة — يوجد ${subscribers} مشترك بها. عطّلها (isActive=false) بدلاً من الحذف.`
+      );
+    }
+
+    await Plan.findByIdAndDelete(planId);
+    return sendSuccess(res, 200, 'تم حذف الخطة');
+  } catch (error) {
+    return sendError(res, 500, 'فشل حذف الخطة', [error.message]);
+  }
+};
+
+// ============================================================
 // 🌱 SEEDING (الموجود مسبقاً)
 // ============================================================
 
 export const seedPlans = async (req, res) => {
   try {
+    // الخطط الافتراضية — تُزرع في مجموعة Plan لو مش موجودة (idempotent)
     const defaultPlans = [
-      { name: 'الخطة المجانية', price: 0, duration: 'lifetime', features: ['قراءة 3 قصص شهرياً', 'تقارير أساسية'] },
-      { name: 'الاشتراك السنوي للمدارس', price: 199, duration: 'year', features: ['حسابات طلاب غير محدودة', 'لوحة تحكم كاملة', 'تخصيص منهج', 'تحليلات ذكية بالـ AI'] },
-      { name: 'الاشتراك الشهري للأهالي', price: 9, duration: 'month', features: ['توليد قصص بالـ AI غير محدود', 'تتبع مهارات الطفل'] },
+      {
+        slug: 'pro', name: 'خطة Pro', price: 149, durationDays: 30, audience: 'parent',
+        badge: 'الأكثر شعبية 🔥', highlight: true, sortOrder: 1,
+        description: 'كل المميزات لطفل واحد',
+        features: ['توليد قصص بالـ AI غير محدود', 'تتبع مهارات الطفل', 'تقارير أسبوعية ذكية'],
+      },
+      {
+        slug: 'family', name: 'خطة العائلة', price: 249, durationDays: 30, audience: 'parent',
+        sortOrder: 2, description: 'حتى 4 أطفال + تقارير متقدمة',
+        features: ['كل مميزات Pro', 'حتى 4 حسابات أطفال', 'تقارير عائلية مقارنة'],
+      },
+      {
+        slug: 'schools', name: 'خطة المدارس', price: 4999, durationDays: 365, audience: 'school',
+        sortOrder: 3, description: 'اشتراك سنوي للمدارس',
+        features: ['حسابات طلاب غير محدودة', 'لوحة تحكم كاملة', 'تخصيص منهج', 'تحليلات ذكية بالـ AI'],
+      },
     ];
-    return sendSuccess(res, 200, 'تم زرع خطط الاشتراكات بنجاح', defaultPlans);
+
+    let created = 0;
+    for (const p of defaultPlans) {
+      const result = await Plan.updateOne(
+        { slug: p.slug },
+        { $setOnInsert: p },
+        { upsert: true }
+      );
+      if (result.upsertedCount) created += 1;
+    }
+
+    const all = await Plan.find().sort({ sortOrder: 1 }).lean();
+    return sendSuccess(res, 200, `تم زرع الخطط (${created} جديدة)`, all);
   } catch (error) {
     return sendError(res, 500, 'فشل زرع الخطط', [error.message]);
   }

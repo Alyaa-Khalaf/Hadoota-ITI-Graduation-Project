@@ -27,13 +27,20 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError<{ message?: string; errors?: string[] }>) => {
-    if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('token')
-        if (!window.location.pathname.includes('/auth/login')) {
-          window.location.href = '/auth/login'
-        }
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      // 401 = الجلسة غير صالحة (توكن مفقود/منتهي). نمسحها ونرجّع لتسجيل الدخول.
+      // ملاحظة: صلاحيات غير كافية بتيجي 403 (مش 401) فمش بنعملها logout هنا.
+      const hadToken =
+        Boolean(localStorage.getItem('accessToken') || localStorage.getItem('token'))
+
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('token')
+
+      const onAuthPage = window.location.pathname.includes('/auth/')
+      // نعيد التوجيه فقط لو فعلاً كان فيه توكن (يعني الجلسة انتهت)،
+      // ومش على صفحة auth أصلاً — عشان ميحصلش redirect loop.
+      if (hadToken && !onAuthPage) {
+        window.location.href = '/auth/login?error=SessionExpired'
       }
     }
     return Promise.reject(error)

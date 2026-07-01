@@ -112,6 +112,23 @@ export interface AdminTransaction {
   createdAt: string;
 }
 
+export interface AdminPlan {
+  _id: string;
+  slug: string;
+  name: string;
+  description?: string;
+  price: number;
+  currency: string;
+  durationDays: number;
+  features?: string[];
+  badge?: string;
+  highlight?: boolean;
+  audience: "parent" | "school" | "all";
+  isActive: boolean;
+  sortOrder?: number;
+  createdAt: string;
+}
+
 export interface AdminStats {
   cards: {
     totalUsers: number;
@@ -205,4 +222,14 @@ export const getTransaction = (id: string) =>
   unwrap<AdminTransaction>(apiClient.get(`/admin/transactions/${id}`));
 export const syncTransactions = () =>
   unwrap<{ synced: number }>(apiClient.post("/admin/transactions/sync"));
+
+// Plans
+export const listPlans = (params?: ListParams) =>
+  unwrap<Paginated<AdminPlan>>(apiClient.get("/admin/plans", { params }));
+export const getPlan = (id: string) => unwrap<AdminPlan>(apiClient.get(`/admin/plans/${id}`));
+export const createPlan = (body: Partial<AdminPlan>) =>
+  unwrap<AdminPlan>(apiClient.post("/admin/plans", body));
+export const updatePlan = (id: string, body: Partial<AdminPlan>) =>
+  unwrap<AdminPlan>(apiClient.put(`/admin/plans/${id}`, body));
+export const deletePlan = (id: string) => apiClient.delete(`/admin/plans/${id}`);
 

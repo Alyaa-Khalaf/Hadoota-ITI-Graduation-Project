@@ -1,28 +1,9 @@
 import User from '../models/User.js'
+import Plan from '../models/Plan.js'
 import { sendEmail } from '../services/emailService.js'
 import { subscriptionTemplate } from '../services/notifications/templates/subscriptionConfirmation.js'
 import { createIntention, buildCheckoutUrl, verifyHmac } from '../services/paymobService.js'
 import { recordPaymobTransaction, recordPendingCheckout } from '../services/transactionService.js'
-
-// Plan definitions — Paymob is one-time payment, so each plan has an
-// amount (in EGP) and a duration after which the subscription expires.
-export const PLANS = {
-  pro: {
-    name: 'Pro',
-    amount: 149,          // EGP / month
-    durationDays: 30
-  },
-  family: {
-    name: 'Family',
-    amount: 249,          // EGP / month
-    durationDays: 30
-  },
-  schools: {
-    name: 'Schools',
-    amount: 4999,         // EGP / year
-    durationDays: 365
-  }
-}
 
 // POST /api/payments/create-checkout
 export const createCheckout = async (req, res, next) => {
@@ -30,10 +11,13 @@ export const createCheckout = async (req, res, next) => {
     const { plan } = req.body
     const userId = req.user?.id || req.user?._id
 
-    if (!PLANS[plan]) {
+    // الخطط دلوقتي بتتقرا من قاعدة البيانات (يديرها الأدمن)
+    const selectedPlan = await Plan.findOne({ slug: plan, isActive: true })
+
+    if (!selectedPlan) {
       return res.status(400).json({
         success: false,
-        message: 'الخطة غير صحيحة — اختر: pro, family, schools',
+        message: 'الخطة غير متاحة أو غير موجودة',
         data: null,
         errors: []
       })
@@ -44,13 +28,11 @@ export const createCheckout = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'المستخدم غير موجود', data: null, errors: [] })
     }
 
-    const selectedPlan = PLANS[plan]
-
     // Unique reference echoed back by Paymob as merchant_order_id.
     const reference = `${userId}_${plan}_${Date.now()}`
 
     const { clientSecret } = await createIntention({
-      amountCents: selectedPlan.amount * 100,
+      amountCents: Math.round(selectedPlan.price * 100),
       reference,
       user,
       plan,
@@ -68,7 +50,7 @@ export const createCheckout = async (req, res, next) => {
       userId,
       plan,
       reference,
-      amount: selectedPlan.amount,
+      amount: selectedPlan.price,
     })
 
     const url = buildCheckoutUrl(clientSecret)
@@ -139,8 +121,13 @@ export const handleCallback = async (req, res) => {
       return res.status(200).json({ received: true })
     }
 
-    if (!userId || !PLANS[plan]) {
-      console.error(`Paymob callback: missing/invalid extras (userId=${userId}, plan=${plan})`)
+    // الخطة بتتقرا من قاعدة البيانات بالـ slug
+    const selectedPlan = plan ? await Plan.findOne({ slug: plan }) : null
+
+    if (!userId || !selectedPlan) {
+      console.error(`Paymob callback: missing/invalid plan (userId=${userId}, plan=${plan})`)
+      // نسجّل المعاملة على أي حال عشان تظهر للأدمن
+      await recordPaymobTransaction({ obj, userId, plan, status: 'succeeded' })
       return res.status(200).json({ received: true })
     }
 
@@ -150,10 +137,10 @@ export const handleCallback = async (req, res) => {
       return res.status(200).json({ received: true })
     }
 
-    const selectedPlan = PLANS[plan]
     const expiresAt = new Date(Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000)
 
     user.subscription.plan = plan
+    user.subscription.planId = selectedPlan._id
     user.subscription.status = 'active'
     user.subscription.provider = 'paymob'
     user.subscription.expiresAt = expiresAt
@@ -168,7 +155,7 @@ export const handleCallback = async (req, res) => {
     try {
       await sendEmail(
         user.email,
-        subscriptionTemplate(user.name, selectedPlan.name, selectedPlan.amount, renewalDate)
+        subscriptionTemplate(user.name, selectedPlan.name, selectedPlan.price, renewalDate)
       )
     } catch (emailErr) {
       console.error('Paymob callback: confirmation email failed:', emailErr.message)

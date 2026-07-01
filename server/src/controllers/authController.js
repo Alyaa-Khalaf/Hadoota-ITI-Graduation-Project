@@ -388,7 +388,7 @@ export const googleAuth = async (req, res, next) => {
         avatar: image,
         googleId,
         password: null,
-        role: "user",
+        role: "parent",
       });
       await sendEmail(user.email, welcomeTemplate(user.name));
     } else if (!user.googleId) {

@@ -45,7 +45,7 @@ export const subscriptionTemplate = (name, plan, amount, renewalDate) => ({
             </div>
             <div class="invoice-row">
               <span class="invoice-label">المبلغ</span>
-              <span class="invoice-value">$${amount}/شهر</span>
+              <span class="invoice-value">${amount} ج.م/شهر</span>
             </div>
             <div class="invoice-row">
               <span class="invoice-label">تاريخ التجديد</span>

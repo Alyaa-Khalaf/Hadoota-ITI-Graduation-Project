@@ -11,6 +11,7 @@ export default function GoogleTokenSync() {
   useEffect(() => {
     if (status === "authenticated" && session?.backendToken) {
       localStorage.setItem("accessToken", session.backendToken);
+      localStorage.setItem("token", session.backendToken);
       if (session.backendRefreshToken) {
         localStorage.setItem("refreshToken", session.backendRefreshToken);
       }

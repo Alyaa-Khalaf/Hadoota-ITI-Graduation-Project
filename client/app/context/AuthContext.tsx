@@ -17,7 +17,7 @@ interface User {
 interface AuthContextType {
   accessToken: string | null;
   setAccessToken: (token: string | null) => void;
-  refreshAccessToken: () => Promise<void>;
+  refreshAccessToken: () => Promise<string | null>;
   logout: () => Promise<void>;
   isLoading: boolean;
   updateUser: (user: User) => void;
@@ -28,6 +28,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 import { API_ORIGIN } from "@/lib/apiConfig";
+import { isTokenExpiring } from "@/utils/authFetch";
 
 const API = API_ORIGIN;
 
@@ -52,7 +53,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // =========================
   // Refresh Token
   // =========================
-  const refreshAccessToken = useCallback(async () => {
+  const refreshAccessToken = useCallback(async (): Promise<string | null> => {
+    const storedAccessToken =
+      typeof window !== "undefined"
+        ? localStorage.getItem("accessToken") || localStorage.getItem("token")
+        : null;
+
+    const keepStoredTokenIfUsable = () => {
+      if (storedAccessToken && !isTokenExpiring(storedAccessToken)) {
+        setAccessToken(storedAccessToken);
+        return storedAccessToken;
+      }
+
+      setAccessToken(null);
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      return null;
+    };
+
     try {
       setIsLoading(true);
 
@@ -61,18 +80,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           ? localStorage.getItem("refreshToken")
           : null;
 
-      if (!refreshToken) {
-        setAccessToken(null);
-        return;
-      }
-
       const res = await fetch(`${API}/api/auth/refresh`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify(refreshToken ? { refreshToken } : {}),
       });
 
       const data = await res.json();
@@ -82,14 +96,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (res.ok && data?.data?.accessToken) {
         setAccessToken(data.data.accessToken);
+        localStorage.setItem("accessToken", data.data.accessToken);
+        localStorage.setItem("token", data.data.accessToken);
         if (data.data.refreshToken) {
           localStorage.setItem('refreshToken', data.data.refreshToken);
         }
+        return data.data.accessToken;
       } else {
-        setAccessToken(null);
+        return keepStoredTokenIfUsable();
       }
     } catch {
-      setAccessToken(null);
+      return keepStoredTokenIfUsable();
     } finally {
       setIsLoading(false);
     }
@@ -107,14 +124,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch { }
 
     setAccessToken(null);
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
   }, []);
 
   // =========================
   // Init
   // =========================
-  useEffect(() => {
-    refreshAccessToken();
-  }, [refreshAccessToken]);
+  // useEffect(() => {
+  //   refreshAccessToken();
+  // }, [refreshAccessToken]);
 
   // ==========================
   // login

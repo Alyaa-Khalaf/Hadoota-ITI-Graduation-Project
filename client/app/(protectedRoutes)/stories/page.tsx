@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useStorySocket } from "@/hooks/useStorySocket";
 import StoryPlayer from "@/components/story-player/StoryPlayer";
 import { useStoryInput } from "@/hooks/useStoryInput";
+import HomeButton from "@/components/ui/HomeButton";
 
 export default function StoriesPage() {
   const { childId, character, topic } = useStoryInput();
@@ -32,6 +33,7 @@ export default function StoriesPage() {
   if (!started) {
     return (
       <div className="text-center p-10">
+        <HomeButton href="/childAdventure" />
         {!canStart && (
           <p className="text-red-500 mb-4">
             تأكدي من اختيار الطفل والشخصية والموضوع قبل البدء
@@ -53,6 +55,7 @@ export default function StoriesPage() {
   if (isGenerating || !scenes) {
     return (
       <div className="text-center p-10">
+        <HomeButton href="/childAdventure" />
         ✨ جاري توليد الحدوتة...
         {error && <p className="text-red-500 mt-4">{error}</p>}
       </div>
@@ -60,6 +63,9 @@ export default function StoriesPage() {
   }
 
   return (
-    <StoryPlayer scenes={scenes} title={storyTitle} />
+    <>
+      <HomeButton href="/childAdventure" />
+      <StoryPlayer scenes={scenes} title={storyTitle} />
+    </>
   );
 }

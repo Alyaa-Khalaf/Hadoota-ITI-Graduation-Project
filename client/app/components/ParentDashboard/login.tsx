@@ -21,7 +21,7 @@ import { API_ORIGIN } from "@/lib/apiConfig";
 
 export default function ParentGateForm() {
   const router = useRouter();
-  const { user, setAccessToken } = useAuth();
+  const { user, login } = useAuth();
 
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -57,13 +57,14 @@ export default function ParentGateForm() {
       }
 
       const token = data?.data?.accessToken;
+      const refreshToken = data?.data?.refreshToken;
 
       if (!token) {
         throw new Error("Token not found");
       }
 
       // ✔️ المصدر الأساسي للتوكن (نفس منطق اللوجن الأساسي)
-      setAccessToken(token);
+      login(token, data?.data?.user || user || {}, refreshToken);
 
       router.push("/ParentDashboard");
     } catch (err: any) {
