@@ -132,9 +132,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // =========================
   // Init
   // =========================
-  // useEffect(() => {
-  //   refreshAccessToken();
-  // }, [refreshAccessToken]);
+  useEffect(() => {
+    refreshAccessToken();
+  }, [refreshAccessToken]);
 
   // ==========================
   // login

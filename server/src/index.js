@@ -87,6 +87,8 @@ app.get('/api/health', (req, res) => {
 })
 
 // Socket.io
+io.use(socketAuthMiddleware)
+
 io.on('connection', (socket) => {
   const userId = socket.data.userId
   console.log(`🔌 Authenticated client connected: ${socket.id} (User: ${userId})`)
