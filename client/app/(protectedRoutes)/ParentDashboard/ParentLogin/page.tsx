@@ -3,10 +3,12 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import LoginForm from "@/components/ParentDashboard/login";
+import PreviousButton from "@/components/ui/PreviousButton";
 
 export default function LoginPage() {
   return (
     <div className="min-h-screen bg-story-bg flex items-center justify-center p-6 font-sans" dir="rtl">
+      <PreviousButton/>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

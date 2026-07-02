@@ -19,38 +19,38 @@ module.exports = {
       },
 
       colors: {
-        // Backgrounds
-        'story-bg': '#FFFDF7',
-        'page-warm': '#FFF7EC',
-        'page-sky': '#F5FAFF',
-        'page-dreamy': '#F8F5FF',
+  // Backgrounds
+  "story-bg": "var(--story-bg)",
+  "page-warm": "var(--page-warm)",
+  "page-sky": "var(--page-sky)",
+  "page-dreamy": "var(--page-dreamy)",
 
-        // Primary (Pastel Pink Theme)
-        primary: '#d5456e',
-        'primary-light': '#FFC2D3',
-        'primary-wash': '#FFF3F7',
+  // Primary
+  primary: "var(--primary)",
+  "primary-light": "var(--primary-light)",
+  "primary-wash": "var(--primary-wash)",
 
-        // Accent Pastels
-        sunny: '#FFE58A',
-        meadow: '#9AD9A4',
-        sky: '#8CC8FF',
-        magic: '#D8B4FE',
-        blossom: '#FFB3C7',
-        rose: '#FF95B5',
+  // Accent
+  sunny: "var(--sunny)",
+  meadow: "var(--meadow)",
+  sky: "var(--sky)",
+  magic: "var(--magic)",
+  blossom: "var(--blossom)",
+  rose: "var(--rose)",
 
-        // Story Categories
-        'cat-adventure': '#DDF4FF',
-        'cat-animals': '#FFF0DB',
-        'cat-magic': '#F1E3FF',
-        'cat-nature': '#DDF9E7',
-        'cat-family': '#FFE2E2',
+  // Categories
+  "cat-adventure": "var(--cat-adventure)",
+  "cat-animals": "var(--cat-animals)",
+  "cat-magic": "var(--cat-magic)",
+  "cat-nature": "var(--cat-nature)",
+  "cat-family": "var(--cat-family)",
 
-        // Typography
-        ink: '#4A3A2A',
-        'ink-muted': '#8B7765',
-        'border-warm': '#EFE6DD',
-        header: '#7A4E68',
-      },
+  // Typography
+  ink: "var(--ink)",
+  "ink-muted": "var(--ink-muted)",
+  "border-warm": "var(--border-warm)",
+  header: "var(--header)",
+},
 
       fontFamily: {
   sans: ['Noto Kufi Arabic', 'sans-serif'],

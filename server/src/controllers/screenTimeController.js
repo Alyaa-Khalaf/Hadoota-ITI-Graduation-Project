@@ -1,6 +1,6 @@
 import Child from '../models/Child.js'
 import User from '../models/User.js'
-import { startSession, endSession, getTodayStatus } from '../services/screenTimeService.js'
+import { startSession, endSession, getTodayStatus, getWeeklyStatus } from '../services/screenTimeService.js'
 
 const verifyParentOwnsChild = async (childId, userId) => {
   const child = await Child.findById(childId)
@@ -70,6 +70,28 @@ export const getTodayScreenTime = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: 'تم جلب بيانات وقت الشاشة',
+      data: result,
+      errors: []
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// GET /api/screentime/:childId/week
+export const getWeekScreenTime = async (req, res, next) => {
+  try {
+    const { childId } = req.params
+    const userId = req.user?.id || req.user?._id
+
+    const { error, status } = await verifyParentOwnsChild(childId, userId)
+    if (error) return res.status(status).json({ success: false, message: error, data: null, errors: [] })
+
+    const result = await getWeeklyStatus(childId)
+
+    res.status(200).json({
+      success: true,
+      message: 'تم جلب تقرير الأسبوع',
       data: result,
       errors: []
     })

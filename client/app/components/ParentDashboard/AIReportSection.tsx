@@ -3,12 +3,16 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
-type ProgressReport = {
-  summary: string;
-  recommendations: string[];
-  aiInsights?: string;
-  nextWeekTopics?: string[];
-  encouragementMessage?: string;
+type DayEntry = {
+  date: string;
+  minutes: number;
+};
+
+type WeeklyScreenTime = {
+  weekStart: string;
+  weekTotal: number;
+  dailyLimit: number;
+  days: DayEntry[];
 };
 
 type Props = {
@@ -17,22 +21,25 @@ type Props = {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export default function AIReportSection({ childId }: Props) {
+const DAY_NAMES_AR = ["أحد", "اتنين", "تلات", "أربع", "خميس", "جمعة", "سبت"];
+
+export default function WeeklyScreenTimeSection({ childId }: Props) {
   const { accessToken } = useAuth();
 
-  const [report, setReport] = useState<ProgressReport | null>(null);
+  const [report, setReport] = useState<WeeklyScreenTime | null>(null);
   const [loading, setLoading] = useState(false);
-  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // 📥 fetch report
-  const fetchReport = async () => {
+  // 📥 fetch weekly report
+  const fetchWeeklyReport = async () => {
     if (!childId || !accessToken) return;
 
     try {
       setLoading(true);
+      setError(null);
 
       const res = await fetch(
-        `${API_BASE}/api/analytics/${childId}/progress`,
+        `${API_BASE}/api/screentime/${childId}/week`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -46,57 +53,28 @@ export default function AIReportSection({ childId }: Props) {
         setReport(data.data);
       } else {
         setReport(null);
+        setError(data?.message || "حصل خطأ في جلب التقرير");
       }
     } catch (err) {
-      console.error("AI report error:", err);
+      console.error("Weekly screen time error:", err);
       setReport(null);
+      setError("حصل خطأ في الاتصال بالسيرفر");
     } finally {
       setLoading(false);
-    }
-  };
-
-  // 🚀 generate new report
-  const generateReport = async () => {
-    if (!childId || !accessToken) return;
-
-    try {
-      setGenerating(true);
-
-      const res = await fetch(
-        `${API_BASE}/api/parent-agent/generate`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ childId }),
-        }
-      );
-
-      const data = await res.json();
-
-      if (data?.success) {
-        await fetchReport();
-      }
-    } catch (err) {
-      console.error("Generate report error:", err);
-    } finally {
-      setGenerating(false);
     }
   };
 
   // 📌 reload when child changes
   useEffect(() => {
     if (childId) {
-      fetchReport();
+      fetchWeeklyReport();
     }
   }, [childId, accessToken]);
 
   if (!childId) {
     return (
       <div dir="rtl" className="text-sm text-gray-400 p-4">
-        اختر طفلاً لعرض تقرير الذكاء الاصطناعي
+        اختر طفلاً لعرض تقرير وقت الشاشة الأسبوعي
       </div>
     );
   }
@@ -106,80 +84,76 @@ export default function AIReportSection({ childId }: Props) {
 
       {/* Header */}
       <div dir="rtl" className="flex justify-between items-center">
-        <h2 className="font-bold text-sm">تقرير الذكاء الاصطناعي الأسبوعي</h2>
+        <h2 className="font-bold text-sm">تقرير وقت الشاشة الأسبوعي</h2>
 
         <button
-          onClick={generateReport}
-          disabled={generating}
-          className="px-3 py-1 text-xs bg-orange-500 text-white rounded-md"
+          onClick={fetchWeeklyReport}
+          disabled={loading}
+          className="px-3 py-1 text-xs bg-primary text-white rounded-md"
         >
-          {generating ? "جاري التوليد..." : "توليد التقرير"}
+          {loading ? "جاري التحديث..." : "تحديث"}
         </button>
       </div>
 
       {/* Loading */}
-      {loading ? (
+      {loading && !report ? (
         <div dir="rtl" className="text-sm text-gray-500 animate-pulse">
           جارٍ تحميل التقرير...
         </div>
+      ) : error ? (
+        <div dir="rtl" className="text-sm text-red-500">
+          {error}
+        </div>
       ) : !report ? (
         <div dir="rtl" className="text-sm text-gray-400">
-          لا يوجد تقرير متاح. قم بتوليد تقرير.
+          لا يوجد بيانات متاحة لهذا الأسبوع.
         </div>
       ) : (
         <div className="space-y-4">
 
-          {/* Summary */}
-          <div dir="rtl">
-            <h3 className="text-xs font-bold">الملخص</h3>
-            <p className="text-sm text-gray-600">{report.summary}</p>
-          </div>
-
-          {/* Insights */}
-          {report.aiInsights && (
-            <div dir="rtl">
-              <h3 className="text-xs font-bold">الاستنتاجات</h3>
-              <p className="text-sm text-gray-600">{report.aiInsights}</p>
-            </div>
-          )}
-
-          {/* Recommendations */}
-          {report.recommendations?.length > 0 && (
-            <div dir="rtl">
-              <h3 className="text-xs font-bold">التوصيات</h3>
-              <ul className="list-disc pr-4 text-sm text-gray-600">
-                {report.recommendations.map((r, i) => (
-                  <li key={i}>{r}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Next Topics */}
-          {(report.nextWeekTopics?.length ?? 0) > 0 && (
-            <div dir="rtl">
-              <h3 className="text-xs font-bold">مواضيع الأسبوع القادم</h3>
-              <div className="flex flex-wrap gap-2 mt-1">
-                {(report.nextWeekTopics ?? []).map((t, i) => (
-                  <span
-                    key={i}
-                    className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-md"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Encouragement */}
-          {report.encouragementMessage && (
-            <div dir="rtl" className="border-t pt-3">
-              <p className="text-sm italic text-orange-600">
-                {report.encouragementMessage}
+          {/* Total summary */}
+          <div dir="rtl" className="flex justify-between items-center border-b pb-3">
+            <div>
+              <h3 className="text-xs font-bold text-gray-500">إجمالي الأسبوع</h3>
+              <p className="text-lg font-bold text-primary">
+                {report.weekTotal} دقيقة
               </p>
             </div>
-          )}
+            <div className="text-left">
+              <h3 className="text-xs font-bold text-gray-500">الحد اليومي</h3>
+              <p className="text-sm text-gray-600">{report.dailyLimit} دقيقة</p>
+            </div>
+          </div>
+
+          {/* Daily breakdown */}
+          <div dir="rtl" className="space-y-2">
+            {report.days.map((day, i) => {
+              const percent = report.dailyLimit > 0
+                ? Math.min(100, Math.round((day.minutes / report.dailyLimit) * 100))
+                : 0;
+              const dayName = DAY_NAMES_AR[new Date(day.date).getDay()];
+              const isOverLimit = day.minutes >= report.dailyLimit;
+
+              return (
+                <div key={i} className="space-y-1">
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>{dayName}</span>
+                    <span className={isOverLimit ? "text-red-500 font-bold" : ""}>
+                      {day.minutes} / {report.dailyLimit} دقيقة
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${
+                        isOverLimit ? "bg-red-500" : "bg-orange-500"
+                      }`}
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

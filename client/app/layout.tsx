@@ -5,6 +5,7 @@ import { AuthProvider } from "./context/AuthContext";
 import Providers from "./components/Providers";
 import GoogleTokenSync from "./components/auth/GoogleTokenSync"; // ← جديد
 import { ChildProvider } from "./context/childContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 export const metadata = {
   title: "Hadoota",
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ar" dir="rtl">
       <body>
+          <ThemeProvider>
         <Providers>
           <AuthProvider>
             <ChildProvider>
@@ -23,6 +25,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </ChildProvider>
           </AuthProvider>
         </Providers>
+        </ThemeProvider>
       </body>
     </html>
   );

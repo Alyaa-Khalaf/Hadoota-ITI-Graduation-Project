@@ -4,6 +4,68 @@
 @tailwind components;
 @tailwind utilities;
 
+/* root colors */
+:root {
+
+  --story-bg:#FFFDF7;
+  --page-warm:#FFF7EC;
+  --page-sky:#F5FAFF;
+  --page-dreamy:#F8F5FF;
+
+  --primary:#d5456e;
+  --primary-light:#FFC2D3;
+  --primary-wash:#FFF3F7;
+
+  --sunny:#FFE58A;
+  --meadow:#9AD9A4;
+  --sky:#8CC8FF;
+  --magic:#D8B4FE;
+  --blossom:#FFB3C7;
+  --rose:#FF95B5;
+
+  --cat-adventure:#DDF4FF;
+  --cat-animals:#FFF0DB;
+  --cat-magic:#F1E3FF;
+  --cat-nature:#DDF9E7;
+  --cat-family:#FFE2E2;
+
+  --ink:#4A3A2A;
+  --ink-muted:#8B7765;
+  --border-warm:#EFE6DD;
+  --header:#7A4E68;
+}
+
+/* blue theme */
+[data-theme="blue"] {
+
+  --story-bg:#F8FCFF;
+  --page-warm:#F4FBFF;
+  --page-sky:#EEF8FF;
+  --page-dreamy:#F3F8FF;
+
+  --primary:#3B82F6;
+  --primary-light:#93C5FD;
+  --primary-wash:#EFF6FF;
+
+  --sunny:#FFE58A;
+  --meadow:#8FD9A8;
+  --sky:#7DD3FC;
+  --magic:#A5B4FC;
+  --blossom:#B8E6FF;
+  --rose:#7CC4FA;
+
+  --cat-adventure:#E6F6FF;
+  --cat-animals:#FFF4E3;
+  --cat-magic:#E8F1FF;
+  --cat-nature:#E7FAF0;
+  --cat-family:#EAF4FF;
+
+  --ink:#2F4055;
+  --ink-muted:#64748B;
+  --border-warm:#D9E7F5;
+  --header:#2C5AA0;
+}
+
 * {
   margin: 0;
   padding: 0;

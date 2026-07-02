@@ -7,12 +7,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Button from "../ui/Button";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
+import { Palette } from "lucide-react";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const { accessToken,user, logout} = useAuth();
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
 
 
   const edit = () => {
@@ -61,6 +64,31 @@ export default function Navbar() {
             <path d="M11.5 2a.5.5 0 0 1 1 0l1.32 4.315a.5.5 0 0 0 .365.365L18.5 8a.5.5 0 0 1 0 1l-4.315 1.32a.5.5 0 0 0-.365-.365L12.5 15a.5.5 0 0 1-1 0l-1.32-4.315a.5.5 0 0 0-.365-.365L5.5 9a.5.5 0 0 1 0-1l4.315-1.32a.5.5 0 0 0 .365-.365L11.5 2zm5 14a.5.5 0 0 1 .5-.5l1.5-.32a.5.5 0 0 0 .365-.365l.32-1.5a.5.5 0 0 1 1 0l.32 1.5a.5.5 0 0 0 .365.365l1.5.32a.5.5 0 0 1 0 1l-1.5.32a.5.5 0 0 0-.365.365l-.32 1.5a.5.5 0 0 1-1 0l-.32-1.5a.5.5 0 0 0-.365-.365l-1.5-.32a.5.5 0 0 1-.5-.5z" />
           </svg>
         </Link>
+        <button
+  onClick={toggleTheme}
+  className="
+    w-10 h-10
+    rounded-full
+    bg-white
+    border
+    border-border-warm
+    shadow-sm
+    flex
+    items-center
+    justify-center
+    hover:scale-105
+    transition
+  "
+>
+  <Palette
+    size={18}
+    className={
+      theme === "pink"
+        ? "text-sky-500"
+        : "text-pink-500"
+    }
+  />
+</button>
 
         {/* Navigation */}
         <nav className="hidden md:flex items-center gap-10 text-base font-bold text-ink-muted font-sans">

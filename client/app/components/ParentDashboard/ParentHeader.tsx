@@ -2,8 +2,9 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { Bell, Settings, LogOut, LayoutDashboard, Sparkles, ArrowRight } from "lucide-react";
+import { Bell, Settings, LogOut, LayoutDashboard, Sparkles, ArrowRight, Subscript, SubscriptIcon, LucideSubscript, CreditCard } from "lucide-react";
 import type { DashboardTab } from "@/(protectedRoutes)/ParentDashboard/page"; // عدّل المسار لو الصفحة في مكان مختلف
+import SubscriptionPage from "@/(protectedRoutes)/dashboard/subscription/page";
 
 type Props = {
   activeTab: DashboardTab;
@@ -87,7 +88,7 @@ export default function ParentHeader({ activeTab, setActiveTab }: Props) {
             className="p-2 rounded-xl text-ink-muted hover:bg-page-warm hover:text-ink transition-colors"
             aria-label="الإعدادات"
           >
-            <Settings size={18} />
+            <CreditCard size={18} />
           </button>
 
           <button

@@ -88,7 +88,20 @@ const childSchema = new mongoose.Schema({
     warningNotified: {
       type: Boolean,
       default: false
-    }
+    },
+    // سجل الأيام اللي فاتت — بيتملى تلقائيًا كل ما يوم يخلص (في resetIfNeeded)
+    // بيُستخدم لحساب التقارير الأسبوعية/الشهرية
+    history: [{
+      date: {
+        type: Date,
+        required: true
+      },
+      minutes: {
+        type: Number,
+        required: true,
+        default: 0
+      }
+    }]
   },
 
   // 🏆 7. موديول التلعيب ونظام النقاط (Gamification Module)
