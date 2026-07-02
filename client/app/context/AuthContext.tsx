@@ -7,6 +7,7 @@ import React, {
   useEffect,
   ReactNode,
   useCallback,
+  useRef,
 } from "react";
 
 interface User {
@@ -53,7 +54,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // =========================
   // Refresh Token
   // =========================
+  // يمنع تكرار نداء الـ refresh في نفس اللحظة (بيحل مشكلة الـ Strict Mode
+  // اللي بينفذ الـ useEffect مرتين، وأي نداء متزامن تاني من مكان تاني في الكود)
+  const refreshPromiseRef = useRef<Promise<string | null> | null>(null);
+
   const refreshAccessToken = useCallback(async (): Promise<string | null> => {
+    // لو فيه request شغال بالفعل، استني نتيجته بدل ما تبعتي واحد جديد
+    if (refreshPromiseRef.current) {
+      return refreshPromiseRef.current;
+    }
+
     const storedAccessToken =
       typeof window !== "undefined"
         ? localStorage.getItem("accessToken") || localStorage.getItem("token")
@@ -72,44 +82,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return null;
     };
 
-    try {
-      setIsLoading(true);
+    const doRefresh = async (): Promise<string | null> => {
+      try {
+        const refreshToken =
+          typeof window !== "undefined"
+            ? localStorage.getItem("refreshToken")
+            : null;
 
-      const refreshToken =
-        typeof window !== "undefined"
-          ? localStorage.getItem("refreshToken")
-          : null;
+        const res = await fetch(`${API}/api/auth/refresh`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(refreshToken ? { refreshToken } : {}),
+        });
 
-      const res = await fetch(`${API}/api/auth/refresh`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(refreshToken ? { refreshToken } : {}),
-      });
+        const data = await res.json();
 
-      const data = await res.json();
-
-      console.log("REFRESH STATUS:", res.status);
-      console.log("REFRESH DATA:", data);
-
-      if (res.ok && data?.data?.accessToken) {
-        setAccessToken(data.data.accessToken);
-        localStorage.setItem("accessToken", data.data.accessToken);
-        localStorage.setItem("token", data.data.accessToken);
-        if (data.data.refreshToken) {
-          localStorage.setItem('refreshToken', data.data.refreshToken);
+        if (res.ok && data?.data?.accessToken) {
+          setAccessToken(data.data.accessToken);
+          localStorage.setItem("accessToken", data.data.accessToken);
+          localStorage.setItem("token", data.data.accessToken);
+          if (data.data.refreshToken) {
+            localStorage.setItem('refreshToken', data.data.refreshToken);
+          }
+          return data.data.accessToken;
+        } else {
+          return keepStoredTokenIfUsable();
         }
-        return data.data.accessToken;
-      } else {
+      } catch {
         return keepStoredTokenIfUsable();
+      } finally {
+        // فضّي الـ lock عشان أي نداء جديد (بعد ما العملية دي تخلص فعلاً) يقدر يبعت request تاني
+        refreshPromiseRef.current = null;
       }
-    } catch {
-      return keepStoredTokenIfUsable();
-    } finally {
-      setIsLoading(false);
-    }
+    };
+
+    refreshPromiseRef.current = doRefresh();
+    return refreshPromiseRef.current;
   }, []);
 
   // =========================
@@ -130,10 +141,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   // =========================
-  // Init
+  // Init — bootstrap auth once on mount. This is the ONLY place that drives
+  // the global `isLoading` gate, so token refreshes triggered later by API
+  // calls don't remount the whole app mid-action.
   // =========================
   useEffect(() => {
-    refreshAccessToken();
+    refreshAccessToken().finally(() => setIsLoading(false));
   }, [refreshAccessToken]);
 
   // ==========================
