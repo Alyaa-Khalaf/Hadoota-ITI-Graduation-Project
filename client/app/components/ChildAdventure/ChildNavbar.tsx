@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useChild } from "@/hooks/useChild";
 import { useSelectedChild } from "@/context/childContext";
 import Link from "next/link";
 
@@ -17,7 +16,7 @@ import {
 } from "lucide-react";
 
 export default function ChildNavbar() {
-    const { child } = useChild();
+
     const [isOpen, setIsOpen] = useState(false);
     const { selectedChild } = useSelectedChild();
 

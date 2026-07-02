@@ -140,6 +140,7 @@ export function ChildProvider({ children }: { children: ReactNode }) {
       console.error("Failed to persist active child:", err);
     });
   };
+  console.log("selectedChild", selectedChild);
 
   return (
     <ChildContext.Provider

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useChildren } from "@/hooks/useChildren";
 import AddingChildForm from "./AddingChildForm";
 import { Plus, Sparkles } from "lucide-react";
+import { useSelectedChild } from "@/context/childContext";
 
 type Child = {
   _id: string;
@@ -18,19 +19,24 @@ type Props = {
   setSelectedChildId: (id: string) => void;
 };
 
-export default function ChildrenList({
-  selectedChildId,
-  setSelectedChildId,
-}: Props) {
+export default function ChildrenList() {
+   const { selectedChild, setSelectedChild } = useSelectedChild();
+
   const { children, loading, refetch } = useChildren();
   const [showAddForm, setShowAddForm] = useState(false);
 
   // بعد إضافة الطفل بنجاح: نقفل المودال، نختاره، ونعيد جلب القائمة
   const handleChildAdded = async (id: string) => {
-    await refetch();
-    setSelectedChildId(id);
-    setShowAddForm(false);
-  };
+  await refetch();
+
+  const newChild = children.find((c) => c._id === id);
+
+  if (newChild) {
+    setSelectedChild(newChild);
+  }
+
+  setShowAddForm(false);
+};
 
   if (loading) {
     return (
@@ -94,7 +100,7 @@ export default function ChildrenList({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {children.map((child: Child) => {
-            const isActive = selectedChildId === child._id;
+           const isActive = selectedChild?._id === child._id;
             const isBoy = child.gender === 1;
 
             // ألوان لطيفة بتتغير حسب جنس الطفل، متسقة مع الباليتة الأساسية
@@ -105,7 +111,7 @@ export default function ChildrenList({
               <button
                 key={child._id}
                 type="button"
-                onClick={() => setSelectedChildId(child._id)}
+                onClick={() => setSelectedChild(child)}
                 className={`
                   relative text-right rounded-2xl p-5 transition-all duration-300
                   border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-light

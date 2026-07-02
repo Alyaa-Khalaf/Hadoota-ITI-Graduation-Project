@@ -201,7 +201,7 @@ export default function Hero() {
                 </motion.div>
               </Link>
 
-              <Link href="/ParentDashboard">
+              <Link href="/ParentDashboard/ParentLogin">
                 <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                   <Button
                     variant="outline"

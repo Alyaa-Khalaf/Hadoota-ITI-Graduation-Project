@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import { Star, Trophy, Award, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useSelectedChild } from "@/context/childContext";
 import { useGamification } from "@/hooks/useGamification";
 
 type WeeklyActivity = {
@@ -28,10 +29,6 @@ type TopicDistribution = {
   color?: string;
 };
 
-type Props = {
-  childId: string;
-};
-
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const COLORS = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E2"];
 
@@ -42,8 +39,10 @@ const REASON_LABELS: Record<string, string> = {
   "Memory Game": "لعبة الذاكرة",
 };
 
-export default function ChildAnalytics({ childId }: Props) {
+export default function ChildAnalytics() {
   const { accessToken } = useAuth();
+  const { selectedChild, loadingSelectedChild } = useSelectedChild();
+  const childId = selectedChild?._id;
 
   const [weeklyActivity, setWeeklyActivity] = useState<WeeklyActivity[]>([]);
   const [topics, setTopics] = useState<TopicDistribution[]>([]);
@@ -52,6 +51,11 @@ export default function ChildAnalytics({ childId }: Props) {
   const { gamification, loading: gamificationLoading } = useGamification(childId);
 
   useEffect(() => {
+    // ⏳ لسه بنحدد مين الطفل المختار (مثلاً وقت الـ refresh)، متعملش
+    // أي fetch لحد ما يبقى واضح مين الطفل، عشان منجيبش بيانات غلط
+    // أو نعرض "لا توجد بيانات" بشكل خاطئ لحظة الانتظار.
+    if (loadingSelectedChild) return;
+
     // ⚠️ flag محلي لكل نداء على الـ effect، عشان نعرف لو الطفل تغيّر
     // قبل ما الطلب القديم يخلص، نتجاهل رد الطلب القديم بدل ما نكتب فوق
     // البيانات الصحيحة للطفل الجديد.
@@ -130,7 +134,15 @@ export default function ChildAnalytics({ childId }: Props) {
     return () => {
       isStale = true;
     };
-  }, [childId, accessToken]);
+  }, [childId, accessToken, loadingSelectedChild]);
+
+  if (loadingSelectedChild) {
+    return (
+      <div dir="rtl" className="p-4 text-sm text-ink-muted animate-pulse">
+        جارٍ تحديد الطفل...
+      </div>
+    );
+  }
 
   if (!childId) {
     return (

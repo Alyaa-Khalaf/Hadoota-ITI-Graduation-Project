@@ -83,7 +83,7 @@ export default function ParentHeader({ activeTab, setActiveTab }: Props) {
         <div className="flex items-center gap-2">
 
           <button
-            onClick={() => router.push("/parent/settings")}
+            onClick={() => router.push("/ParentDashboard/ParentSubscribtion")}
             className="p-2 rounded-xl text-ink-muted hover:bg-page-warm hover:text-ink transition-colors"
             aria-label="الإعدادات"
           >
