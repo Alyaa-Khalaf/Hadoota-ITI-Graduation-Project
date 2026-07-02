@@ -7,14 +7,17 @@ import QuickActions from '@/components/ChildAdventure/QuickActions';
 import RecentStories from '@/components/ChildAdventure/RecentStories';
 import WelcomeHero from '@/components/ChildAdventure/WelcomeHero'
 import { useChild } from '@/hooks/useChild';
+import { useSelectedChild } from "@/context/childContext";
 // 1. استيراد useAuth
 import { useAuth } from '@/context/AuthContext';
 import React from 'react'
+import PreviousButton from '@/components/ui/PreviousButton';
 
 function ChildAdventure() {
   const { child, loading: childLoading } = useChild();
   const { isLoading: authLoading } = useAuth();
     const {user}=useAuth()
+    const { selectedChild } = useSelectedChild();
     console.log(`The parent is ${user?.email}`)
   // 3. التعديل السحري: لو الـ Context لسه بيجيب التوكن، أو الـ Hook لسه بيجيب داتا الطفل ⬅️ استنى ومتعرضش الصفحة لسه
   if (authLoading || childLoading) {
@@ -30,13 +33,15 @@ function ChildAdventure() {
   console.log("CHILD DATA IN PAGE:", child);
 
   return (
+ 
     <div className="relative min-h-screen overflow-hidden">
+       {/* <PreviousButton/> */}
       <ChildNavbar />
       {/* <FloatingDecorations /> */}
 
       <div className="relative z-10 p-6">
         {/* دلوقتي الـ child.name مستحيل يضيع لو الطفل مسجل فعلاً */}
-        <WelcomeHero name={child?.name || "بطل"} />
+        <WelcomeHero name={selectedChild?.name || "بطل"} />
        
  <ChildStats />
 

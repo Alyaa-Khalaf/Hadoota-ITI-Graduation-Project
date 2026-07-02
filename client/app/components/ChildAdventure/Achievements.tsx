@@ -2,6 +2,8 @@
 
 import { useGamification } from "@/hooks/useGamification";
 import AchievementCard from "./AchievementCard";
+import { useSelectedChild } from "@/context/childContext";
+
 import AdventureHeader from "./AdventureHeader";
 
 type Badge = {
@@ -9,7 +11,8 @@ type Badge = {
 };
 
 export default function Achievements() {
-  const childId = "demo-child";
+  const { selectedChild } = useSelectedChild();
+  const childId = selectedChild?._id || "demo-child";
   const { gamification, loading } = useGamification(childId);
 
   if (loading) {

@@ -7,6 +7,10 @@ import {
   updateChild,
   deleteChild,
 } from "../controllers/childController.js";
+import {
+  getActiveChild,
+  setActiveChild,
+} from "../controllers/activeChildController.js";
 import authMiddleware from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
 
@@ -43,6 +47,9 @@ router.post(
 
 // 2️⃣ جلب كل أطفال الأب الحالي
 router.get("/", getChildren);
+router.get("/active", getActiveChild);
+
+router.post("/active", setActiveChild);
 
 // 3️⃣ جلب بيانات طفل محدد بواسطة الـ ID
 router.get(
@@ -58,6 +65,7 @@ router.get(
   validate,
   getChild,
 );
+
 
 // 4️⃣ تعديل بيانات طفل (تمت إضافتها وتأمينها بالـ Validation)
 router.put(

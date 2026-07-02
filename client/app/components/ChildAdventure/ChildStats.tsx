@@ -2,12 +2,11 @@
 
 import { motion } from "framer-motion";
 import AdventureHeader from "./AdventureHeader";
-import { useChild } from "@/hooks/useChild";
 import { useGamification } from "@/hooks/useGamification";
-
+import { useSelectedChild } from "@/context/childContext";
 export default function ChildStats() {
-  const { child } = useChild();
-  const { gamification, loading } = useGamification(child?._id || "");
+const { selectedChild } = useSelectedChild();
+  const { gamification, loading } = useGamification(selectedChild?._id || "");
 
   if (loading) {
     return (

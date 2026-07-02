@@ -26,7 +26,7 @@ export default function HomeButton({
       dir="rtl"
       className="
         fixed top-4 right-4 z-50
-        flex items-center gap-2
+        inline-flex items-center gap-2
         rounded-full
         bg-white/90 backdrop-blur
         border-2 border-primary/30

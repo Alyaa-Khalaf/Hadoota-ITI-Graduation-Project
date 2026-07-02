@@ -82,7 +82,7 @@ export default function LoginForm() {
         role = null;
       }
 
-      router.push(role === "admin" ? "/dashboard/admin" : "/childAdventure");
+      router.push(role === "admin" ? "/dashboard/admin" : "/auth/ChildrenChoosen");
     } catch (err: any) {
       setError(
         err.message || "حدث خطأ أثناء تسجيل الدخول"

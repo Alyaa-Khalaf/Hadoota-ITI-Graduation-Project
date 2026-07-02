@@ -3,23 +3,24 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useChild } from "./useChild";
+import { useSelectedChild } from "@/context/childContext";
 
 export function useRecentStories() {
   const { accessToken, isLoading } = useAuth();
-  const { child } = useChild();
+   const { selectedChild } = useSelectedChild();
 
   const [stories, setStories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStories = async () => {
-      if (isLoading || !accessToken || !child?._id) return;
+      if (isLoading || !accessToken || !selectedChild?._id) return;
 
       try {
         setLoading(true);
 
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/stories/history/${child._id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/stories/history/${selectedChild._id}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -40,7 +41,7 @@ export function useRecentStories() {
     };
 
     fetchStories();
-  }, [accessToken, isLoading, child?._id]);
+  }, [accessToken, isLoading, selectedChild?._id]);
 
   return { stories, loading };
 }

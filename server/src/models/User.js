@@ -46,6 +46,11 @@ const userSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
+    activeChild: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Child",
+      default: null,
+    },
     schoolCode: {
       type: String,
       default: null,

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useChild } from "@/hooks/useChild";
+import { useSelectedChild } from "@/context/childContext";
 import Link from "next/link";
 
 import {
@@ -18,6 +19,7 @@ import {
 export default function ChildNavbar() {
     const { child } = useChild();
     const [isOpen, setIsOpen] = useState(false);
+    const { selectedChild } = useSelectedChild();
 
     const navItems = [
         {
@@ -151,7 +153,7 @@ export default function ChildNavbar() {
                         <div className="hidden sm:flex items-center gap-3">
                             <div className="text-right">
                                 <p className="font-black text-white">
-                                    {child?.name || "بطلنا"}
+                                    {selectedChild?.name || "بطلنا"}
                                 </p>
 
                                 <p className="text-xs text-white/70">
@@ -277,7 +279,7 @@ export default function ChildNavbar() {
 
                                 <div>
                                     <h3 className="font-black text-lg text-ink">
-                                        {child?.name || "بطلنا"}
+                                        {selectedChild?.name || "بطلنا"}
                                     </h3>
 
                                     <p className="text-ink-muted text-sm">
