@@ -98,7 +98,7 @@ export default function AddingChildForm({ onAdded }: Props) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="مثال: يوسف"
-          className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
+          className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
@@ -112,7 +112,7 @@ export default function AddingChildForm({ onAdded }: Props) {
           value={age}
           onChange={(e) => setAge(e.target.value)}
           placeholder="مثال: 6"
-          className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
+          className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
@@ -153,7 +153,7 @@ export default function AddingChildForm({ onAdded }: Props) {
               onClick={() => setAvatar(a)}
               className={`w-10 h-10 flex items-center justify-center text-lg rounded-full border-2 ${
                 avatar === a
-                  ? "border-orange-500 bg-orange-50"
+                  ? "border-primary-light bg-primary"
                   : "border-gray-200"
               }`}
             >
@@ -167,7 +167,7 @@ export default function AddingChildForm({ onAdded }: Props) {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full py-2.5 text-sm font-bold bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-60"
+        className="w-full py-2.5 text-sm font-bold bg-primary text-white rounded-lg hover:bg-primary-light hover:text-ink disabled:opacity-60"
       >
         {submitting ? "جارٍ الإضافة..." : "إضافة الطفل"}
       </button>

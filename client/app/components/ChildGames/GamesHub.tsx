@@ -1,5 +1,7 @@
 "use client";
 
+import { useSelectedChild } from "@/context/childContext";
+import { useGamification } from "@/hooks/useGamification";
 import Link from "next/link";
 
 const games = [
@@ -7,45 +9,57 @@ const games = [
     id: "memory",
     title: "لعبة الذاكرة",
     emoji: "🧠",
-    description: "طابق الصور واجمع النجوم",
-    color: "bg-[#FAC775]",
-    textColor: "text-[#633806]",
-    subColor: "text-[#854F0B]",
     href: "/games/GameMemory",
+    unlockStars: 0,
+    color: "bg-[#FAC775]",
   },
   {
     id: "quiz",
     title: "اختبر نفسك",
     emoji: "❓",
-    description: "أسئلة ممتعة للأطفال",
-    color: "bg-[#85B7EB]",
-    textColor: "text-[#0C447C]",
-    subColor: "text-[#185FA5]",
     href: "/games/ChildQuizGame",
+    unlockStars: 0,
+    color: "bg-[#85B7EB]",
   },
   {
-    id: "puzzle",
-    title: "تركيب الصور",
-    emoji: "🧩",
-    description: "كوّن الصورة الصحيحة",
-    color: "bg-[#97C459]",
-    textColor: "text-[#27500A]",
-    subColor: "text-[#3B6D11]",
-    href: "/games/CollectedImages",
+    id: "balloons",
+    title: "فرقعة البالونات",
+    emoji: "🎈",
+    href: "/games/BalloonGame",
+    unlockStars: 500,
+    color: "bg-pink-300",
   },
   {
-    id: "speed",
-    title: "سرعة التفاعل",
-    emoji: "⚡",
-    description: "اختار بسرعة واربح نقاط",
-    color: "bg-[#AFA9EC]",
-    textColor: "text-[#3C3489]",
-    subColor: "text-[#534AB7]",
-    href: "/games/SpeedReactionGame",
+    id: "coloring",
+    title: "التلوين",
+    emoji: "🎨",
+    href: "/games/ColoringGame",
+    unlockStars: 1000,
+    color: "bg-yellow-300",
+  },
+  {
+    id: "maze",
+    title: "المتاهة",
+    emoji: "🧭",
+    href: "/games/MazeGame",
+    unlockStars: 1500,
+    color: "bg-green-300",
+  },
+  {
+    id: "2048",
+    title: "2048 للأطفال",
+    emoji: "🍓",
+    href: "/games/Kids2048",
+    unlockStars: 2000,
+    color: "bg-purple-300",
   },
 ];
 
 function GamesHub() {
+  const { selectedChild } = useSelectedChild();
+const { gamification } = useGamification(selectedChild?._id || "");
+
+const stars = gamification?.stars ?? 0;
   return (
     <div className="min-h-screen px-5 py-8 bg-white" dir="rtl">
       {/* Header */}
@@ -60,32 +74,76 @@ function GamesHub() {
 
    <div className="max-w-md mx-auto">
   <div className="grid grid-cols-2 gap-5">
-    {games.map((game) => (
-      <Link
-        key={game.id}
-        href={game.href}
-        className={`
-          ${game.color}
-          h-36
+    {games.map((game) => {
+  const unlocked = stars >= game.unlockStars;
+
+  return unlocked ? (
+    <Link
+      key={game.id}
+      href={game.href}
+      className={`
+        ${game.color}
+        h-36
+        rounded-[28px]
+        shadow-lg
+        flex flex-col
+        items-center
+        justify-center
+        hover:scale-105
+        transition
+      `}
+    >
+      <span className="text-5xl">{game.emoji}</span>
+
+      <h3 className="font-black mt-2">
+        {game.title}
+      </h3>
+    </Link>
+  ) : (
+    <div
+      key={game.id}
+      className="
+        relative
+        h-36
+        rounded-[28px]
+        bg-gray-200
+        flex
+        flex-col
+        items-center
+        justify-center
+        opacity-80
+      "
+    >
+      <span className="text-5xl grayscale">
+        {game.emoji}
+      </span>
+
+      <h3 className="font-black mt-2">
+        {game.title}
+      </h3>
+
+      <div
+        className="
+          absolute inset-0
+          bg-black/35
           rounded-[28px]
-          shadow-lg
           flex
           flex-col
           items-center
           justify-center
-          transition-transform
-          hover:scale-105
-        `}
+        "
       >
-        <span className="text-5xl mb-2">
-          {game.emoji}
-        </span>
+        <div className="text-5xl">
+          🔒
+        </div>
 
-        <h3 className="font-black text-lg">
-          {game.title}
-        </h3>
-      </Link>
-    ))}
+        <p className="text-white font-bold mt-2">
+          تحتاج {game.unlockStars} ⭐
+        </p>
+      </div>
+    </div>
+  );
+})}
   </div>
 </div>
 

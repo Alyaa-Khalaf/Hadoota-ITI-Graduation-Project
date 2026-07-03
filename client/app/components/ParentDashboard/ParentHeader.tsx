@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { Bell, Settings, LogOut, LayoutDashboard, Sparkles, ArrowRight, Subscript, SubscriptIcon, LucideSubscript, CreditCard } from "lucide-react";
+import { Bell, Settings, LogOut, LayoutDashboard, Sparkles, ArrowRight, Subscript, SubscriptIcon, LucideSubscript, CreditCard, ArrowLeft } from "lucide-react";
 import type { DashboardTab } from "@/(protectedRoutes)/ParentDashboard/page"; // عدّل المسار لو الصفحة في مكان مختلف
 import SubscriptionPage from "@/(protectedRoutes)/dashboard/subscription/page";
 
@@ -58,7 +58,7 @@ export default function ParentHeader({ activeTab, setActiveTab }: Props) {
         </div>
 
         {/* CENTER - NAVIGATION */}
-        <nav className="hidden md:flex items-center gap-1 bg-page-warm p-1 rounded-2xl">
+        <nav className="hidden md:flex items-center gap-1 bg-primary-wash p-1 rounded-2xl">
           {navItems.map(({ tab, label, icon: Icon }) => {
             const isActive = activeTab === tab;
             return (
@@ -108,8 +108,8 @@ export default function ParentHeader({ activeTab, setActiveTab }: Props) {
                        hover:bg-primary hover:text-white transition-colors shrink-0"
             aria-label="الرجوع لصفحة الطفل"
           >
-            <ArrowRight size={20} />
             <span className="hidden sm:inline text-md font-bold">رجوع</span>
+            <ArrowLeft size={15} />
           </button> 
         </div>
       </div>
