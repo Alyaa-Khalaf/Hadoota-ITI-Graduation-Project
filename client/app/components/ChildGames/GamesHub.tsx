@@ -47,9 +47,9 @@ const games = [
   },
   {
     id: "2048",
-    title: "2048 للأطفال",
+    title: "اختبار الرياضيات",
     emoji: "🍓",
-    href: "/games/Kids2048",
+    href: "/games/MathQuizGame",
     unlockStars: 2000,
     color: "bg-purple-300",
   },
@@ -57,9 +57,10 @@ const games = [
 
 function GamesHub() {
   const { selectedChild } = useSelectedChild();
-const { gamification } = useGamification(selectedChild?._id || "");
+  const { gamification } = useGamification(selectedChild?._id || "");
 
-const stars = gamification?.stars ?? 0;
+  const stars = gamification?.stars ?? 0;
+
   return (
     <div className="min-h-screen px-5 py-8 bg-white" dir="rtl">
       {/* Header */}
@@ -72,84 +73,77 @@ const stars = gamification?.stars ?? 0;
         </p>
       </div>
 
-   <div className="max-w-md mx-auto">
-  <div className="grid grid-cols-2 gap-5">
-    {games.map((game) => {
-  const unlocked = stars >= game.unlockStars;
+      <div className="max-w-md mx-auto">
+        <div className="grid grid-cols-2 gap-5">
+          {games.map((game) => {
+            const unlocked = stars >= game.unlockStars;
 
-  return unlocked ? (
-    <Link
-      key={game.id}
-      href={game.href}
-      className={`
-        ${game.color}
-        h-36
-        rounded-[28px]
-        shadow-lg
-        flex flex-col
-        items-center
-        justify-center
-        hover:scale-105
-        transition
-      `}
-    >
-      <span className="text-5xl">{game.emoji}</span>
+            const cardContent = (
+              <>
+                <span className="text-5xl">{game.emoji}</span>
 
-      <h3 className="font-black mt-2">
-        {game.title}
-      </h3>
-    </Link>
-  ) : (
-    <div
-      key={game.id}
-      className="
-        relative
-        h-36
-        rounded-[28px]
-        bg-gray-200
-        flex
-        flex-col
-        items-center
-        justify-center
-        opacity-80
-      "
-    >
-      <span className="text-5xl grayscale">
-        {game.emoji}
-      </span>
+                <h3 className="font-black mt-2">{game.title}</h3>
 
-      <h3 className="font-black mt-2">
-        {game.title}
-      </h3>
+                {!unlocked && (
+                  <p className="text-[11px] font-bold text-ink/60 mt-1">
+                    يحتاج {game.unlockStars} ⭐
+                  </p>
+                )}
 
-      <div
-        className="
-          absolute inset-0
-          bg-black/35
-          rounded-[28px]
-          flex
-          flex-col
-          items-center
-          justify-center
-        "
-      >
-        <div className="text-5xl">
-          🔒
+                {!unlocked && (
+                  <div
+                    className="
+                    absolute
+                    top-2
+                    left-2
+                    w-8 h-8
+                    rounded-full
+                    bg-white/90
+                    shadow-md
+                    flex
+                    items-center
+                    justify-center
+                    text-base
+                    "
+                  >
+                    🔒
+                  </div>
+                )}
+              </>
+            );
+
+            const cardClassName = `
+              relative
+              ${game.color}
+              h-36
+              rounded-[28px]
+              shadow-lg
+              flex flex-col
+              items-center
+              justify-center
+              transition
+              ${unlocked ? "hover:scale-105" : "active:scale-95"}
+            `;
+
+            return unlocked ? (
+              <Link key={game.id} href={game.href} className={cardClassName}>
+                {cardContent}
+              </Link>
+            ) : (
+              <div key={game.id} className={cardClassName}>
+                {cardContent}
+              </div>
+            );
+          })}
         </div>
-
-        <p className="text-white font-bold mt-2">
-          تحتاج {game.unlockStars} ⭐
-        </p>
       </div>
-    </div>
-  );
-})}
-  </div>
-</div>
 
       {/* Stars */}
       <p className="text-center text-2xl mt-8 tracking-widest opacity-40">
         ⭐ ⭐ ⭐ ⭐ ⭐
+      </p>
+      <p className="text-center text-xl font-bold">
+        {stars} ⭐
       </p>
     </div>
   );

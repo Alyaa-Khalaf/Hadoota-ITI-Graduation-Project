@@ -7,8 +7,8 @@ function MemoryGames() {
   return (
     <div>
       <HomeButton href="/childAdventure" />
-      <PreviousButton/>
       <MemoryGame/>
+      <PreviousButton/>
     </div>
   )
 }
