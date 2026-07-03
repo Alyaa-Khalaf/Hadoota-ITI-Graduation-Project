@@ -36,36 +36,39 @@
 }
 
 /* blue theme */
+/* blue theme */
+/* kids theme */
+/* Storybook Theme */
+/* Boys Theme */
 [data-theme="blue"] {
 
-  --story-bg:#F8FCFF;
-  --page-warm:#F4FBFF;
-  --page-sky:#EEF8FF;
-  --page-dreamy:#F3F8FF;
+  --story-bg:#F8FCFC;
+  --page-warm:#F5FAFA;
+  --page-sky:#EEF9F9;
+  --page-dreamy:#F9FEFE;
 
-  --primary:#3B82F6;
-  --primary-light:#93C5FD;
-  --primary-wash:#EFF6FF;
+  --primary: #2D6A4F;      /* أخضر غابة عميق (احترافي وجذاب) */
+  --primary-light: #52B788; /* أخضر نعناعي مشرق */
+  --primary-wash: #F0F9F5;  /* أخضر باهت جداً جداً (خلفية) */
 
-  --sunny:#FFE58A;
-  --meadow:#8FD9A8;
-  --sky:#7DD3FC;
-  --magic:#A5B4FC;
-  --blossom:#B8E6FF;
-  --rose:#7CC4FA;
+  --sunny:#F4D35E;
+  --meadow:#8BCF9B;
+  --sky:#6FB9E8;
+  --magic:#8FA8F7;
+  --blossom:#BFE9F5;
+  --rose:#7BC8C3;
 
-  --cat-adventure:#E6F6FF;
-  --cat-animals:#FFF4E3;
-  --cat-magic:#E8F1FF;
-  --cat-nature:#E7FAF0;
-  --cat-family:#EAF4FF;
+  --cat-adventure:#EAF8FC;
+  --cat-animals:#FFF6E4;
+  --cat-magic:#EEF3FF;
+  --cat-nature:#EAF8F1;
+  --cat-family:#EEF8FA;
 
-  --ink:#2F4055;
-  --ink-muted:#64748B;
-  --border-warm:#D9E7F5;
-  --header:#2C5AA0;
+  --ink:#2E4057;
+  --ink-muted:#708090;
+  --border-warm:#D7E8E6;
+  --header:#1F7A70;
 }
-
 * {
   margin: 0;
   padding: 0;

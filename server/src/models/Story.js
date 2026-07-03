@@ -20,7 +20,7 @@ const storySchema = new mongoose.Schema({
   character: {
     type: String,
     required: [true, 'الشخصية مطلوبة'],
-    enum: ['أسد', 'أميرة', 'رحالة']
+    enum: ['أسد', 'أميرة', 'رحالة','روبوت','التنين','رائد الفضاء','البطل الخارق','قطة لطيفة']
   },
   topic: {
     type: String,

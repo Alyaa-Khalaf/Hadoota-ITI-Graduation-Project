@@ -258,61 +258,85 @@ export default function StoryPlayer({
     />
   ) : null;
 
+  // -------------------- شاشة النهاية --------------------
   if (isFinished) {
     return (
       <>
         {audioElement}
-        <div dir="rtl" className="min-h-[70vh] flex items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-white rounded-3xl shadow-lg border border-purple-100 p-8 text-center"
+        <div
+          dir="rtl"
+          className="min-h-[70vh] flex items-center justify-center p-6 bg-gradient-to-b from-page-dreamy via-page-sky to-white"
         >
-          <div className="text-5xl mb-4">🎉</div>
-          <h2 className="text-2xl font-black text-purple-700 mb-2">انتهت الحدوتة!</h2>
-          {title && <p className="text-gray-600 mb-6">{title}</p>}
-          <Link
-            href="/childAdventure"
-            className="inline-block bg-purple-600 text-white font-bold px-8 py-3 rounded-2xl shadow-[0_4px_0_#5b21b6] hover:brightness-110 transition"
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", damping: 16 }}
+            className="max-w-md w-full bg-white rounded-3xl shadow-story border-[3px] border-primary-light p-8 text-center"
           >
-            ارجع للمغامرة
-          </Link>
-        </motion.div>
+            <motion.div
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="text-6xl mb-4"
+            >
+              🎉
+            </motion.div>
+            <h2 className="text-2xl font-black text-primary mb-2">
+              انتهت الحدوتة!
+            </h2>
+            {title && <p className="text-ink-muted mb-6">{title}</p>}
+            <Link
+              href="/childAdventure"
+              className="inline-block bg-primary text-white font-bold px-8 py-3.5 rounded-2xl shadow-button hover:brightness-110 active:scale-95 transition"
+            >
+              ارجع للمغامرة 🏡
+            </Link>
+          </motion.div>
         </div>
       </>
     );
   }
 
+  // -------------------- شاشة "اضغطي للبدء" --------------------
   if (needsTapToPlay) {
     return (
       <>
         {audioElement}
-        <div dir="rtl" className="min-h-[70vh] flex items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full bg-white rounded-3xl shadow-lg border border-purple-100 p-8 text-center"
+        <div
+          dir="rtl"
+          className="min-h-[70vh] flex items-center justify-center p-6 bg-gradient-to-b from-page-dreamy via-page-sky to-white"
         >
-          <div className="text-5xl mb-4">🎧</div>
-          {title && (
-            <h1 className="text-xl font-black text-purple-700 mb-2">{title}</h1>
-          )}
-          <p className="text-gray-600 mb-6">
-            {hasAudio
-              ? "الحدوتة جاهزة! اضغطي لتسمعي القصة مع الصوت"
-              : "الحدوتة جاهزة! اضغطي للبدء (الصوت غير متاح — سيتم عرض النص فقط)"}
-          </p>
-          <button
-            type="button"
-            onClick={handleStartListening}
-            className="bg-yellow-300 text-purple-900 font-bold px-8 py-4 rounded-2xl shadow-[0_4px_0_#ca8a04] hover:brightness-105 active:translate-y-0.5 transition text-lg"
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-md w-full bg-white rounded-3xl shadow-story border-[3px] border-primary-light p-8 text-center"
           >
-            ▶️ استمعي للحدوتة
-          </button>
-          {playbackError && (
-            <p className="text-red-500 text-sm mt-4">{playbackError}</p>
-          )}
-        </motion.div>
+            <motion.div
+              animate={{ rotate: [0, -6, 6, 0] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+              className="text-6xl mb-4"
+            >
+              🎧
+            </motion.div>
+            {title && (
+              <h1 className="text-xl font-black text-primary mb-2">{title}</h1>
+            )}
+            <p className="text-ink-muted mb-6 leading-relaxed">
+              {hasAudio
+                ? "الحدوتة جاهزة! اضغطي لتسمعي القصة مع الصوت"
+                : "الحدوتة جاهزة! اضغطي للبدء (الصوت غير متاح — سيتم عرض النص فقط)"}
+            </p>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              type="button"
+              onClick={handleStartListening}
+              className="bg-sunny text-ink font-black px-8 py-4 rounded-2xl shadow-button hover:brightness-105 transition text-lg border-2 border-white"
+            >
+              ▶️ استمعي للحدوتة
+            </motion.button>
+            {playbackError && (
+              <p className="text-rose text-sm mt-4 font-bold">{playbackError}</p>
+            )}
+          </motion.div>
         </div>
       </>
     );
@@ -321,97 +345,119 @@ export default function StoryPlayer({
   const displayedText = words.slice(0, visibleWords).join(" ");
   const showChoices = awaitingChoice && activeChoices.length > 0;
 
+  // -------------------- شاشة القراءة --------------------
   return (
     <>
       {audioElement}
-      <div dir="rtl" className="max-w-3xl mx-auto p-4 sm:p-6">
-      {title && (
-        <h1 className="text-2xl sm:text-3xl font-black text-purple-700 text-center mb-6">
-          {title}
-        </h1>
-      )}
+      <div
+        dir="rtl"
+        className="max-w-3xl mx-auto p-4 sm:p-6 min-h-screen bg-gradient-to-b from-page-dreamy via-page-sky to-white"
+      >
+        {title && (
+          <h1 className="text-2xl sm:text-3xl font-black text-primary text-center mb-5">
+            {title}
+          </h1>
+        )}
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={current}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -12 }}
-          transition={{ duration: 0.35 }}
-          className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden"
-        >
-          <div className="w-full bg-gradient-to-b from-purple-50 to-white flex items-center justify-center">
-            <motion.img
-              key={scene.image}
-              initial={{ opacity: 0, scale: 1.03 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              src={scene.image}
-              alt=""
-              className="w-full max-h-[min(70vh,32rem)] object-contain"
+        {/* Progress dots */}
+        <div className="flex items-center justify-center gap-1.5 mb-5" dir="ltr">
+          {scenes.map((_, index) => (
+            <span
+              key={index}
+              className={`
+                h-2 rounded-full transition-all
+                ${index === current ? "w-6 bg-primary" : "w-2 bg-primary-light"}
+              `}
             />
-          </div>
-
-          <div className="p-5 sm:p-6 min-h-[120px]">
-            <p className="text-lg sm:text-xl leading-relaxed text-gray-800 text-right">
-              {showChoices ? scene.text : displayedText}
-              {!showChoices && visibleWords < words.length && (
-                <span className="inline-block w-0.5 h-5 bg-purple-500 mr-1 animate-pulse align-middle" />
-              )}
-            </p>
-          </div>
-        </motion.div>
-      </AnimatePresence>
-
-      {showChoices && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-6 space-y-3"
-        >
-          <p className="text-center font-black text-purple-700 text-lg">
-            ماذا تختار؟ 🤔
-          </p>
-          {activeChoices.map((choice, index) => (
-            <button
-              key={`${choice.nextScene}-${index}`}
-              type="button"
-              onClick={() => handleChoice(choice.nextScene)}
-              className="w-full bg-gradient-to-l from-purple-500 to-purple-600 text-white font-bold px-6 py-4 rounded-2xl shadow-[0_4px_0_#5b21b6] hover:brightness-110 active:translate-y-0.5 transition text-right"
-            >
-              {choice.text}
-            </button>
           ))}
-        </motion.div>
-      )}
+        </div>
 
-      {!showChoices && (
-      <div className="flex items-center justify-center gap-3 mt-6">
-        <button
-          type="button"
-          onClick={togglePause}
-          className="bg-yellow-300 text-purple-900 font-bold px-6 py-3 rounded-2xl shadow-[0_4px_0_#ca8a04] active:translate-y-0.5 transition"
-        >
-          {isPaused ? "▶️ كمّل" : "⏸️ وقف"}
-        </button>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.35 }}
+            className="bg-white rounded-3xl shadow-story border border-border-warm overflow-hidden"
+          >
+            <div className="w-full bg-gradient-to-b from-cat-magic to-white flex items-center justify-center">
+              <motion.img
+                key={scene.image}
+                initial={{ opacity: 0, scale: 1.03 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                src={scene.image}
+                alt=""
+                className="w-full max-h-[min(70vh,32rem)] object-contain"
+              />
+            </div>
 
-        <button
-          type="button"
-          onClick={replayScene}
-          className="bg-purple-100 text-purple-800 font-bold px-6 py-3 rounded-2xl border border-purple-200 active:scale-95 transition"
-        >
-          🔁 من الأول
-        </button>
-      </div>
-      )}
+            <div className="p-5 sm:p-6 min-h-[120px]">
+              <p className="text-lg sm:text-xl leading-relaxed text-ink text-right">
+                {showChoices ? scene.text : displayedText}
+                {!showChoices && visibleWords < words.length && (
+                  <span className="inline-block w-0.5 h-5 bg-primary mr-1 animate-pulse align-middle" />
+                )}
+              </p>
+            </div>
+          </motion.div>
+        </AnimatePresence>
 
-      {playbackError && (
-        <p className="text-center text-red-500 text-sm mt-3">{playbackError}</p>
-      )}
+        {showChoices && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-6 space-y-3"
+          >
+            <p className="text-center font-black text-primary text-lg mb-1">
+              ماذا تختار؟ 🤔
+            </p>
+            {activeChoices.map((choice, index) => (
+              <motion.button
+                key={`${choice.nextScene}-${index}`}
+                whileTap={{ scale: 0.97 }}
+                type="button"
+                onClick={() => handleChoice(choice.nextScene)}
+                className="w-full bg-primary text-white font-bold px-6 py-4 rounded-2xl shadow-button hover:brightness-110 transition text-right"
+              >
+                {choice.text}
+              </motion.button>
+            ))}
+          </motion.div>
+        )}
 
-      <p className="text-center text-sm text-gray-400 mt-4">
-        المشهد {current + 1} من {scenes.length}
-      </p>
+        {!showChoices && (
+          <div className="flex items-center justify-center gap-3 mt-6">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              type="button"
+              onClick={togglePause}
+              className="bg-sunny text-ink font-bold px-6 py-3 rounded-2xl shadow-button border-2 border-white transition"
+            >
+              {isPaused ? "▶️ كمّل" : "⏸️ وقف"}
+            </motion.button>
+
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              type="button"
+              onClick={replayScene}
+              className="bg-white text-primary font-bold px-6 py-3 rounded-2xl border-2 border-primary-light transition"
+            >
+              🔁 من الأول
+            </motion.button>
+          </div>
+        )}
+
+        {playbackError && (
+          <p className="text-center text-rose text-sm mt-3 font-bold">
+            {playbackError}
+          </p>
+        )}
+
+        <p className="text-center text-sm text-ink-muted mt-4">
+          المشهد {current + 1} من {scenes.length}
+        </p>
       </div>
     </>
   );
