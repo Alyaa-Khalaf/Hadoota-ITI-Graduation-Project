@@ -15,27 +15,25 @@ export default function Footer() {
       dir="rtl"
     >
       <div className="container mx-auto max-w-7xl px-6 py-16">
-
         <div className="grid gap-10 text-right md:grid-cols-3">
-
           {/* عن حدوتة */}
           <div className="space-y-4">
             <h4 className="text-xl font-black tracking-tight text-header">
-              ✨ حدوتة
+              <img
+                src="https://i.postimg.cc/vBh3rg27/6dcc91a697e148f9b10475c183968468.png"
+                alt="Hadoota Logo"
+              />
             </h4>
 
             <p className="max-w-xs text-sm font-bold leading-relaxed text-ink-muted">
-              منصة مصرية مبتكرة لقصص الأطفال التفاعلية والذكية،
-              مصممة لتنمية خيال طفلك وبناء مهاراته وأخلاقه
-              في بيئة تعليمية آمنة وممتعة.
+              منصة مصرية مبتكرة لقصص الأطفال التفاعلية والذكية، مصممة لتنمية
+              خيال طفلك وبناء مهاراته وأخلاقه في بيئة تعليمية آمنة وممتعة.
             </p>
           </div>
 
           {/* روابط سريعة */}
           <div className="space-y-4">
-            <h5 className="text-base font-black">
-              🔗 روابط سريعة
-            </h5>
+            <h5 className="text-base font-black">🔗 روابط سريعة</h5>
 
             <ul className="space-y-3 text-sm font-bold">
               <li>
@@ -81,26 +79,21 @@ export default function Footer() {
 
           {/* التواصل */}
           <div className="space-y-4">
-           <h5 className="text-base font-black text-header">
-              💌 تواصل معنا
-            </h5>
+            <h5 className="text-base font-black text-header">💌 تواصل معنا</h5>
 
-          <p className="text-sm font-bold text-ink-muted">
-              لديك أي استفسار أو اقتراح؟
-              فريقنا يسعد بخدمتك دائماً.
+            <p className="text-sm font-bold text-ink-muted">
+              لديك أي استفسار أو اقتراح؟ فريقنا يسعد بخدمتك دائماً.
             </p>
 
             <div className="inline-block">
-              <Badge variant="sky">
-                support@hadouta.com
-              </Badge>
+              <Badge variant="sky">support@hadouta.com</Badge>
             </div>
           </div>
         </div>
 
         {/* Divider */}
-       <div className="mt-12 border-t border-primary/15 pt-8 text-center">
-         <p className="text-xs font-bold text-ink-muted">
+        <div className="mt-12 border-t border-primary/15 pt-8 text-center">
+          <p className="text-xs font-bold text-ink-muted">
             © ٢٠٢٦ حدوتة. صُنع بكل حب من أجل جيل ذكي ومبدع 🚀
           </p>
         </div>

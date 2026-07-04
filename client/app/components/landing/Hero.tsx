@@ -247,7 +247,7 @@ export default function Hero() {
                     transition={{ duration: 0.2 }}
                     className="absolute left-1/2 -translate-x-1/2 mt-3 w-56 bg-white shadow-xl rounded-xl overflow-hidden border z-50"
                   >
-                    <Link
+                    {/* <Link
                       href="/auth/register/school"
                       className="block px-4 py-3 hover:bg-sky/10 text-right transition-colors"
                       onClick={() => setOpenSchoolChoice(false)}
@@ -261,7 +261,7 @@ export default function Hero() {
                       onClick={() => setOpenSchoolChoice(false)}
                     >
                       ولي أمر
-                    </Link>
+                    </Link> */}
                   </motion.div>
                 )}
               </div>
