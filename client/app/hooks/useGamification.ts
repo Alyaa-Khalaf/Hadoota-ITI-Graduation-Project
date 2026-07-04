@@ -62,7 +62,8 @@ export function useGamification(childId: string) {
       setLoading(false);
     }
   }, [childId, accessToken, authLoading]);
-
+console.log("Fetching gamification for:", childId);
+console.log("Access Token:", accessToken);
   useEffect(() => {
     fetchGamification();
   }, [fetchGamification]);

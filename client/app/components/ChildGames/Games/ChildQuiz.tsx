@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useChild } from "@/hooks/useChild";
+import { useSelectedChild } from "@/context/childContext";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -79,7 +80,7 @@ function buildRound(): Question[] {
 }
 
 export default function QuizGame() {
-  const { child } = useChild();
+const { selectedChild } = useSelectedChild();
   const { accessToken } = useAuth();
 
   const [round, setRound] = useState<Question[]>(() => buildRound());
@@ -117,7 +118,7 @@ export default function QuizGame() {
 
   const sendReward = async () => {
     try {
-      const childId = child?._id;
+      const childId = selectedChild?._id;
       if (!childId || !accessToken) return;
 
       await fetch("http://localhost:5000/api/gamification/reward", {

@@ -9,19 +9,17 @@ export default function PreviousButton() {
   return (
     <button
       onClick={() => router.back()}
+      
       className="
-      fixed left-4 top-4
+       fixed top-4 left-4 z-50
         inline-flex items-center gap-2
-        px-5 py-3
-        rounded-2xl
-        bg-white
-        border-2 border-primary
-        text-primary
-        font-bold
-        shadow-md
-        transition-all
-        hover:bg-primary
-        hover:text-white
+        rounded-full
+        bg-white/90 backdrop-blur
+        border-2 border-primary/30
+        px-4 py-2.5
+        text-sm font-black text-primary
+        shadow-lg
+        transition hover:scale-105 hover:bg-white
       "
     >
       <ArrowLeft size={20} />

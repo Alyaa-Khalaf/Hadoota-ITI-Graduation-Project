@@ -33,6 +33,7 @@ export const getGamification = async (req, res) => {
 // ==========================================
 export const grantReward = async (req, res) => {
   try {
+       console.log("Reward Request:", req.body);
     const { childId, type, amount, badgeName, reason } = req.body;
 
     // التحقق الصارم المتوافق مع الـ Enum الخاص بكِ ["star", "badge"]

@@ -23,6 +23,7 @@ const { selectedChild } = useSelectedChild();
       </div>
     );
   }
+  console.log("Selected Child:", selectedChild?._id);
 
   const stars = gamification.stars;
   const level = gamification.level;
