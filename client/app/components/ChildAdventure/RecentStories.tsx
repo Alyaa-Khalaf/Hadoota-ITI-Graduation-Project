@@ -11,7 +11,7 @@ export default function RecentStories() {
 
   if (loading) {
     return (
-      <section className="mt-8">
+      <section className="mt-8" >
         <AdventureHeader header="حواديتك" subHeader="ارجع كمل مغامراتك 📚" />
         <div className="mt-6 space-y-4">
           {[1, 2, 3].map((i) => (
@@ -40,7 +40,7 @@ export default function RecentStories() {
 
   if (!stories.length) {
     return (
-      <section className="mt-8">
+      <section className="mt-8" id="stories">
         <AdventureHeader header="حواديتك" subHeader="ارجع كمل مغامراتك 📚" />
 
         <motion.div

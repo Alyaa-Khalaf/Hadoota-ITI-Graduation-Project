@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useSelectedChild } from "@/context/childContext";
+import { useAuth } from "@/context/AuthContext";
 
 type Balloon = {
   id: number;
@@ -14,20 +16,53 @@ const icons = ["⭐", "⭐", "⭐", "💣", "❤️"];
 const GAME_DURATION = 30;
 
 export default function BalloonGame() {
+  const { selectedChild } = useSelectedChild();
+  const { accessToken } = useAuth();
+
   const [balloons, setBalloons] = useState<Balloon[]>([]);
   const [score, setScore] = useState(0);
   const [time, setTime] = useState(GAME_DURATION);
 
-  // 🔑 كل مرة نعمل ريستارت، نزوّد الرقم ده، عشان الـ effects تتبني من
-  // جديد مرة واحدة بس (مش كل ثانية)
+  const [rewardSent, setRewardSent] = useState(false);
+
   const [resetKey, setResetKey] = useState(0);
 
-  // 🛡️ نتابع بيها هل اللعبة لسه شغالة ولا لأ من غير ما نحط "time"
-  // في dependency arrays بتاعة الـ intervals، عشان منعملش recreate
-  // للـ interval كل ثانية
   const isPlayingRef = useRef(true);
 
+  // ==========================
+  // إرسال المكافأة
+  // ==========================
+  const sendReward = async () => {
+    try {
+      if (!selectedChild?._id) return;
+
+      const res = await fetch(
+        "http://localhost:5000/api/gamification/reward",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            childId: selectedChild._id,
+            type: "star",
+            amount: score,
+            reason: "Balloon Game",
+          }),
+        }
+      );
+
+      const data = await res.json();
+      console.log("Reward:", data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // ==========================
   // Timer
+  // ==========================
   useEffect(() => {
     isPlayingRef.current = true;
 
@@ -45,8 +80,9 @@ export default function BalloonGame() {
     return () => clearInterval(timer);
   }, [resetKey]);
 
-  // Spawn balloons — بيتبني مرة واحدة بس لكل لعبة، وبيوقف نفسه
-  // بمجرد ما isPlayingRef تبقى false بدل ما يتقفل ويتفتح كل ثانية
+  // ==========================
+  // إنشاء البالونات
+  // ==========================
   useEffect(() => {
     const interval = setInterval(() => {
       if (!isPlayingRef.current) return;
@@ -65,7 +101,9 @@ export default function BalloonGame() {
     return () => clearInterval(interval);
   }, [resetKey]);
 
-  // Move balloons — نفس الفكرة، بيتبني مرة واحدة بس
+  // ==========================
+  // حركة البالونات
+  // ==========================
   useEffect(() => {
     const move = setInterval(() => {
       if (!isPlayingRef.current) return;
@@ -83,6 +121,9 @@ export default function BalloonGame() {
     return () => clearInterval(move);
   }, [resetKey]);
 
+  // ==========================
+  // فرقعة البالون
+  // ==========================
   const popBalloon = (balloon: Balloon) => {
     if (!isPlayingRef.current) return;
 
@@ -103,11 +144,24 @@ export default function BalloonGame() {
     }
   };
 
-  // 🔄 ريستارت محلي بدل ما نعمل reload لكل الصفحة
+  // ==========================
+  // إرسال النجوم عند نهاية اللعبة
+  // ==========================
+  useEffect(() => {
+    if (time === 0 && !rewardSent) {
+      sendReward();
+      setRewardSent(true);
+    }
+  }, [time, rewardSent]);
+
+  // ==========================
+  // إعادة اللعب
+  // ==========================
   const handleRestart = () => {
     setBalloons([]);
     setScore(0);
     setTime(GAME_DURATION);
+    setRewardSent(false);
     setResetKey((k) => k + 1);
   };
 
@@ -125,7 +179,6 @@ export default function BalloonGame() {
       to-white
       "
     >
-      {/* Clouds */}
       <div className="absolute top-8 left-8 text-6xl opacity-70">
         ☁️
       </div>
@@ -134,7 +187,6 @@ export default function BalloonGame() {
         ☁️
       </div>
 
-      {/* Header */}
       <div className="absolute top-5 left-5 bg-white rounded-2xl px-5 py-3 shadow-lg font-bold">
         ⭐ {score}
       </div>
@@ -143,7 +195,6 @@ export default function BalloonGame() {
         ⏳ {time}
       </div>
 
-      {/* Balloons */}
       {balloons.map((balloon) => (
         <button
           key={balloon.id}
@@ -179,7 +230,6 @@ export default function BalloonGame() {
         </button>
       ))}
 
-      {/* End Game */}
       {time === 0 && (
         <div
           className="
@@ -206,30 +256,41 @@ export default function BalloonGame() {
             <p className="text-5xl font-black text-yellow-500 mt-3">
               {score}
             </p>
-          <div className="flex justify-center gap-4">
-             <button
-    onClick={handleRestart}
-    className="
-      px-8
-      py-3
-      rounded-2xl
-      bg-primary
-      text-white
-      font-bold
-      hover:scale-105
-      transition
-    "
-  >
-              إعادة اللعب
-            </button>
 
-            <Link
-              href="/games/GamesHub"
-              className="px-6 py-3 rounded-full bg-sky text-white font-black hover:brightness-110 active:scale-95 transition-all"
-            >
-              العودة للألعاب 🎮
-            </Link>
-          </div>
+            <div className="flex justify-center gap-4 mt-8">
+              <button
+                onClick={handleRestart}
+                className="
+                  px-8
+                  py-3
+                  rounded-2xl
+                  bg-primary
+                  text-white
+                  font-bold
+                  hover:scale-105
+                  transition
+                "
+              >
+                إعادة اللعب
+              </button>
+
+              <Link
+                href="/games/GamesHub"
+                className="
+                  px-6
+                  py-3
+                  rounded-full
+                  bg-sky
+                  text-white
+                  font-black
+                  hover:brightness-110
+                  active:scale-95
+                  transition-all
+                "
+              >
+                العودة للألعاب 🎮
+              </Link>
+            </div>
           </div>
         </div>
       )}

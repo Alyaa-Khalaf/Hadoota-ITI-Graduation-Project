@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useChild } from "@/hooks/useChild";
 import { useAuth } from "@/context/AuthContext";
+import { useSelectedChild } from "@/context/childContext";
 
 type Card = {
   id: number;
@@ -20,7 +20,7 @@ const IMAGES = [
 ];
 
 export default function MemoryGame() {
-  const { child } = useChild();
+  const { selectedChild } = useSelectedChild();
   const { accessToken } = useAuth();
 
   const [cards, setCards] = useState<Card[]>([]);
@@ -91,7 +91,7 @@ export default function MemoryGame() {
 
   const sendReward = async () => {
     try {
-      const childId = child?._id;
+      const childId = selectedChild?._id;
       if (!childId) return;
 
       const res = await fetch(
