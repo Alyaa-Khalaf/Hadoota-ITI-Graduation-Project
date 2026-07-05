@@ -10,6 +10,7 @@ import Transaction from '../models/Transaction.js';
 import Plan from '../models/Plan.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
 import { syncTransactionsFromUsers } from '../services/transactionService.js';
+import { getUsageSummaryByUser, getUsageByUserId } from '../services/tokenUsageService.js';
 
 // ============================================================
 // Helpers
@@ -830,6 +831,30 @@ export const deletePlan = async (req, res) => {
     return sendSuccess(res, 200, 'تم حذف الخطة');
   } catch (error) {
     return sendError(res, 500, 'فشل حذف الخطة', [error.message]);
+  }
+};
+
+// ============================================================
+// 🔢 TOKEN USAGE (استهلاك الـ AI tokens لكل مستخدم)
+// ============================================================
+
+export const getTokenUsageSummary = async (req, res) => {
+  try {
+    const { from, to } = req.query;
+    const summary = await getUsageSummaryByUser({ from, to });
+    return sendSuccess(res, 200, 'تم جلب ملخص استهلاك التوكنز', summary);
+  } catch (error) {
+    return sendError(res, 500, 'فشل جلب استهلاك التوكنز', [error.message]);
+  }
+};
+
+export const getTokenUsageForUser = async (req, res) => {
+  try {
+    const { page, limit } = getPaging(req);
+    const result = await getUsageByUserId(req.params.id, { page, limit });
+    return sendSuccess(res, 200, 'تم جلب استهلاك المستخدم', result);
+  } catch (error) {
+    return sendError(res, 500, 'فشل جلب استهلاك المستخدم', [error.message]);
   }
 };
 

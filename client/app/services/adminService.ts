@@ -167,6 +167,33 @@ export interface RecentActivity {
   storyStatus: { name: string; value: number }[];
 }
 
+// خاص باستهلاك التوكنز/الصور لكل مستخدم عبر مزودي الـ AI (Gemini/OpenAI/Pollinations)
+export interface AdminTokenUsageSummary {
+  userId: string;
+  userName?: string;
+  userEmail?: string;
+  totalTokens: number;
+  promptTokens: number;
+  completionTokens: number;
+  imageCount: number;
+  callsCount: number;
+  lastUsedAt: string;
+}
+
+export interface AdminTokenUsageEntry {
+  _id: string;
+  userId: string;
+  childId?: { _id: string; name: string } | null;
+  storyId?: { _id: string; title: string } | null;
+  provider: "gemini" | "openai" | "pollinations";
+  operation: "story_structure" | "scene_image" | "other";
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  imageCount: number;
+  createdAt: string;
+}
+
 async function unwrap<T>(promise: Promise<{ data: { data: T } }>): Promise<T> {
   const res = await promise;
   return res.data.data;
@@ -245,3 +272,11 @@ export const createPlan = (body: Partial<AdminPlan>) =>
 export const updatePlan = (id: string, body: Partial<AdminPlan>) =>
   unwrap<AdminPlan>(apiClient.put(`/admin/plans/${id}`, body));
 export const deletePlan = (id: string) => apiClient.delete(`/admin/plans/${id}`);
+
+// Token Usage
+export const getTokenUsageSummary = (params?: { from?: string; to?: string }) =>
+  unwrap<AdminTokenUsageSummary[]>(apiClient.get("/admin/token-usage", { params }));
+export const getTokenUsageForUser = (userId: string, params?: ListParams) =>
+  unwrap<Paginated<AdminTokenUsageEntry>>(
+    apiClient.get(`/admin/token-usage/${userId}`, { params })
+  );

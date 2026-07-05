@@ -46,6 +46,9 @@ import {
   createPlan,
   updatePlan,
   deletePlan,
+  // token usage
+  getTokenUsageSummary,
+  getTokenUsageForUser,
   // seeding
   seedPlans,
   seedKnowledge,
@@ -93,6 +96,10 @@ router.get('/transactions/:id', getTransaction);
 // PLANS
 router.route('/plans').get(listPlans).post(createPlan);
 router.route('/plans/:id').get(getPlan).put(updatePlan).delete(deletePlan);
+
+// TOKEN USAGE
+router.get('/token-usage', getTokenUsageSummary);
+router.get('/token-usage/:id', getTokenUsageForUser);
 
 // SEEDING
 router.post('/seed/plans', seedPlans);

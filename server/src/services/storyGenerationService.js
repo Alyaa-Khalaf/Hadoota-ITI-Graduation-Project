@@ -35,11 +35,15 @@ export const runNourhanStoryPipeline = async ({
 
   console.log(`📖 Story generation using: ${getProvider()}`)
 
+  // بنبعت parentId كـ userId عشان استهلاك التوكنز يترصد على صاحب الحساب
+  const usageContext = { userId: parentId, childId, storyId: story._id }
+
   const structure = await generateStoryStructure({
     topic,
     character,
     childAge,
     sceneCount,
+    ...usageContext,
   })
 
   story.title = structure.title
@@ -48,7 +52,7 @@ export const runNourhanStoryPipeline = async ({
 
   for (const scene of structure.scenes) {
     const [imageBuffer, audioBuffer] = await Promise.all([
-      generateSceneImage(scene.imagePrompt),
+      generateSceneImage(scene.imagePrompt, usageContext),
       generateSpeech(scene.text),
     ])
 

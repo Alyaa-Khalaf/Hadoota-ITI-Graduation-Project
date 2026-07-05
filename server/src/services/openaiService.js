@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import { recordTokenUsage } from './tokenUsageService.js'
 
 let client = null
 
@@ -19,6 +20,9 @@ export const generateStoryStructure = async ({
   character,
   childAge = 6,
   sceneCount = DEFAULT_SCENE_COUNT,
+  userId,
+  childId,
+  storyId,
 }) => {
   const openai = getClient()
   const count = Math.min(Math.max(sceneCount, 2), 5)
@@ -59,6 +63,20 @@ Rules:
     temperature: 0.8,
   })
 
+  // تسجيل استهلاك التوكنز من الـ response.usage اللي بترجعها OpenAI
+  if (response.usage) {
+    await recordTokenUsage({
+      userId,
+      childId,
+      storyId,
+      provider: 'openai',
+      operation: 'story_structure',
+      promptTokens: response.usage.prompt_tokens || 0,
+      completionTokens: response.usage.completion_tokens || 0,
+      totalTokens: response.usage.total_tokens || 0,
+    })
+  }
+
   const content = response.choices[0]?.message?.content
   if (!content) {
     throw new Error('OpenAI returned empty story content')
@@ -72,7 +90,7 @@ Rules:
   return parsed
 }
 
-export const generateSceneImage = async (imagePrompt) => {
+export const generateSceneImage = async (imagePrompt, { userId, childId, storyId } = {}) => {
   const openai = getClient()
 
   const result = await openai.images.generate({
@@ -81,6 +99,16 @@ export const generateSceneImage = async (imagePrompt) => {
     size: '1024x1024',
     quality: 'standard',
     n: 1,
+  })
+
+  // DALL-E متتسعّرش بالتوكن، فبنسجّل عدد الصور بدلاً من ذلك
+  await recordTokenUsage({
+    userId,
+    childId,
+    storyId,
+    provider: 'openai',
+    operation: 'scene_image',
+    imageCount: 1,
   })
 
   const imageUrl = result.data[0]?.url

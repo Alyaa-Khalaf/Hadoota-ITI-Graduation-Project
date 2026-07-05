@@ -15,11 +15,11 @@ export const generateStoryStructure = async (params) => {
   return openaiService.generateStoryStructure(params)
 }
 
-export const generateSceneImage = async (imagePrompt) => {
+export const generateSceneImage = async (imagePrompt, context = {}) => {
   if (useGemini()) {
-    return geminiService.generateSceneImage(imagePrompt)
+    return geminiService.generateSceneImage(imagePrompt, context)
   }
-  return openaiService.generateSceneImage(imagePrompt)
+  return openaiService.generateSceneImage(imagePrompt, context)
 }
 
 export { getProvider }

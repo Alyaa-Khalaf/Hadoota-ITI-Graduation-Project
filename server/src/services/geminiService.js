@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { recordTokenUsage } from './tokenUsageService.js'
 
 const DEFAULT_SCENE_COUNT = 3
 
@@ -40,11 +41,31 @@ Rules:
 Write an interactive story about "${topic}" with hero "${character}" for a ${childAge}-year-old child.`
 }
 
+// بيستخرج بيانات استهلاك التوكنز من رد Gemini (لو موجودة) ويسجّلها
+const trackGeminiUsage = async ({ response, userId, childId, storyId, operation }) => {
+  const usage = response.usageMetadata
+  if (!usage) return
+
+  await recordTokenUsage({
+    userId,
+    childId,
+    storyId,
+    provider: 'gemini',
+    operation,
+    promptTokens: usage.promptTokenCount || 0,
+    completionTokens: usage.candidatesTokenCount || 0,
+    totalTokens: usage.totalTokenCount || 0,
+  })
+}
+
 export const generateStoryStructure = async ({
   topic,
   character,
   childAge = 6,
   sceneCount = DEFAULT_SCENE_COUNT,
+  userId,
+  childId,
+  storyId,
 }) => {
   const genAI = getClient()
   const modelName = process.env.GEMINI_STORY_MODEL || 'gemini-2.0-flash'
@@ -60,6 +81,14 @@ export const generateStoryStructure = async ({
   const result = await model.generateContent(
     buildStoryPrompt({ topic, character, childAge, sceneCount })
   )
+
+  await trackGeminiUsage({
+    response: result.response,
+    userId,
+    childId,
+    storyId,
+    operation: 'story_structure',
+  })
 
   const content = result.response.text()
   if (!content) {
@@ -86,7 +115,7 @@ const extractImageBufferFromGeminiResponse = (response) => {
   return null
 }
 
-const generateSceneImageWithGemini = async (imagePrompt) => {
+const generateSceneImageWithGemini = async (imagePrompt, { userId, childId, storyId } = {}) => {
   const genAI = getClient()
   const modelName =
     process.env.GEMINI_IMAGE_MODEL || 'gemini-2.0-flash-preview-image-generation'
@@ -101,6 +130,15 @@ const generateSceneImageWithGemini = async (imagePrompt) => {
   const prompt = `${imagePrompt}. Style: warm children's book illustration, soft colors, no text or letters in image.`
 
   const result = await model.generateContent(prompt)
+
+  await trackGeminiUsage({
+    response: result.response,
+    userId,
+    childId,
+    storyId,
+    operation: 'scene_image',
+  })
+
   const buffer = extractImageBufferFromGeminiResponse(result.response)
 
   if (!buffer) {
@@ -110,26 +148,59 @@ const generateSceneImageWithGemini = async (imagePrompt) => {
   return buffer
 }
 
-const generateSceneImageWithPollinations = async (imagePrompt) => {
+const generateSceneImageWithPollinations = async (
+  imagePrompt,
+  { userId, childId, storyId, retries = 2 } = {}
+) => {
   const prompt = encodeURIComponent(
     `${imagePrompt}. warm children's book illustration, soft colors, no text, safe for kids`
   )
   const url = `https://image.pollinations.ai/prompt/${prompt}?width=1024&height=1024&nologo=true`
 
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`Pollinations image fetch failed (${response.status})`)
-  }
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 30000) // 30s timeout
 
-  const arrayBuffer = await response.arrayBuffer()
-  return Buffer.from(arrayBuffer)
+      const response = await fetch(url, { signal: controller.signal })
+      clearTimeout(timeout)
+
+      if (!response.ok) {
+        throw new Error(`Pollinations image fetch failed (${response.status})`)
+      }
+
+      const arrayBuffer = await response.arrayBuffer()
+
+      // Pollinations مجانية ومفيهاش توكنز، بس بنسجّل عدد الصور المستهلكة للتتبع
+      await recordTokenUsage({
+        userId,
+        childId,
+        storyId,
+        provider: 'pollinations',
+        operation: 'scene_image',
+        imageCount: 1,
+      })
+
+      return Buffer.from(arrayBuffer)
+    } catch (err) {
+      const isLastAttempt = attempt === retries
+      if (isLastAttempt) {
+        throw err
+      }
+      console.warn(
+        `Pollinations attempt ${attempt + 1} failed (${err.message}), retrying...`
+      )
+      // انتظار بسيط قبل إعادة المحاولة (backoff)
+      await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)))
+    }
+  }
 }
 
-export const generateSceneImage = async (imagePrompt) => {
+export const generateSceneImage = async (imagePrompt, context = {}) => {
   try {
-    return await generateSceneImageWithGemini(imagePrompt)
+    return await generateSceneImageWithGemini(imagePrompt, context)
   } catch (geminiError) {
     console.warn('Gemini image failed, using Pollinations fallback:', geminiError.message)
-    return generateSceneImageWithPollinations(imagePrompt)
+    return generateSceneImageWithPollinations(imagePrompt, context)
   }
 }
