@@ -30,7 +30,6 @@ export default function ParentHeader({ activeTab, setActiveTab }: Props) {
   const navItems: { tab: DashboardTab; label: string; icon: typeof LayoutDashboard }[] = [
     { tab: "overview", label: "نظرة عامة", icon: LayoutDashboard },
     { tab: "reports", label: "تقارير الذكاء الاصطناعي", icon: Sparkles },
-    { tab: "notifications", label: "الإشعارات", icon: Bell },
   ];
 
   return (

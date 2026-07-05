@@ -17,6 +17,7 @@ import { Star, Trophy, Award, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useSelectedChild } from "@/context/childContext";
 import { useGamification } from "@/hooks/useGamification";
+import { useRecentStories } from "@/hooks/useRecentStories";
 
 type WeeklyActivity = {
   name: string;
@@ -40,6 +41,7 @@ const REASON_LABELS: Record<string, string> = {
 };
 
 export default function ChildAnalytics() {
+  const { stories, loading: storiesLoading } = useRecentStories();
   const { accessToken } = useAuth();
   const { selectedChild, loadingSelectedChild } = useSelectedChild();
   const childId = selectedChild?._id;
@@ -76,19 +78,19 @@ export default function ChildAnalytics() {
         setLoading(true);
 
         // 📊 Weekly Activity
-        const weeklyRes = await fetch(
-          `${API_BASE}/api/analytics/${childId}/stories?period=weekly&days=7`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
+        // const weeklyRes = await fetch(
+        //   `${API_BASE}/api/analytics/${childId}/stories?period=weekly&days=7`,
+        //   {
+        //     headers: {
+        //       Authorization: `Bearer ${accessToken}`,
+        //     },
+        //   }
+        // );
 
-        const weeklyData = await weeklyRes.json();
+        // const weeklyData = await weeklyRes.json();
 
         // لو الطفل المختار تغيّر وإحنا لسه مستنيين الرد ده، اتجاهله بالكامل
-        if (isStale) return;
+        // if (isStale) return;
 
         const weeklyChart = (weeklyData?.data?.chart || []).map((item: any) => ({
           name: item.week || item.date || "N/A",
@@ -175,81 +177,71 @@ export default function ChildAnalytics() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        {/* 📈 Weekly Chart */}
-        <div className="h-80 bg-white rounded-2xl p-4 border border-border-warm shadow-sm">
-          <h3 className="text-sm font-bold mb-3 text-ink">
-            نشاط القراءة الأسبوعي
-          </h3>
+        
 
-          {weeklyActivity.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center gap-2 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-cat-adventure flex items-center justify-center text-2xl">
-                📖
-              </div>
-              <p className="text-xs font-bold text-ink">
-                لا توجد قصص مقروءة هذا الأسبوع
-              </p>
-              <p className="text-[11px] text-ink-muted max-w-[200px]">
-                شجّع طفلك على قراءة أول قصة ليبدأ ظهور نشاطه هنا
-              </p>
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weeklyActivity}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="stories"
-                  stroke="#FF7043"
-                  strokeWidth={3}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-
-        {/* 🥧 Topics Chart */}
-        <div className="h-80 bg-white rounded-2xl p-4 border border-border-warm shadow-sm">
-          <h3 className="text-sm font-bold mb-3 text-ink">
-            توزيع المواضيع
-          </h3>
-
-          {topics.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center gap-2 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-cat-magic flex items-center justify-center text-2xl">
-                🧩
-              </div>
-              <p className="text-xs font-bold text-ink">
-                لا توجد مواضيع مسجّلة بعد
-              </p>
-              <p className="text-[11px] text-ink-muted max-w-[200px]">
-                توزيع المواضيع سيظهر هنا بعد قراءة بعض القصص
-              </p>
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={topics}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius={90}
-                  label
-                >
-                  {topics.map((t, i) => (
-                    <Cell key={i} fill={t.color || "#8884d8"} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+        
       </div>
+{/* 📚 آخر القصص المقروءة */}
+<div className="bg-white rounded-2xl border border-border-warm shadow-sm p-5">
+  <h3 className="text-sm font-bold text-ink mb-4">
+    📚 آخر القصص المقروءة
+  </h3>
 
+  {storiesLoading ? (
+    <div className="py-8 text-center text-ink-muted animate-pulse">
+      جارٍ تحميل القصص...
+    </div>
+  ) : stories.length === 0 ? (
+    <div className="py-8 text-center">
+      <div className="text-5xl mb-3">📖</div>
+      <p className="font-bold text-ink">
+        لم يقرأ الطفل أي قصة بعد
+      </p>
+      <p className="text-xs text-ink-muted mt-2">
+        ستظهر هنا آخر القصص التي يقرأها الطفل
+      </p>
+    </div>
+  ) : (
+    <div className="space-y-3">
+      {stories.map((story: any) => (
+        <div
+          key={story._id}
+          className="flex items-center justify-between rounded-2xl bg-primary-wash p-4 hover:shadow-md transition"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-cat-adventure flex items-center justify-center text-2xl">
+              📚
+            </div>
+
+            <div>
+              <h4 className="font-bold text-ink">
+                {story.title}
+              </h4>
+
+              {story.topic && (
+                <p className="text-xs text-ink-muted mt-1">
+                  🏷️ {story.topic}
+                </p>
+              )}
+
+              {story.character && (
+                <p className="text-xs text-ink-muted">
+                  👤 {story.character}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="text-left">
+            <p className="text-[11px] text-ink-muted">
+              {new Date(story.createdAt).toLocaleDateString("ar-EG")}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
       {/* 🏆 Gamification Section */}
       {gamificationLoading ? (
         <div className="h-40 bg-white rounded-2xl border border-border-warm animate-pulse" />
@@ -291,6 +283,7 @@ export default function ChildAnalytics() {
               <p className="text-[11px] text-ink-muted">شارة</p>
             </div>
           </div>
+          
 
           {/* Recent rewards */}
           <div className="space-y-2">
