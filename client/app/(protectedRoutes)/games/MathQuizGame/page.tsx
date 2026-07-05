@@ -1,8 +1,15 @@
+"use client";
+
 import MathQuizGame from '@/components/ChildGames/Games/MemoryGame'
 import PreviousButton from '@/components/ui/PreviousButton'
+import { useSelectedChild } from '@/context/childContext';
+import { useScreenTimeSession } from '@/hooks/Usescreentimesession';
 import React from 'react'
 
-function page() {
+function MathQuizGames() {
+  const { selectedChild } = useSelectedChild()
+
+   useScreenTimeSession(selectedChild?._id)
   return (
     <>
     <PreviousButton/>
@@ -12,4 +19,4 @@ function page() {
   )
 }
 
-export default page
+export default MathQuizGames

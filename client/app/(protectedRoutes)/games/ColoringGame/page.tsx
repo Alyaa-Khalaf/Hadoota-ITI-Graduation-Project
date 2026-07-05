@@ -1,9 +1,16 @@
+"use client";
+
 import React from 'react'
 import HomeButton from '@/components/ui/HomeButton'
 import ColorMatchGame from '@/components/ChildGames/Games/colors'
 import PreviousButton from '@/components/ui/PreviousButton'
+import { useScreenTimeSession } from '@/hooks/Usescreentimesession'
+import { useSelectedChild } from '@/context/childContext'
 
-function page() {
+function ColoreingGame() {
+  const { selectedChild } = useSelectedChild()
+  
+     useScreenTimeSession(selectedChild?._id)
   return (
     <div>
       <HomeButton href="/childAdventure" />
@@ -13,4 +20,4 @@ function page() {
   )
 }
 
-export default page
+export default ColoreingGame

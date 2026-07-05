@@ -1,8 +1,15 @@
+"use client";
+
 import React from 'react'
 import ChildQuiz from '@/components/ChildGames/Games/ChildQuiz'
 import HomeButton from '@/components/ui/HomeButton'
 import PreviousButton from '@/components/ui/PreviousButton'
-function page() {
+import { useSelectedChild } from '@/context/childContext'
+import { useScreenTimeSession } from '@/hooks/Usescreentimesession'
+function ChildQuizGame() {
+  const { selectedChild } = useSelectedChild()
+
+   useScreenTimeSession(selectedChild?._id)
   return (
     <div>
       <HomeButton href="/childAdventure" />
@@ -12,4 +19,4 @@ function page() {
   )
 }
 
-export default page
+export default ChildQuizGame

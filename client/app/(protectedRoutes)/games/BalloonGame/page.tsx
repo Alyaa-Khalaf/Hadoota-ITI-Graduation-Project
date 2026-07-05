@@ -1,10 +1,17 @@
+"use client";
+
 import BalloonGame from '@/components/ChildGames/Games/balloon'
+import { useSelectedChild } from '@/context/childContext'
+import { useScreenTimeSession } from '@/hooks/Usescreentimesession'
 import React from 'react'
 
-function page() {
+function BallonGame() {
+  const { selectedChild } = useSelectedChild()
+
+   useScreenTimeSession(selectedChild?._id)
   return (
     <BalloonGame/>
   )
 }
 
-export default page
+export default BallonGame

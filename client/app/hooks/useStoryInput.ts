@@ -1,9 +1,9 @@
 "use client";
 
-import { useChild } from "@/hooks/useChild";
+import { useSelectedChild } from "@/context/childContext";
 
 export const useStoryInput = () => {
-  const { child } = useChild();
+  const {  selectedChild} = useSelectedChild();
 
   const params =
     typeof window !== "undefined"
@@ -11,9 +11,9 @@ export const useStoryInput = () => {
       : null;
 
   return {
-    childId: child?._id,
-    childName: child?.name,
-    childAge: child?.age,
+    childId: selectedChild?._id,
+    childName: selectedChild?.name,
+    childAge: selectedChild?.age,
     character: params?.get("character") || "",
     topic: params?.get("topic") || "",
   };

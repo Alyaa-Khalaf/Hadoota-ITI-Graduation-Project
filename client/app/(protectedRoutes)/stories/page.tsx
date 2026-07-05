@@ -6,8 +6,13 @@ import StoryPlayer from "@/components/story-player/StoryPlayer";
 import { useStoryInput } from "@/hooks/useStoryInput";
 import HomeButton from "@/components/ui/HomeButton";
 import PreviousButton from "@/components/ui/PreviousButton";
+import { useSelectedChild } from "@/context/childContext";
+import { useScreenTimeSession } from "@/hooks/Usescreentimesession";
 
 export default function StoriesPage() {
+  const { selectedChild } = useSelectedChild()
+
+   useScreenTimeSession(selectedChild?._id)
   const { childId, character, topic } = useStoryInput();
 
   const {
