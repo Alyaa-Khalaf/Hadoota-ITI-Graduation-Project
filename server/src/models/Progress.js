@@ -47,9 +47,11 @@ const progressSchema = new mongoose.Schema({
   }],
 
   // 4. تاريخ النقاط اليومي
+  // ملحوظة: اتغيّر من { day: String } إلى { date: Date } عشان الأسابيع
+  // متتلخبطش ببعض (كانت النقط بتتراكم على نفس اسم اليوم كل أسبوع)
   dailyHistory: [
     {
-      day: { type: String, required: true },
+      date: { type: Date, required: true },
       points: { type: Number, default: 0 }
     }
   ],

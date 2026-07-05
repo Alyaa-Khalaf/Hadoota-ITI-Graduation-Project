@@ -8,6 +8,8 @@ import ChildAnalytics from "@/components/ParentDashboard/ChildAnalytics";
 import AIReportSection from "@/components/ParentDashboard/AIReportSection";
 import NotificationsPanel from "@/components/ParentDashboard/NotificationsPanel";
 import SettingsPanel from "@/components/ParentDashboard/SettingsPanel";
+import WeeklyScreenTimeSection from "@/components/ParentDashboard/Weeklyscreentimesection";
+import ProgressReportSection from "@/components/ParentDashboard/Progressreportsection";
 
 export type DashboardTab = "overview" | "reports" | "notifications";
 
@@ -47,7 +49,11 @@ export default function ParentDashboard() {
                 `اختر طفلاً أولاً من تبويب نظرة عامة`
               </div>
             ) : (
-              <AIReportSection childId={selectedChildId} />
+             <>
+  <AIReportSection childId={selectedChildId} />
+  <WeeklyScreenTimeSection childId={selectedChildId} />
+  <ProgressReportSection childId={selectedChildId} />
+</>
             )}
           </div>
         )}

@@ -12,9 +12,10 @@ const getMidnight = (d = new Date()) => {
   return midnight
 }
 
-// بداية الأسبوع الحالي — افتراض إن الأسبوع يبدأ يوم الأحد (0)
-// لو عايزها تبدأ السبت غيّر startDay لـ 6
-const getWeekStart = (d = new Date(), startDay = 0) => {
+// بداية الأسبوع الحالي — الأسبوع يبدأ يوم السبت (6)
+// مهم: لازم تفضل نفس القيمة بالظبط زي getWeekStart في progressController.js
+// عشان تقرير وقت الشاشة وتقرير النقط يحسبوا نفس حدود الأسبوع
+const getWeekStart = (d = new Date(), startDay = 6) => {
   const midnight = getMidnight(d)
   const day = midnight.getDay() // 0 = أحد ... 6 = سبت
   const diff = (day - startDay + 7) % 7
@@ -166,7 +167,7 @@ export const getTodayStatus = async (childId) => {
 }
 
 // ---------------------------------------------
-// جديد: تقرير أسبوعي
+// تقرير أسبوعي
 // ---------------------------------------------
 
 // Returns { weekStart, weekTotal, dailyLimit, days: [{ date, minutes }] }
