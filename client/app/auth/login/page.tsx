@@ -17,7 +17,7 @@ export default function LoginPage() {
         {/* العودة للرئيسية بروح مبهجة */}
         <div className="text-center mb-6">
           <Link href="/" className="inline-block text-2xl font-black text-primary tracking-tight hover:scale-105 transition-transform">
-            ✨ حدوتة
+           <img src="https://i.postimg.cc/vBh3rg27/6dcc91a697e148f9b10475c183968468.png" alt="Hadoota Logo" />
           </Link>
         </div>
 

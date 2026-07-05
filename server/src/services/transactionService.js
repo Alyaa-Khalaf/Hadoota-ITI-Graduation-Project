@@ -4,10 +4,15 @@ import Transaction from '../models/Transaction.js'
 import Plan from '../models/Plan.js'
 
 export const upsertTransaction = async (payload) => {
-  const filter = payload.paymobTransactionId
-    ? { paymobTransactionId: payload.paymobTransactionId }
-    : payload.reference
-      ? { reference: payload.reference }
+  // Match by `reference` first: a pending checkout row is created keyed by
+  // `reference` (which has a unique index) before Paymob assigns a
+  // `paymobTransactionId`. Matching on `reference` lets the success callback
+  // update that same row in place (pending → succeeded) instead of inserting a
+  // new one — which would collide on the unique `reference` index and throw.
+  const filter = payload.reference
+    ? { reference: payload.reference }
+    : payload.paymobTransactionId
+      ? { paymobTransactionId: payload.paymobTransactionId }
       : payload.stripeInvoiceId
         ? { stripeInvoiceId: payload.stripeInvoiceId }
         : payload.stripeSessionId
