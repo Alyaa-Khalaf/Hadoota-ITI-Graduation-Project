@@ -29,11 +29,60 @@ const BOOL_OPTIONS = [
 ];
 
 const FIELDS: FormField[] = [
+  // ── معلومات أساسية ──
   { name: "name", label: "اسم الخطة", required: true },
   { name: "slug", label: "المعرّف (slug) — حروف إنجليزية", required: true, placeholder: "pro" },
   { name: "price", label: "السعر (ج.م)", type: "number", required: true },
   { name: "durationDays", label: "مدة الاشتراك (أيام)", type: "number", required: true },
   { name: "audience", label: "الجمهور", type: "select", options: AUDIENCE_OPTIONS },
+
+  // ── Limits ──
+  {
+    name: "limits.storiesCount",
+    label: "عدد القصص المتاحة (-1 = بلا حد)",
+    type: "number",
+    placeholder: "-1",
+  },
+  {
+    name: "limits.childrenCount",
+    label: "عدد الأطفال المسموح بهم",
+    type: "number",
+    placeholder: "1",
+  },
+  {
+    name: "limits.hasPremiumContent",
+    label: "محتوى مميز (Premium)؟",
+    type: "select",
+    options: BOOL_OPTIONS,
+  },
+  {
+    name: "limits.hasDownloads",
+    label: "تحميل القصص Offline؟",
+    type: "select",
+    options: BOOL_OPTIONS,
+  },
+  {
+    name: "limits.hasDetailedReports",
+    label: "تقارير تفصيلية للطفل؟",
+    type: "select",
+    options: BOOL_OPTIONS,
+  },
+
+  // ── Trial ──
+  {
+    name: "isTrial",
+    label: "خطة تجريبية (Trial)؟",
+    type: "select",
+    options: BOOL_OPTIONS,
+  },
+  {
+    name: "trialDays",
+    label: "مدة التجربة (أيام)",
+    type: "number",
+    placeholder: "7",
+  },
+
+  // ── عرض ──
   { name: "features", label: "المميزات (كل ميزة في سطر)", type: "textarea", placeholder: "ميزة 1\nميزة 2" },
   { name: "badge", label: "البادج", placeholder: "الأكثر شعبية 🔥" },
   { name: "highlight", label: "خطة مميزة؟", type: "select", options: BOOL_OPTIONS },
@@ -65,7 +114,21 @@ export default function PlansSection() {
 
   const openCreate = () => {
     setEditing(null);
-    setValues({ audience: "all", highlight: "false", isActive: "true", sortOrder: "0" });
+    setValues({
+      audience: "all",
+      highlight: "false",
+      isActive: "true",
+      sortOrder: "0",
+      // Limits defaults
+      "limits.storiesCount": "5",
+      "limits.childrenCount": "1",
+      "limits.hasPremiumContent": "false",
+      "limits.hasDownloads": "false",
+      "limits.hasDetailedReports": "false",
+      // Trial defaults
+      isTrial: "false",
+      trialDays: "7",
+    });
     setFormError("");
     setFormOpen(true);
   };
@@ -84,6 +147,15 @@ export default function PlansSection() {
       isActive: p.isActive === false ? "false" : "true",
       sortOrder: String(p.sortOrder ?? 0),
       description: p.description ?? "",
+      // Limits
+      "limits.storiesCount": String(p.limits?.storiesCount ?? 5),
+      "limits.childrenCount": String(p.limits?.childrenCount ?? 1),
+      "limits.hasPremiumContent": p.limits?.hasPremiumContent ? "true" : "false",
+      "limits.hasDownloads": p.limits?.hasDownloads ? "true" : "false",
+      "limits.hasDetailedReports": p.limits?.hasDetailedReports ? "true" : "false",
+      // Trial
+      isTrial: p.isTrial ? "true" : "false",
+      trialDays: String(p.trialDays ?? 7),
     });
     setFormError("");
     setFormOpen(true);
@@ -108,6 +180,17 @@ export default function PlansSection() {
     isActive: values.isActive !== "false",
     sortOrder: Number(values.sortOrder || 0),
     description: values.description,
+    // Limits
+    limits: {
+      storiesCount: Number(values["limits.storiesCount"] ?? 5),
+      childrenCount: Number(values["limits.childrenCount"] ?? 1),
+      hasPremiumContent: values["limits.hasPremiumContent"] === "true",
+      hasDownloads: values["limits.hasDownloads"] === "true",
+      hasDetailedReports: values["limits.hasDetailedReports"] === "true",
+    },
+    // Trial
+    isTrial: values.isTrial === "true",
+    trialDays: Number(values.trialDays ?? 7),
   });
 
   const submit = async () => {

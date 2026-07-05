@@ -8,6 +8,7 @@ import {
 } from '../controllers/storyController.js'
 import authMiddleware from '../middleware/auth.js'
 import validate from '../middleware/validate.js'
+import { checkPlanLimit } from '../middleware/subscriptionMiddleware.js'
 import {
   generateStoryValidation,
   storyChoiceValidation,
@@ -15,17 +16,27 @@ import {
   getSingleStoryValidation,
   updateStoryValidation
 } from '../services/validation/storyValidation.js'
+import Story from '../models/Story.js'
+import Child from '../models/Child.js'
 
 const router = express.Router()
 
 // All routes require authentication
 router.use(authMiddleware)
 
-// Generate new story
+// Helper: جيب عدد القصص المكتملة للـ parent ده عبر كل أطفاله
+const getUserStoryCount = async (userId) => {
+  const children = await Child.find({ parentId: userId }).select('_id')
+  const childIds = children.map((c) => c._id)
+  return Story.countDocuments({ childId: { $in: childIds }, status: 'completed' })
+}
+
+// Generate new story — محمية بـ storiesCount limit
 router.post(
   '/generate',
   generateStoryValidation,
   validate,
+  checkPlanLimit('storiesCount', getUserStoryCount),
   generateStory
 )
 

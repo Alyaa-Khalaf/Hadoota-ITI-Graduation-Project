@@ -105,7 +105,10 @@ export default function FormModal({
                       onChange={(e) => onChange(field.name, e.target.value)}
                       required={field.required}
                       placeholder={field.placeholder}
-                      className="w-full p-2.5 rounded-2xl border border-[#E8DED4] text-sm bg-[#FFFBF0] focus:outline-none focus:ring-2 focus:ring-[#FF7043]/40"
+                      dir={field.type === "number" ? "ltr" : undefined}
+                      className={`w-full p-2.5 rounded-2xl border border-[#E8DED4] text-sm bg-[#FFFBF0] focus:outline-none focus:ring-2 focus:ring-[#FF7043]/40 ${
+                        field.type === "number" ? "text-right" : ""
+                      }`}
                     />
                   )}
                 </div>
@@ -128,4 +131,3 @@ export default function FormModal({
     </AnimatePresence>
   );
 }
-

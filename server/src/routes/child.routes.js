@@ -13,13 +13,18 @@ import {
 } from "../controllers/activeChildController.js";
 import authMiddleware from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
+import { checkPlanLimit } from "../middleware/subscriptionMiddleware.js";
+import Child from "../models/Child.js";
 
 const router = express.Router();
 
 // تطبيق الحماية على كل المسارات تلقائياً
 router.use(authMiddleware);
 
-// 1️⃣ إضافة طفل جديد مع التحقق من البيانات
+// Helper: جيب عدد الأطفال الحاليين للـ parent
+const getChildCount = (userId) => Child.countDocuments({ parentId: userId });
+
+// 1️⃣ إضافة طفل جديد مع التحقق من البيانات — محمية بـ childrenCount limit
 router.post(
   "/",
   [
@@ -42,13 +47,13 @@ router.post(
       .withMessage("مستوى التعلم غير صحيح"),
   ],
   validate,
+  checkPlanLimit("childrenCount", getChildCount),
   createChild,
 );
 
 // 2️⃣ جلب كل أطفال الأب الحالي
 router.get("/", getChildren);
 router.get("/active", getActiveChild);
-
 router.post("/active", setActiveChild);
 
 // 3️⃣ جلب بيانات طفل محدد بواسطة الـ ID
@@ -66,8 +71,7 @@ router.get(
   getChild,
 );
 
-
-// 4️⃣ تعديل بيانات طفل (تمت إضافتها وتأمينها بالـ Validation)
+// 4️⃣ تعديل بيانات طفل
 router.put(
   "/:id",
   [
@@ -86,7 +90,7 @@ router.put(
   updateChild,
 );
 
-// 5️⃣ حذف طفل نهائياً ()
+// 5️⃣ حذف طفل نهائياً
 router.delete(
   "/:id",
   [

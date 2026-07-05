@@ -112,6 +112,14 @@ export interface AdminTransaction {
   createdAt: string;
 }
 
+export interface AdminPlanLimits {
+  storiesCount: number;      // -1 = unlimited
+  childrenCount: number;
+  hasPremiumContent: boolean;
+  hasDownloads: boolean;
+  hasDetailedReports: boolean;
+}
+
 export interface AdminPlan {
   _id: string;
   slug: string;
@@ -126,6 +134,11 @@ export interface AdminPlan {
   audience: "parent" | "school" | "all";
   isActive: boolean;
   sortOrder?: number;
+  // Limits — بيتحكم في الـ features الحقيقية
+  limits?: AdminPlanLimits;
+  // Trial
+  isTrial?: boolean;
+  trialDays?: number;
   createdAt: string;
 }
 
@@ -232,4 +245,3 @@ export const createPlan = (body: Partial<AdminPlan>) =>
 export const updatePlan = (id: string, body: Partial<AdminPlan>) =>
   unwrap<AdminPlan>(apiClient.put(`/admin/plans/${id}`, body));
 export const deletePlan = (id: string) => apiClient.delete(`/admin/plans/${id}`);
-

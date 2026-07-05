@@ -1,11 +1,11 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Plan from "../models/Plan.js";
 import { sendEmail } from "../services/emailService.js";
 import { resetPasswordTemplate } from "../services/notifications/templates/resetPassword.js";
 import { welcomeTemplate } from "../services/notifications/templates/welcome.js";
 
 // Generate Access Token (15 Minutes)
-// Accepts either a user object or a user id string.
 const generateAccessToken = (userOrId) => {
   const id = typeof userOrId === 'string' || typeof userOrId === 'number'
     ? userOrId
@@ -17,7 +17,6 @@ const generateAccessToken = (userOrId) => {
 };
 
 // Generate Refresh Token (30 Days)
-// Accepts either a user object or a user id string.
 const generateRefreshToken = (userOrId) => {
   const id = typeof userOrId === 'string' || typeof userOrId === 'number'
     ? userOrId
@@ -27,6 +26,9 @@ const generateRefreshToken = (userOrId) => {
     expiresIn: '30d',
   });
 };
+
+// Helper: جيب الـ free plan من الـ DB
+const getFreePlan = () => Plan.findOne({ slug: 'free' }).select('_id slug');
 
 // @desc    Register
 // @route   POST /api/auth/register
@@ -46,13 +48,24 @@ export const register = async (req, res, next) => {
       });
     }
 
+    // جيب الـ free plan عشان نحط الـ planId صح
+    const freePlan = await getFreePlan();
+
     // Create user
-    const user = await User.create({ name, email, password });
+    const user = await User.create({
+      name,
+      email,
+      password,
+      subscription: {
+        plan: 'free',
+        planId: freePlan?._id ?? null,
+        status: 'active',
+      },
+    });
 
     // Generate tokens
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
-    // Save refresh token
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
@@ -60,17 +73,16 @@ export const register = async (req, res, next) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "none",
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      maxAge: 30 * 24 * 60 * 60 * 1000,
       path: "/",
     };
 
     res.cookie("accessToken", accessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 15 * 60 * 1000,
     });
     res.cookie("refreshToken", refreshToken, cookieOptions);
 
-    // Send welcome email
     await sendEmail(user.email, welcomeTemplate(user.name));
 
     res.status(201).json({
@@ -101,7 +113,6 @@ export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // Check if user exists + get password
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(401).json({
@@ -112,7 +123,6 @@ export const login = async (req, res, next) => {
       });
     }
 
-    // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({
@@ -123,11 +133,18 @@ export const login = async (req, res, next) => {
       });
     }
 
-    // Generate tokens
+    // لو الـ planId فاضي — صلحه تلقائياً عند الـ login
+    if (!user.subscription?.planId) {
+      const freePlan = await getFreePlan();
+      if (freePlan) {
+        user.subscription.planId = freePlan._id;
+        await user.save({ validateBeforeSave: false });
+      }
+    }
+
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    // Save refresh token
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
@@ -162,9 +179,7 @@ export const login = async (req, res, next) => {
       errors: [],
     });
   } catch (error) {
-    // next(error)
     console.error("LOGIN ERROR:", error);
-
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -178,7 +193,6 @@ export const login = async (req, res, next) => {
 // @access  Private
 export const logout = async (req, res, next) => {
   try {
-    // Clear refresh token
     await User.findByIdAndUpdate(req.user.id, { refreshToken: null });
 
     res.clearCookie("accessToken", { path: "/" });
@@ -214,10 +228,8 @@ export const refreshToken = async (req, res, next) => {
       });
     }
 
-    // Verify refresh token
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
-    // Check if user exists + token matches
     const user = await User.findById(decoded.id).select("+refreshToken");
     if (!user || user.refreshToken !== refreshToken) {
       return res.status(401).json({
@@ -228,11 +240,9 @@ export const refreshToken = async (req, res, next) => {
       });
     }
 
-    // Generate new tokens
     const newAccessToken = generateAccessToken(user);
     const newRefreshToken = generateRefreshToken(user);
 
-    // Save new refresh token
     user.refreshToken = newRefreshToken;
     await user.save({ validateBeforeSave: false });
 
@@ -281,16 +291,14 @@ export const forgotPassword = async (req, res, next) => {
       });
     }
 
-    // Generate reset token
     const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
 
     user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    user.resetPasswordExpires = Date.now() + 3600000;
     await user.save({ validateBeforeSave: false });
 
-    // TODO: Send email with reset token (SendGrid)
     await sendEmail(user.email, resetPasswordTemplate(resetToken));
 
     res.status(200).json({
@@ -303,6 +311,7 @@ export const forgotPassword = async (req, res, next) => {
     next(error);
   }
 };
+
 // @desc    Reset Password
 // @route   POST /api/auth/reset-password
 // @access  Public
@@ -319,10 +328,8 @@ export const resetPassword = async (req, res, next) => {
       });
     }
 
-    // Verify reset token
     const decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
 
-    // Find user
     const user = await User.findById(decoded.id).select(
       '+resetPasswordToken +resetPasswordExpires'
     );
@@ -377,11 +384,10 @@ export const googleAuth = async (req, res, next) => {
       });
     }
 
-    // Check if user exists
     let user = await User.findOne({ email });
 
     if (!user) {
-      // مستخدم جديد - اعمله حساب
+      const freePlan = await getFreePlan();
       user = await User.create({
         name,
         email,
@@ -389,23 +395,29 @@ export const googleAuth = async (req, res, next) => {
         googleId,
         password: null,
         role: "parent",
+        subscription: {
+          plan: 'free',
+          planId: freePlan?._id ?? null,
+          status: 'active',
+        },
       });
       await sendEmail(user.email, welcomeTemplate(user.name));
     } else if (!user.googleId) {
-      // مستخدم موجود بـ email عادي - اربط حسابه بجوجل
       user.googleId = googleId;
       if (!user.avatar || user.avatar === "default-avatar.png") {
         user.avatar = image;
       }
+      // صلح الـ planId لو فاضي
+      if (!user.subscription?.planId) {
+        const freePlan = await getFreePlan();
+        if (freePlan) user.subscription.planId = freePlan._id;
+      }
       await user.save({ validateBeforeSave: false });
     }
-    // لو googleId موجود بالفعل - يدخل عادي
 
-    // Generate tokens
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    // Save refresh token
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 

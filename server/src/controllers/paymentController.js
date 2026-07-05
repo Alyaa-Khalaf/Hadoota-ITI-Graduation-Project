@@ -11,9 +11,7 @@ export const createCheckout = async (req, res, next) => {
     const { plan } = req.body
     const userId = req.user?.id || req.user?._id
 
-    // الخطط دلوقتي بتتقرا من قاعدة البيانات (يديرها الأدمن)
     const selectedPlan = await Plan.findOne({ slug: plan, isActive: true })
-
     if (!selectedPlan) {
       return res.status(400).json({
         success: false,
@@ -28,7 +26,30 @@ export const createCheckout = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'المستخدم غير موجود', data: null, errors: [] })
     }
 
-    // Unique reference echoed back by Paymob as merchant_order_id.
+    // ── خطة مجانية أو trial (سعر = 0) — فعّل مباشرة بدون Paymob ──
+    if (selectedPlan.price === 0) {
+      const durationDays = selectedPlan.isTrial
+        ? (selectedPlan.trialDays || 14)
+        : selectedPlan.durationDays
+
+      const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000)
+
+      user.subscription.plan     = plan
+      user.subscription.planId   = selectedPlan._id
+      user.subscription.status   = 'active'
+      user.subscription.expiresAt = expiresAt
+      user.subscription.provider = 'paymob'
+      await user.save({ validateBeforeSave: false })
+
+      return res.status(200).json({
+        success: true,
+        message: 'تم تفعيل الخطة المجانية بنجاح',
+        data: { free: true, expiresAt },
+        errors: []
+      })
+    }
+
+    // ── خطة مدفوعة — اكمل مع Paymob ──
     const reference = `${userId}_${plan}_${Date.now()}`
 
     const { clientSecret } = await createIntention({
@@ -41,9 +62,8 @@ export const createCheckout = async (req, res, next) => {
       redirectionUrl: `${process.env.CLIENT_URL}/dashboard/subscription?payment=processing`
     })
 
-    // Persist a pending marker so we can correlate the callback.
-    user.subscription.provider = 'paymob'
-    user.subscription.lastReference = reference
+    user.subscription.provider      = 'paymob'
+    user.subscription.lastReference  = reference
     await user.save({ validateBeforeSave: false })
 
     await recordPendingCheckout({
@@ -88,8 +108,6 @@ export const getSubscriptionStatus = async (req, res, next) => {
 }
 
 // POST /api/payments/webhook
-// Paymob server-to-server "transaction processed" callback.
-// Body: { type, obj: {...transaction...} }, with hmac in the query string.
 export const handleCallback = async (req, res) => {
   try {
     const receivedHmac = req.query.hmac
@@ -97,14 +115,12 @@ export const handleCallback = async (req, res) => {
 
     if (!obj || !verifyHmac(obj, receivedHmac)) {
       console.error('Paymob callback: HMAC verification failed')
-      // 200 so Paymob does not retry an unverifiable payload, but do nothing.
       return res.status(200).json({ received: true, verified: false })
     }
 
     const extras = obj.payment_key_claims?.extra || obj.order?.extras || {}
     const reference = obj.order?.merchant_order_id
 
-    // Prefer extras; fall back to parsing our special_reference: `${userId}_${plan}_${ts}`
     let userId = extras.userId
     let plan = extras.plan
     if ((!userId || !plan) && typeof reference === 'string') {
@@ -121,12 +137,10 @@ export const handleCallback = async (req, res) => {
       return res.status(200).json({ received: true })
     }
 
-    // الخطة بتتقرا من قاعدة البيانات بالـ slug
     const selectedPlan = plan ? await Plan.findOne({ slug: plan }) : null
 
     if (!userId || !selectedPlan) {
       console.error(`Paymob callback: missing/invalid plan (userId=${userId}, plan=${plan})`)
-      // نسجّل المعاملة على أي حال عشان تظهر للأدمن
       await recordPaymobTransaction({ obj, userId, plan, status: 'succeeded' })
       return res.status(200).json({ received: true })
     }
@@ -139,12 +153,12 @@ export const handleCallback = async (req, res) => {
 
     const expiresAt = new Date(Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000)
 
-    user.subscription.plan = plan
-    user.subscription.planId = selectedPlan._id
-    user.subscription.status = 'active'
-    user.subscription.provider = 'paymob'
-    user.subscription.expiresAt = expiresAt
-    user.subscription.paymobOrderId = obj.order?.id ? String(obj.order.id) : user.subscription.paymobOrderId
+    user.subscription.plan              = plan
+    user.subscription.planId            = selectedPlan._id
+    user.subscription.status            = 'active'
+    user.subscription.provider          = 'paymob'
+    user.subscription.expiresAt         = expiresAt
+    user.subscription.paymobOrderId     = obj.order?.id ? String(obj.order.id) : user.subscription.paymobOrderId
     user.subscription.lastTransactionId = String(obj.id)
     if (reference) user.subscription.lastReference = reference
 
@@ -165,7 +179,6 @@ export const handleCallback = async (req, res) => {
     return res.status(200).json({ received: true, verified: true })
   } catch (error) {
     console.error('Paymob callback handler error:', error)
-    // Still 200 — webhook errors should not trigger infinite Paymob retries.
     return res.status(200).json({ received: true, error: true })
   }
 }

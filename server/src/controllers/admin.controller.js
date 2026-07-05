@@ -771,10 +771,24 @@ export const updatePlan = async (req, res) => {
     const allowed = [
       'name', 'description', 'price', 'currency', 'durationDays',
       'features', 'badge', 'highlight', 'audience', 'isActive', 'sortOrder',
+      'isTrial', 'trialDays',
     ];
     const update = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) update[key] = req.body[key];
+    }
+
+    // limits عبارة عن object متداخل — لازم نتعامل معاه بشكل منفصل
+    // عشان لو الفرونت بعت limits جزئي منمسحش باقي القيم اللي مبعتتش
+    if (req.body.limits !== undefined) {
+      const allowedLimits = [
+        'storiesCount', 'childrenCount', 'hasPremiumContent', 'hasDownloads', 'hasDetailedReports',
+      ];
+      for (const key of allowedLimits) {
+        if (req.body.limits[key] !== undefined) {
+          update[`limits.${key}`] = req.body.limits[key];
+        }
+      }
     }
 
     // السماح بتعديل الـ slug مع التحقق من عدم التكرار

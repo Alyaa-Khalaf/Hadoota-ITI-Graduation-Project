@@ -36,6 +36,55 @@ const planSchema = new mongoose.Schema(
       default: 30,
       min: [1, 'المدة لا تقل عن يوم واحد'],
     },
+
+    // =====================
+    // Limits — ده اللي بيتحكم في الـ features فعلياً
+    // =====================
+    limits: {
+      // عدد القصص المتاحة — (-1) يعني unlimited
+      storiesCount: {
+        type: Number,
+        default: 5,
+      },
+      // عدد الأطفال اللي يقدر الـ parent يضيفهم
+      childrenCount: {
+        type: Number,
+        default: 1,
+      },
+      // يقدر يشوف المحتوى المميز (premium stories)؟
+      hasPremiumContent: {
+        type: Boolean,
+        default: false,
+      },
+      // يقدر يحمّل قصص للتشغيل offline؟
+      hasDownloads: {
+        type: Boolean,
+        default: false,
+      },
+      // يقدر يشوف التقارير التفصيلية للطفل؟
+      hasDetailedReports: {
+        type: Boolean,
+        default: false,
+      },
+    },
+
+    // =====================
+    // Trial settings
+    // =====================
+    // هل الخطة دي تجربة مجانية؟
+    isTrial: {
+      type: Boolean,
+      default: false,
+    },
+    // مدة التجربة بالأيام (بتتفعّل لما المستخدم يبدأ الـ trial)
+    trialDays: {
+      type: Number,
+      default: 7,
+    },
+
+    // =====================
+    // Display fields (للعرض في الـ UI بس)
+    // =====================
     features: {
       type: [String],
       default: [],
