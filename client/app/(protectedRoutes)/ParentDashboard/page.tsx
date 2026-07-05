@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import { useChildren } from "@/hooks/useChildren";
 import ChildAnalytics from "@/components/ParentDashboard/ChildAnalytics";
 import AIReportSection from "@/components/ParentDashboard/AIReportSection";
-import NotificationsPanel from "@/components/ParentDashboard/NotificationsPanel";
 import SettingsPanel from "@/components/ParentDashboard/SettingsPanel";
 import WeeklyScreenTimeSection from "@/components/ParentDashboard/Weeklyscreentimesection";
 
@@ -59,7 +58,7 @@ export default function ParentDashboard() {
         {/* الإشعارات والإعدادات */}
         {activeTab === "notifications" && (
           <div className="space-y-6">
-            <NotificationsPanel />
+            
             <SettingsPanel />
           </div>
         )}
