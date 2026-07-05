@@ -38,26 +38,25 @@ export default function ParentHeader({ activeTab, setActiveTab }: Props) {
       dir="rtl"
       className="w-full bg-white/90 backdrop-blur-md border-b border-border-warm sticky top-0 z-50"
     >
-      <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-2.5 md:py-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3 md:gap-4">
 
         {/* LEFT - Back button + Brand */}
-        <div className="flex items-center gap-3">
-          
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
 
-          <div className="w-10 h-10 rounded-2xl bg-primary-wash flex items-center justify-center text-xl shrink-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-primary-wash flex items-center justify-center text-lg sm:text-xl shrink-0">
             🧸
           </div>
-          <div className="text-right">
-            <h1 className="text-base font-bold text-ink leading-tight">
+          <div className="text-right min-w-0">
+            <h1 className="text-sm sm:text-base font-bold text-ink leading-tight truncate">
               لوحة تحكم الوالدين
             </h1>
-            <p className="text-xs text-ink-muted">
+            <p className="hidden sm:block text-xs text-ink-muted truncate">
               إدارة الأطفال، التحليلات وتقارير الذكاء الاصطناعي
             </p>
           </div>
         </div>
 
-        {/* CENTER - NAVIGATION */}
+        {/* CENTER - NAVIGATION (Desktop only) */}
         <nav className="hidden md:flex items-center gap-1 bg-primary-wash p-1 rounded-2xl">
           {navItems.map(({ tab, label, icon: Icon }) => {
             const isActive = activeTab === tab;
@@ -81,11 +80,11 @@ export default function ParentHeader({ activeTab, setActiveTab }: Props) {
         </nav>
 
         {/* RIGHT - ACTIONS */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
 
           <button
             onClick={() => router.push("/ParentDashboard/ParentSubscribtion")}
-            className="p-2 rounded-xl text-ink-muted hover:bg-page-warm hover:text-ink transition-colors"
+            className="p-1.5 sm:p-2 rounded-xl text-ink-muted hover:bg-page-warm hover:text-ink transition-colors"
             aria-label="الإعدادات"
           >
             <CreditCard size={18} />
@@ -93,29 +92,29 @@ export default function ParentHeader({ activeTab, setActiveTab }: Props) {
 
           <button
             onClick={handleLogout}
-            className="px-3 py-1.5 text-xs font-bold bg-rose text-white rounded-xl
+            className="px-2 sm:px-3 py-1.5 text-xs font-bold bg-rose text-white rounded-xl
                        hover:bg-rose/90 active:scale-95 transition-all duration-200
                        flex items-center gap-1.5"
           >
             <LogOut size={14} />
-            تسجيل الخروج
+            <span className="hidden sm:inline">تسجيل الخروج</span>
           </button>
 
 
-<button
+          <button
             onClick={() => router.push("/childAdventure")}
-            className="flex items-center gap-1 px-2.5 py-2 rounded-xl text-ink-muted
+            className="flex items-center gap-1 px-2 sm:px-2.5 py-2 rounded-xl text-ink-muted
                        hover:bg-primary hover:text-white transition-colors shrink-0"
             aria-label="الرجوع لصفحة الطفل"
           >
             <span className="hidden sm:inline text-md font-bold">رجوع</span>
             <ArrowLeft size={15} />
-          </button> 
+          </button>
         </div>
       </div>
 
       {/* MOBILE NAV - يظهر تحت الهيدر في الشاشات الصغيرة بدل الاختفاء التام */}
-      <nav className="md:hidden flex items-center gap-1 bg-page-warm p-1 mx-4 mb-3 rounded-2xl overflow-x-auto">
+      <nav className="md:hidden flex flex-nowrap items-center gap-1 bg-page-warm p-1 mx-3 sm:mx-4 mb-3 rounded-2xl overflow-x-auto">
         {navItems.map(({ tab, label, icon: Icon }) => {
           const isActive = activeTab === tab;
           return (

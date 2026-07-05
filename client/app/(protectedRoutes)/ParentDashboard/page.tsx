@@ -9,7 +9,6 @@ import AIReportSection from "@/components/ParentDashboard/AIReportSection";
 import NotificationsPanel from "@/components/ParentDashboard/NotificationsPanel";
 import SettingsPanel from "@/components/ParentDashboard/SettingsPanel";
 import WeeklyScreenTimeSection from "@/components/ParentDashboard/Weeklyscreentimesection";
-import ProgressReportSection from "@/components/ParentDashboard/Progressreportsection";
 
 export type DashboardTab = "overview" | "reports" | "notifications";
 
@@ -52,7 +51,6 @@ export default function ParentDashboard() {
              <>
   <AIReportSection childId={selectedChildId} />
   <WeeklyScreenTimeSection childId={selectedChildId} />
-  <ProgressReportSection childId={selectedChildId} />
 </>
             )}
           </div>

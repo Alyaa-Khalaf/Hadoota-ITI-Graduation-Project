@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 type Notification = {
-  id: string;
+  _id: string;
   title: string;
-  body: string;
-  isRead: boolean;
+  message: string;
+  read: boolean;
   createdAt: string;
 };
 
@@ -16,7 +16,10 @@ type Filter = "all" | "unread" | "read";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function NotificationsPanel() {
-  const { accessToken, isLoading: authLoading } = useAuth();
+  const { accessToken, user, isLoading: authLoading } = useAuth();
+
+  // ⚠️ عدّلي هنا لو حقل الـ id عندك في user اسمه مختلف (زي user?.id بدل user?._id)
+  const userId = (user as any)?._id || (user as any)?.id;
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
@@ -24,7 +27,7 @@ export default function NotificationsPanel() {
 
   // 📥 fetch notifications
   const fetchNotifications = async () => {
-    if (!accessToken) {
+    if (!accessToken || !userId) {
       setLoading(false);
       setNotifications([]);
       return;
@@ -33,7 +36,7 @@ export default function NotificationsPanel() {
     try {
       setLoading(true);
 
-      const res = await fetch(`${API_BASE}/api/notifications`, {
+      const res = await fetch(`${API_BASE}/api/notifications/${userId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -42,7 +45,13 @@ export default function NotificationsPanel() {
       const data = await res.json();
 
       if (res.ok && data?.success) {
-        setNotifications(data.data || []);
+        // 🛡️ getUserNotifications ممكن ترجع array مباشرة أو object فيه
+        // notifications array جواه (شكل الـ pagination) — بنغطي الحالتين
+        const raw = data.data;
+        const list: Notification[] = Array.isArray(raw)
+          ? raw
+          : raw?.notifications ?? [];
+        setNotifications(list);
       } else {
         setNotifications([]);
       }
@@ -59,30 +68,13 @@ export default function NotificationsPanel() {
     if (!accessToken) return;
 
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+      prev.map((n) => (n._id === id ? { ...n, read: true } : n))
     );
 
     try {
+      // ⚠️ الباك اند بيستخدم PUT مش PATCH
       await fetch(`${API_BASE}/api/notifications/${id}/read`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // 🗑 delete notification
-  const deleteNotification = async (id: string) => {
-    if (!accessToken) return;
-
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-
-    try {
-      await fetch(`${API_BASE}/api/notifications/${id}`, {
-        method: "DELETE",
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -94,8 +86,8 @@ export default function NotificationsPanel() {
 
   // 📌 filter logic
   const filteredNotifications = notifications.filter((n) => {
-    if (filter === "unread") return !n.isRead;
-    if (filter === "read") return n.isRead;
+    if (filter === "unread") return !n.read;
+    if (filter === "read") return n.read;
     return true;
   });
 
@@ -103,7 +95,8 @@ export default function NotificationsPanel() {
   useEffect(() => {
     if (authLoading) return;
     fetchNotifications();
-  }, [accessToken, authLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accessToken, userId, authLoading]);
 
   if (loading) {
     return (
@@ -147,27 +140,17 @@ export default function NotificationsPanel() {
         ) : (
           filteredNotifications.map((n) => (
             <div
-              key={n.id}
-              className={`p-3 border rounded-lg flex justify-between items-start ${
-                !n.isRead ? "bg-orange-50" : "bg-white"
+              key={n._id}
+              onClick={() => markAsRead(n._id)}
+              className={`p-3 border rounded-lg cursor-pointer ${
+                !n.read ? "bg-orange-50" : "bg-white"
               }`}
             >
-              {/* Content */}
-              <div onClick={() => markAsRead(n.id)} className="cursor-pointer">
-                <h3 className="text-sm font-bold">{n.title}</h3>
-                <p className="text-xs text-gray-500">{n.body}</p>
-                <span className="text-[10px] text-gray-400">
-                  {new Date(n.createdAt).toLocaleString()}
-                </span>
-              </div>
-
-              {/* Actions */}
-              <button
-                onClick={() => deleteNotification(n.id)}
-                className="text-red-500 text-xs"
-              >
-                حذف
-              </button>
+              <h3 className="text-sm font-bold">{n.title}</h3>
+              <p className="text-xs text-gray-500">{n.message}</p>
+              <span className="text-[10px] text-gray-400">
+                {new Date(n.createdAt).toLocaleString()}
+              </span>
             </div>
           ))
         )}

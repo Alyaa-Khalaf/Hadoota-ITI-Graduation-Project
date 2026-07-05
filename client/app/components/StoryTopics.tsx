@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { useChild } from "@/hooks/useChild"
+import { useSelectedChild } from "@/context/childContext"
 
 const topics: StoryTopics[] = [
   { id: 1, title: "الفضاء", emoji: "🚀", color: "bg-sky", shadowColor: "0  15px 4px rgba(38, 127, 253, 0.8)" },
@@ -21,20 +22,20 @@ export default function StoryTitles() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const { child } = useChild() // ✅ الجديد
+  const { selectedChild, loadingSelectedChild } = useSelectedChild()
 
   const character = searchParams.get("character") || ""
 
   const [selectedTopic, setSelectedTopics] = useState<StoryTopics | null>(null)
 
 const handleStart = () => {
-  if (!child?._id || !selectedTopic || !character) return;
+  if (!selectedChild?._id || !selectedTopic || !character) return;
 
   router.push(
-    `/stories?childId=${child._id}&character=${encodeURIComponent(character)}&topic=${encodeURIComponent(selectedTopic.title)}`
+    `/stories?childId=${selectedChild._id}&character=${encodeURIComponent(character)}&topic=${encodeURIComponent(selectedTopic.title)}`
   );
 };
-console.log("child:", child)
+console.log("selectedChild:", selectedChild)
 console.log("selectedTopic:", selectedTopic)
 console.log("character:", character)
   return (
@@ -158,7 +159,7 @@ console.log("character:", character)
           >
              <button
             onClick={handleStart}
-         disabled={!selectedTopic || !character || !child?._id}
+         disabled={!selectedTopic || !character || !selectedChild?._id}
             className="bg-primary text-white px-8 py-4 rounded-2xl font-bold disabled:opacity-50"
           >
             ابدأ الحدوتة

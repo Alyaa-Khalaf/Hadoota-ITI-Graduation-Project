@@ -2,6 +2,7 @@ import Child from '../models/Child.js'
 import { io } from '../index.js'
 import { screenTimeAlertTemplate } from './notifications/templates/screenTimeAlert.js'
 import { sendEmail } from './emailService.js'
+import { sendNotification } from './notifications/notificationService.js'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 const HISTORY_KEEP_DAYS = 90 // نحتفظ بآخر 90 يوم بس عشان الـ document ميكبرش أوي
@@ -46,6 +47,7 @@ const resetIfNeeded = (child) => {
     child.screenTime.lastReset = new Date()
     child.screenTime.sessionStart = null
     child.screenTime.warningNotified = false
+    child.screenTime.blockedNotified = false
   }
 }
 
@@ -84,6 +86,17 @@ const notifyParentIfNeeded = async (child, parent) => {
     if (parent) {
       const template = screenTimeAlertTemplate(parent.name, child.name, today, limit)
       await sendEmail(parent.email, template)
+
+      // 💾 نسجّل الإشعار في الداتابيز عشان يظهر في NotificationsPanel بتاع الأهل
+      // channels: ['in_app'] بس عشان الإيميل خلاص بيتبعت فوق يدويًا، متبعتش مرتين
+      sendNotification({
+        userId: parent._id,
+        type: 'screen_time_limit',
+        title: 'تنبيه وقت الشاشة',
+        message: `${child.name} استخدم ${Math.round(percent)}% من وقت الشاشة المسموح النهارده`,
+        data: { childId: child._id.toString(), today, limit, percent: Math.round(percent) },
+        channels: ['in_app'],
+      }).catch(err => console.error('Failed to save screen time notification:', err))
     }
   }
 
@@ -96,6 +109,20 @@ const notifyParentIfNeeded = async (child, parent) => {
         limit,
         message: `${child.name} خلص وقت الشاشة النهارده`
       })
+    }
+
+    // 💾 إشعار دائم مرة واحدة بس في اليوم لما الوقت يخلص خالص
+    if (parent && !child.screenTime.blockedNotified) {
+      child.screenTime.blockedNotified = true
+
+      sendNotification({
+        userId: parent._id,
+        type: 'screen_time_limit',
+        title: 'خلص وقت الشاشة',
+        message: `${child.name} خلص وقت الشاشة المسموح بيه النهارده (${limit} دقيقة)`,
+        data: { childId: child._id.toString(), today, limit },
+        channels: ['in_app'],
+      }).catch(err => console.error('Failed to save screen time blocked notification:', err))
     }
   }
 }
