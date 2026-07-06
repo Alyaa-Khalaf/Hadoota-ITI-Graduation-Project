@@ -82,15 +82,7 @@ export default function ParentGateForm() {
     >
       {/* شعار/صورة خاصة بواجهة الـ Parent Dashboard */}
       <div className="flex flex-col items-center mb-2">
-        <div className="relative w-16 h-16 mb-3">
-          <Image
-            src="/images/parent-dashboard-logo.svg"
-            alt="Parent Dashboard"
-            fill
-            className="object-contain"
-            priority
-          />
-        </div>
+        
         <h1 className="text-lg font-black text-center">
           تأكيد هوية ولي الأمر
         </h1>
