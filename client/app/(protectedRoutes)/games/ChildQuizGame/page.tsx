@@ -5,7 +5,7 @@ import ChildQuiz from '@/components/ChildGames/Games/ChildQuiz'
 import HomeButton from '@/components/ui/HomeButton'
 import PreviousButton from '@/components/ui/PreviousButton'
 import { useSelectedChild } from '@/context/childContext'
-import { useScreenTimeSession } from '@/hooks/Usescreentimesession'
+import { useScreenTimeSession } from '@/hooks/useScreenTimeSession.ts'
 function ChildQuizGame() {
   const { selectedChild } = useSelectedChild()
 

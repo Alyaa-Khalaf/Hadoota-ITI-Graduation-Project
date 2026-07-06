@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import type { MappedStoryScene } from "@/services/mediaService";
+import { useAuth } from "@/context/AuthContext";
+import { endScreenTime } from "@/lib/api/screenTime";
 
 const splitWords = (text: string) => text.trim().split(/\s+/).filter(Boolean);
 
@@ -41,10 +43,25 @@ const playAudioElement = (audio: HTMLAudioElement): Promise<void> => {
 export default function StoryPlayer({
   scenes,
   title,
+  childId,
 }: {
   scenes: MappedStoryScene[];
   title?: string;
+  childId?: string;
 }) {
+  const { accessToken } = useAuth();
+  const sessionEndedRef = useRef(false);
+
+  const endSession = useCallback(() => {
+    if (sessionEndedRef.current) return;
+    if (!childId || !accessToken) return;
+
+    sessionEndedRef.current = true;
+    endScreenTime(childId, accessToken).catch((err) =>
+      console.error("Failed to end screen time:", err)
+    );
+  }, [childId, accessToken]);
+
   const [current, setCurrent] = useState(0);
   const [visibleWords, setVisibleWords] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -246,6 +263,20 @@ export default function StoryPlayer({
       audio.removeEventListener("ended", handleEnded);
     };
   }, [scene?.audio, syncWordsFromAudio, words.length, current]);
+
+  // تسجيل نهاية جلسة الاستخدام لما الحدوتة تخلص طبيعي
+  useEffect(() => {
+    if (isFinished) {
+      endSession();
+    }
+  }, [isFinished, endSession]);
+
+  // تسجيل نهاية الجلسة لو الطفل قفل/غادر الصفحة قبل ما يخلص الحدوتة
+  useEffect(() => {
+    return () => {
+      endSession();
+    };
+  }, [endSession]);
 
   const audioElement = scene?.audio ? (
     <audio

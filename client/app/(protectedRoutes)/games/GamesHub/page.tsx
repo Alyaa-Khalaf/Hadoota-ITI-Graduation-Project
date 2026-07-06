@@ -3,7 +3,7 @@
 import GamesHub from '@/components/ChildGames/GamesHub'
 import ChildLayout from '@/components/layout/ChildLayout'
 import { useSelectedChild } from '@/context/childContext'
-import { useScreenTimeSession } from '@/hooks/Usescreentimesession'
+import { useScreenTimeSession } from '@/hooks/useScreenTimeSession.ts'
 import React from 'react'
 
 function GameHub() {

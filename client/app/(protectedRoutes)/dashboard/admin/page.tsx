@@ -26,7 +26,7 @@ const SECTIONS: AdminSection[] = [
   { key: "users", label: "المستخدمين", icon: Users },
   { key: "children", label: "الأطفال", icon: Baby },
   { key: "stories", label: "الحواديت", icon: BookOpen },
-  { key: "schools", label: "المدارس", icon: School },
+  // { key: "schools", label: "المدارس", icon: School },
   { key: "quizzes", label: "الاختبارات", icon: FileQuestion },
   { key: "transactions", label: "المعاملات", icon: CreditCard },
   { key: "plans", label: "الخطط", icon: Tag },

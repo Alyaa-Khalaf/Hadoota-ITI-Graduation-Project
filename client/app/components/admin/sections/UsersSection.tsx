@@ -14,13 +14,13 @@ import type { AdminUser } from "@/services/adminService";
 const ROLE_LABELS: Record<string, string> = {
   parent: "ولي أمر",
   admin: "مدير",
-  teacher: "معلم",
+  // teacher: "معلم",
   student: "طالب",
 };
 
 const ROLE_OPTIONS = [
   { value: "parent", label: "ولي أمر" },
-  { value: "teacher", label: "معلم" },
+  // { value: "teacher", label: "معلم" },
   { value: "student", label: "طالب" },
   { value: "admin", label: "مدير" },
 ];

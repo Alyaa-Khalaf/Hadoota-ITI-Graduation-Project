@@ -47,7 +47,7 @@ export default function OverviewSection() {
         <StatCard icon={Users} label="المستخدمين" value={c.totalUsers} delay={0} />
         <StatCard icon={Baby} label="الأطفال" value={c.totalChildren} accent="text-[#4D96FF]" delay={0.05} />
         <StatCard icon={BookOpen} label="الحواديت" value={c.totalStories} accent="text-[#C77DFF]" delay={0.1} />
-        <StatCard icon={School} label="المدارس" value={c.totalSchools} accent="text-[#6BCB77]" delay={0.15} />
+        {/* <StatCard icon={School} label="المدارس" value={c.totalSchools} accent="text-[#6BCB77]" delay={0.15} /> */}
         <StatCard icon={FileQuestion} label="الاختبارات" value={c.totalQuizzes} accent="text-[#4D96FF]" delay={0.2} />
         <StatCard icon={BrainCircuit} label="بنك المعرفة" value={c.totalKnowledge} accent="text-[#C77DFF]" delay={0.25} />
         <StatCard icon={Flag} label="حواديت مبلّغ عنها" value={c.flaggedStories} accent="text-red-500" delay={0.3} />
@@ -78,7 +78,7 @@ export default function OverviewSection() {
               <BarChart data={[
                 { name: "أهالي", value: c.totalParents },
                 { name: "طلاب", value: c.totalStudents },
-                { name: "معلمين", value: c.totalTeachers },
+                // { name: "معلمين", value: c.totalTeachers },
               ]}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />

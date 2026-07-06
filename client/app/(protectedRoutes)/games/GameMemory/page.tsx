@@ -3,7 +3,7 @@ import MemoryGame from '@/components/ChildGames/Games/MemoryGame'
 import React from 'react'
 import HomeButton from '@/components/ui/HomeButton'
 import PreviousButton from '@/components/ui/PreviousButton'
-import { useScreenTimeSession } from '@/hooks/Usescreentimesession'
+import { useScreenTimeSession } from '@/hooks/useScreenTimeSession.ts'
 import { useSelectedChild } from '@/context/childContext'
 
 function MemoryGames() {

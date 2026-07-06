@@ -13,7 +13,7 @@ import type {
 const ROLE_LABELS: Record<string, string> = {
   parent: "ولي أمر",
   admin: "مدير",
-  teacher: "معلم",
+  // teacher: "معلم",
   student: "طالب",
 };
 
@@ -126,7 +126,7 @@ export function knowledgeDetailFields(k: AdminKnowledge): DetailField[] {
 
 const AUDIENCE_LABELS: Record<string, string> = {
   parent: "أولياء الأمور",
-  school: "المدارس",
+  // school: "المدارس",
   all: "الكل",
 };
 
