@@ -6,9 +6,12 @@ import PreviousButton from "@/components/ui/PreviousButton";
 import StoryPlayer from "@/components/story-player/StoryPlayer";
 import { useStorySocket } from "@/hooks/useStorySocket";
 import { useStoryInput } from "@/hooks/useStoryInput";
+import { useAuth } from "@/context/AuthContext";
+import { startScreenTime } from "@/lib/api/screenTime";
 
 export default function StoriesPage() {
   const { childId, character, topic } = useStoryInput();
+  const { accessToken } = useAuth();
 
   console.log({
     childId,
@@ -16,13 +19,8 @@ export default function StoriesPage() {
     topic,
   });
 
-  const {
-    generateStory,
-    isGenerating,
-    scenes,
-    storyTitle,
-    error,
-  } = useStorySocket();
+  const { generateStory, isGenerating, scenes, storyTitle, error } =
+    useStorySocket();
 
   const [started, setStarted] = useState(false);
 
@@ -31,35 +29,28 @@ export default function StoriesPage() {
 
     setStarted(true);
 
-    await generateStory(
-      childId,
-      character,
-      topic
-    );
+    if (accessToken) {
+      startScreenTime(childId, accessToken).catch((err) =>
+        console.error("Failed to start screen time:", err),
+      );
+    }
+
+    await generateStory(childId, character, topic);
   };
 
-  const canStart = Boolean(
-    childId &&
-    character &&
-    topic
-  );
+  const canStart = Boolean(childId && character && topic);
 
   if (!started) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-sky-100 via-amber-50 to-pink-100 flex items-center justify-center p-6">
         <div className="w-full max-w-xl rounded-[32px] bg-white shadow-2xl border-4 border-yellow-300 p-8 text-center">
-
           <div className="flex justify-end mb-6">
             <HomeButton href="/childAdventure" />
           </div>
 
-          <div className="text-7xl mb-4">
-            📖✨
-          </div>
+          <div className="text-7xl mb-4">📖✨</div>
 
-          <h1 className="text-4xl font-black text-primary">
-            مستعد للمغامرة؟
-          </h1>
+          <h1 className="text-4xl font-black text-primary">مستعد للمغامرة؟</h1>
 
           <p className="mt-3 text-lg text-ink-muted">
             اضغط على الزر وسيبدأ الراوي في حكاية جديدة مليئة بالمفاجآت.
@@ -103,11 +94,7 @@ export default function StoriesPage() {
             🚀 ابدأ الحدوتة
           </button>
 
-          {error && (
-            <p className="mt-5 text-red-500 font-bold">
-              {error}
-            </p>
-          )}
+          {error && <p className="mt-5 text-red-500 font-bold">{error}</p>}
         </div>
       </div>
     );
@@ -117,14 +104,11 @@ export default function StoriesPage() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-sky-100 via-amber-50 to-pink-100 flex items-center justify-center p-6">
         <div className="rounded-[32px] bg-white border-4 border-yellow-300 shadow-2xl p-10 text-center w-full max-w-lg">
-
           <div className="flex justify-end mb-6">
             <HomeButton href="/childAdventure" />
           </div>
 
-          <div className="text-7xl animate-bounce mb-6">
-            📚
-          </div>
+          <div className="text-7xl animate-bounce mb-6">📚</div>
 
           <h2 className="text-3xl font-black text-primary">
             جاري تجهيز الحدوتة...
@@ -138,15 +122,9 @@ export default function StoriesPage() {
             <div className="h-full w-full bg-gradient-to-r from-primary to-rose animate-pulse" />
           </div>
 
-          <div className="mt-6 text-5xl">
-            🦊 🐻 🐰
-          </div>
+          <div className="mt-6 text-5xl">🦊 🐻 🐰</div>
 
-          {error && (
-            <p className="mt-5 text-red-500 font-bold">
-              {error}
-            </p>
-          )}
+          {error && <p className="mt-5 text-red-500 font-bold">{error}</p>}
         </div>
       </div>
     );
@@ -156,10 +134,7 @@ export default function StoriesPage() {
     <>
       <HomeButton href="/childAdventure" />
       <PreviousButton />
-      <StoryPlayer
-        scenes={scenes}
-        title={storyTitle}
-      />
+      <StoryPlayer scenes={scenes} title={storyTitle} childId={childId} />
     </>
   );
 }
