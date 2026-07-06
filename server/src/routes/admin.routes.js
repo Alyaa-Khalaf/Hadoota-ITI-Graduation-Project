@@ -6,6 +6,7 @@ import {
   // stats
   getAdminStats,
   getRecentActivity,
+  getScreenTimeOverview,
   // users
   listUsers,
   getUser,
@@ -62,6 +63,7 @@ router.use(authMiddleware, isAdmin);
 // STATS
 router.get('/stats', getAdminStats);
 router.get('/recent-activity', getRecentActivity);
+router.get('/screentime', getScreenTimeOverview);
 
 // USERS
 router.route('/users').get(listUsers).post(createUser);

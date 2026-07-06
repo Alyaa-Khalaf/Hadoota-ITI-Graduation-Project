@@ -286,3 +286,81 @@ export const getDashboardAnalytics = async (parentId) => {
   await setCachedJson(cacheKey, result);
   return result;
 };
+// ============================================================
+// 🛡️ ADMIN — Screen Time Overview (كل الأطفال)
+// ============================================================
+export const getAdminScreenTimeAnalytics = async ({ days = 7 } = {}) => {
+  const cacheKey = buildAnalyticsCacheKey("admin-screentime", "all", `days:${days}`);
+  const cached = await getCachedJson(cacheKey);
+  if (cached) return cached;
+
+  const { start } = getDateRange(Number(days) || 7);
+
+  // إجمالي الدقايق كل يوم لكل الأطفال مجمّعين
+  const dailyTotals = await StorySession.aggregate([
+    { $match: { readAt: { $gte: start } } },
+    {
+      $group: {
+        _id: { $dateToString: { format: "%Y-%m-%d", date: "$readAt" } },
+        totalSeconds: { $sum: "$durationSeconds" },
+        sessionsCount: { $sum: 1 },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+
+  const daily = dailyTotals.map((d) => ({
+    date: d._id,
+    minutes: Math.round(d.totalSeconds / 60),
+    sessionsCount: d.sessionsCount,
+  }));
+
+  // أكتر 10 أطفال استخدام في المدة دي
+  const topChildren = await StorySession.aggregate([
+    { $match: { readAt: { $gte: start } } },
+    {
+      $group: {
+        _id: "$childId",
+        totalSeconds: { $sum: "$durationSeconds" },
+        sessionsCount: { $sum: 1 },
+      },
+    },
+    { $sort: { totalSeconds: -1 } },
+    { $limit: 10 },
+    {
+      $lookup: {
+        from: "children",
+        localField: "_id",
+        foreignField: "_id",
+        as: "child",
+      },
+    },
+    { $unwind: "$child" },
+    {
+      $project: {
+        childId: "$_id",
+        name: "$child.name",
+        avatar: "$child.avatar",
+        totalMinutes: { $round: [{ $divide: ["$totalSeconds", 60] }, 0] },
+        sessionsCount: 1,
+        limit: "$child.settings.screenTimeLimit",
+      },
+    },
+  ]);
+
+  const totalMinutes = daily.reduce((sum, d) => sum + d.minutes, 0);
+  const activeChildrenCount = await StorySession.distinct("childId", {
+    readAt: { $gte: start },
+  });
+
+  const result = {
+    days,
+    totalMinutes,
+    activeChildrenCount: activeChildrenCount.length,
+    daily,
+    topChildren,
+  };
+
+  await setCachedJson(cacheKey, result);
+  return result;
+};

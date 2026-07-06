@@ -11,6 +11,7 @@ import Plan from '../models/Plan.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
 import { syncTransactionsFromUsers } from '../services/transactionService.js';
 import { getUsageSummaryByUser, getUsageByUserId } from '../services/tokenUsageService.js';
+import { getAdminScreenTimeAnalytics } from '../services/analyticsService.js';
 
 // ============================================================
 // Helpers
@@ -912,5 +913,21 @@ export const seedKnowledge = async (req, res) => {
     return sendSuccess(res, 200, 'تم زرع تصنيفات بنك المعرفة بنجاح', defaultCategories);
   } catch (error) {
     return sendError(res, 500, 'فشل زرع التصنيفات', [error.message]);
+  }
+};
+// ============================================================
+// ⏱️ SCREEN TIME OVERVIEW (كل الأطفال)
+// ============================================================
+
+/**
+ * GET /api/admin/screentime?days=7
+ */
+export const getScreenTimeOverview = async (req, res) => {
+  try {
+    const { days = 7 } = req.query;
+    const data = await getAdminScreenTimeAnalytics({ days: Number(days) || 7 });
+    return sendSuccess(res, 200, 'تم جلب نظرة عامة على وقت الشاشة', data);
+  } catch (error) {
+    return sendError(res, 500, 'فشل جلب وقت الشاشة', [error.message]);
   }
 };
