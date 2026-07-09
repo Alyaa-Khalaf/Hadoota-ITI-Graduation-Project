@@ -10,17 +10,16 @@ export default function AdventureHeader({
   subHeader,
 }: AdventureHeaderProps) {
   return (
-    <div className="flex justify-center py-8 mt-8">
-      <div
-        className="inline-flex flex-col items-center text-center font-bold  px-8 py-5 border-r-4 border-b-4 border-sunny rounded-br-3xl"
-      >
-        <h2 className=" text-3xl text-header">
+    <div className="py-4 sm:py-6 flex justify-center" dir="rtl">
+      <div className="text-center">
+        <h2 className="text-3xl sm:text-4xl font-bold text-primary mb-2">
           {header}
         </h2>
-
-        <p className="mt-2 text-sm  text-ink-mute">
-          {subHeader}
-        </p>
+        {subHeader && (
+          <p className="text-sm sm:text-base text-muted-foreground font-medium">
+            {subHeader}
+          </p>
+        )}
       </div>
     </div>
   );

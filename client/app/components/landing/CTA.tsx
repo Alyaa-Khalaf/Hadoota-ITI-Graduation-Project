@@ -1,140 +1,102 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
-import Badge from "../ui/Badge";
-import Button from "../ui/Button";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, ArrowRight, UserCircle } from "lucide-react";
+import CTAImage from '../../../public/assets/CTA.jpg';
+import Image from "next/image";
 
-const featuresList = [
-  "تقارير أسبوعية مفصلة عن مستوى طفلك",
-  "تحكم كامل في وقت الشاشة والقصص",
-  "تخصيص واختيار القيم اللغوية والأخلاقية",
-];
 
-export default function CTA() {
+export default function CTASection() {
   return (
-    <section
-      id="cta"
-      className="
-        py-24
-        bg-gradient-to-b
-        from-page-warm
-        via-page-dreamy/30
-        to-white
-      "
-      dir="rtl"
-    >
-      <div className="container mx-auto max-w-7xl px-6 grid gap-12 lg:grid-cols-[1fr_1.1fr] items-center">
+    <section className="relative overflow-hidden py-24" dir="rtl">
+      {/* خلفية متدرجة (Gradient Background) */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/80 to-magic" />
 
-        {/* Mockup */}
-        <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="
-            relative
-            rounded-3xl
-            border
-            border-primary/10
-            bg-white
-            p-8
-            shadow-story
-            min-h-[350px]
-            flex
-            flex-col
-            justify-between
-          "
-        >
-          {/* Header Card */}
-          <div className="rounded-2xl bg-primary-wash p-6 border border-primary/10">
-            <div className="h-4 w-28 rounded bg-primary/20 mb-3" />
-            <div className="h-3 w-full rounded bg-primary/10 mb-2" />
-            <div className="h-3 w-3/4 rounded bg-primary/10" />
-          </div>
+      {/* عناصر توهج ديكوراتيف (Decorative blurs) */}
+      <div className="absolute top-10 right-10 w-72 h-72 rounded-full bg-white/10 blur-3xl" />
+      <div className="absolute bottom-10 left-10 w-64 h-64 rounded-full bg-sunny/20 blur-3xl" />
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-4 mt-6">
-            <div className="rounded-2xl bg-sky/5 p-5 border border-sky/10">
-              <div className="h-3 w-16 rounded bg-sky/20 mb-3" />
-              <div className="h-5 w-24 rounded bg-sky/30" />
-            </div>
-
-            <div className="rounded-2xl bg-blossom/5 p-5 border border-blossom/10">
-              <div className="h-3 w-16 rounded bg-blossom/20 mb-3" />
-              <div className="h-5 w-24 rounded bg-blossom/30" />
-            </div>
-          </div>
-
-          {/* Progress */}
-          <div className="mt-6 rounded-2xl bg-page-dreamy/50 p-5 border border-border-warm">
-            <div className="h-3 w-24 rounded bg-primary/20 mb-4" />
-            <div className="h-3 w-full rounded-full bg-primary/10 overflow-hidden">
-              <div className="h-full w-[75%] rounded-full bg-primary" />
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Content */}
-        <div className="space-y-8 font-sans">
+      <div className="container relative z-10 mx-auto px-6">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           
-          <div>
-            <Badge variant="sky">
-              👪 لوحة الأهل
+          {/* جزء النصوص */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
+            <Badge className="bg-white/20 text-white mb-6 border-white/20">
+              <Sparkles className="w-3 h-3 ml-1" /> رحلة آمنة وممتعة
             </Badge>
-          </div>
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-6 leading-tight">
+              هل أنت مستعد لمنح طفلك <br />
+              <span className="text-sunny">أفضل تجربة تعليمية؟</span>
+            </h2>
+            <p className="text-white/80 text-lg mb-8 leading-relaxed">
+              انضم إلى آلاف الأهالي الذين وثقوا في حدوتة. احصل على رؤية كاملة لتطور طفلك، وأدر أوقات تعلمه بكل سهولة.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+  {/* الزر الأول */}
+  <Button 
+    size="lg" 
+    className="rounded-2xl bg-white text-primary hover:bg-white/90 text-base font-bold shadow-xl px-8 h-14" 
+    asChild
+  >
+    <Link href="/auth/register" className="flex items-center gap-2">
+      ابدأ رحلة طفلك الآن 
+      {/* استخدمنا ArrowLeft عشان يكون متوافق مع اتجاه الكتابة بالعربي */}
+      <ArrowRight className="w-5 h-5" /> 
+    </Link>
+  </Button>
 
-          <h2 className="text-4xl font-black leading-tight tracking-tight text-header md:text-5xl">
-            راحة بال تامة للآباء
-          </h2>
+  {/* الزر الثاني */}
+  <Button 
+    size="lg" 
+    variant="default" 
+    className="rounded-2xl border-white/30 text-white hover:bg-white/10 text-base font-bold px-8 h-14" 
+    asChild
+  >
+    <Link href="/about" className="flex items-center gap-2">
+      <UserCircle className="w-5 h-5" /> اكتشف لوحة الآباء
+    </Link>
+  </Button>
+</div>
+          </motion.div>
 
-          <p className="max-w-xl text-base font-bold leading-relaxed text-ink-muted md:text-lg">
-            لوحة متكاملة تمنحك رؤية واضحة لتطور طفلك اللغوي،
-            وتتيح لك إدارة أوقات الاستخدام واختيار التوجهات
-            التعليمية المناسبة له بسهولة.
-          </p>
+          {/* جزء الصورة والعناصر العائمة */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="flex justify-center relative"
+          >
+            <div className="w-80 h-80 rounded-full overflow-hidden border-4 border-white/20 shadow-2xl relative">
+              {/* هنا ضعي صورتك الجديدة التي سنتفق عليها */}
+              <Image
+              src={CTAImage} alt="طفل يقرأ" className="w-full h-full object-cover" />
+            </div>
 
-          <div className="space-y-4">
-            {featuresList.map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-3 text-base font-bold text-ink"
-              >
-                <span
-                  className="
-                    flex
-                    h-7
-                    w-7
-                    items-center
-                    justify-center
-                    rounded-full
-                    bg-primary/10
-                    text-primary
-                    text-xs
-                    font-black
-                    shrink-0
-                  "
-                >
-                  ✓
-                </span>
-
-                <p>{item}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="pt-4">
-            <Link href="/auth/register">
-              <Button
-                variant="primary"
-                className="text-base !py-4 !px-10"
-              >
-                استكشف لوحة الآباء
-              </Button>
-            </Link>
-          </div>
+            {/* عناصر عائمة (بدل PawPrint استخدمنا نجوم) */}
+            <motion.div
+              animate={{ y: [-10, 10, -10] }}
+              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+              className="absolute top-4 -left-4"
+            >
+              <Sparkles className="w-10 h-10 text-sunny" />
+            </motion.div>
+            <motion.div
+              animate={{ y: [10, -10, 10] }}
+              transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+              className="absolute bottom-8 -right-4"
+            >
+              <Sparkles className="w-12 h-12 text-sky" />
+            </motion.div>
+          </motion.div>
         </div>
-
       </div>
     </section>
   );

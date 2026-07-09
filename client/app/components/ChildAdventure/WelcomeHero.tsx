@@ -2,72 +2,36 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import welcomeImage from "../../../public/assets/storyBg.jpg";
 
-type WelcomeHeroProps = {
-  name: string;
-};
-
-export default function WelcomeHero({ name }: WelcomeHeroProps) {
+export default function WelcomeHero({ name }: { name: string }) {
   return (
-    <div
-  dir="rtl"
-  className="child-welcome
-    relative overflow-hidden text-center
-    rounded-b-[28px]
-    border-x-[3px] border-b-[3px] border-primary
-    p-20
-    mt-20
-  "
->
- 
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-0">
+        <Image src={welcomeImage} alt="Hero Background" fill className="object-cover" priority />
+        <div className="absolute inset-0 bg-slate-950/60" />
+      </div>
 
-  {/* Heading */}
-  <h1
-    className="
-      mt-0 mb-3
-      text-4xl md:text-5xl
-      leading-[1.3]
-      text-cat-animals
-      font-bold
-    "
-  >
-    مرحبًا يا {name}
-
-    <motion.span
-      animate={{ rotate: [0, 25, -10, 20, -5, 0] }}
-      transition={{ duration: 1.4, repeat: Infinity, repeatDelay: 1 }}
-      className="inline-block origin-[70%_70%]"
-    >
-      👋
-    </motion.span>
-  </h1>
-
-  <p className="text-base font-bold mb-7 text-cat-adventure">
-    جاهز لمغامرة جديدة مليانة سحر ومتعة؟
-  </p>
-
-  {/* CTA Button */}
-  <motion.div
-    animate={{ y: [0, -5, 0] }}
-    transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-    whileHover={{ y: -3 }}
-    whileTap={{ y: 3 }}
-    className="inline-block"
-  >
-    <Link href="/characters"
-      className="
-        inline-flex items-center gap-2
-        text-white text-xl bg-primary
-        px-9 py-3
-        rounded-full
-        cursor-pointer mt-8
-      "
-    >
-      🚀 ابدأ المغامرة
-    </Link>
-  </motion.div>
-
-  
-</div>
+      <div className="relative z-10 text-center px-6 max-w-3xl">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight">
+            مرحباً يا {name} <br />
+            <span className="text-teal-300">جاهز لمغامرة جديدة؟</span>
+          </h1>
+          <p className="text-lg md:text-xl text-white/80 mb-10">مغامرة مليانة سحر ومتعة في انتظارك الآن</p>
+          
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Button size="lg" className="bg-coral-500 hover:bg-coral-600 h-14 px-8 rounded-xl font-bold shadow-xl shadow-coral-500/20" asChild>
+              <Link href="/characters">ابدأ المغامرة الآن 🚀</Link>
+            </Button>
+            <Button size="lg" className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 h-14 px-8 rounded-xl font-bold" asChild>
+              <Link href="/games/GamesHub">الألعاب 🎮</Link>
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    </section>
   );
 }

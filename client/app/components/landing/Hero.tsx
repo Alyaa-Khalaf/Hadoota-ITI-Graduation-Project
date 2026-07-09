@@ -1,308 +1,91 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import Link from "next/link";
-import Badge from "../ui/Badge";
-import Button from "../ui/Button";
-import { useAuth } from "@/context/AuthContext";
-
-/* الكتاب السحري: عنصر التوقيع - يفتح ويطلق نجوم القصة عند الـ hover */
-function MagicStorybook() {
-  const [isOpen, setIsOpen] = useState(false);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const rotateX = useSpring(useTransform(mouseY, [-60, 60], [8, -8]), {
-    stiffness: 150,
-    damping: 20,
-  });
-  const rotateY = useSpring(useTransform(mouseX, [-60, 60], [-8, 8]), {
-    stiffness: 150,
-    damping: 20,
-  });
-  const ref = useRef(null);
-
-  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = (ref.current as HTMLDivElement | null)?.getBoundingClientRect();
-    if (!rect) return;
-    mouseX.set(e.clientX - rect.left - rect.width / 2);
-    mouseY.set(e.clientY - rect.top - rect.height / 2);
-  }
-
-  function handleMouseLeave() {
-    mouseX.set(0);
-    mouseY.set(0);
-    setIsOpen(false);
-  }
-
-  return (
-    <motion.div
-      ref={ref}
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{ rotateX, rotateY, transformPerspective: 800 }}
-      className="relative mx-auto mb-6 flex h-32 w-44 cursor-pointer items-center justify-center sm:h-40 sm:w-56"
-    >
-      {/* نجوم تتطلق من الكتاب لما يفتح */}
-      {isOpen &&
-        [...Array(6)].map((_, i) => (
-          <motion.span
-            key={i}
-            className="pointer-events-none absolute text-xl"
-            style={{ left: "50%", top: "30%" }}
-            initial={{ opacity: 0, x: 0, y: 0, scale: 0.3 }}
-            animate={{
-              opacity: [0, 1, 0],
-              x: (i - 2.5) * 26,
-              y: -60 - (i % 3) * 18,
-              scale: [0.3, 1, 0.6],
-              rotate: i % 2 === 0 ? 180 : -180,
-            }}
-            transition={{ duration: 1.1, delay: i * 0.05, ease: "easeOut" }}
-          >
-            {["✨", "⭐", "💫"][i % 3]}
-          </motion.span>
-        ))}
-
-      {/* الغطاء الخلفي للكتاب */}
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary to-sky shadow-2xl shadow-primary/30" />
-
-      {/* صفحة الكتاب اللي بتفتح */}
-      <motion.div
-        className="absolute right-1/2 top-1/2 h-[88%] w-[46%] origin-right rounded-l-xl bg-white shadow-inner"
-        style={{ translateY: "-50%" }}
-        animate={{ rotateY: isOpen ? -150 : 0 }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
-      />
-
-      <div className="absolute left-1/2 top-1/2 h-[88%] w-[46%] -translate-y-1/2 rounded-r-xl bg-white" />
-
-      {/* رمز القصة في النص */}
-      <motion.span
-        className="relative z-10 text-5xl"
-        animate={{ scale: isOpen ? 1.1 : 1, y: isOpen ? -4 : 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        📖
-      </motion.span>
-    </motion.div>
-  );
-}
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Star, ArrowLeft } from "lucide-react";
+import heroImage from "../../../public/assets/kidsHero.jpg";
 
 export default function Hero() {
-  const [openSchoolChoice, setOpenSchoolChoice] = useState(false);
-  const { accessToken } = useAuth();
-
   return (
-    <section
-      className="relative overflow-hidden bg-story-bg pt-40 pb-24 text-center"
-      dir="rtl"
-    >
-      {/* خلفية متحركة */}
-      <motion.div
-        className="pointer-events-none absolute left-1/2 top-12 h-96 w-96 -translate-x-1/2 rounded-full bg-sky/10 blur-3xl"
-        animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="pointer-events-none absolute right-10 top-40 h-72 w-72 rounded-full bg-primary/10 blur-3xl"
-        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.9, 0.5] }}
-        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-      />
+    <section className="relative flex items-center overflow-hidden py-32 md:py-48" dir="rtl">
+      {/* الخلفية مع Overlay */}
+      <div className="absolute inset-0">
+        <Image
+          src={heroImage}
+          alt="مغامرة حدوتة التعليمية"
+          fill
+          priority
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-black/40" />
+      </div>
 
-      <div className="container mx-auto max-w-4xl px-4 flex flex-col items-center">
-
-        {/* الكتاب السحري - عنصر التوقيع */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.7 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
-          <MagicStorybook />
-        </motion.div>
-
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-8"
-        >
-          <Badge variant="dreamy">
-            ✨ التطبيق الأول لقصص الأطفال التفاعلية في مصر
-          </Badge>
-        </motion.div>
-
-        {/* Title */}
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.15 }}
-          className="max-w-4xl text-5xl md:text-6xl lg:text-7xl font-black leading-[1.15] tracking-tight"
-        >
-          حوّل وقت الشاشة إلى{" "}
-          <motion.span
-            className="relative inline-block text-primary"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+      <div className="relative container mx-auto px-6 z-10">
+        <div className="max-w-2xl">
+          {/* تقييمات النجوم - مثل التمبليت */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex items-center gap-3 mb-6 bg-white/10 w-fit px-4 py-1.5 rounded-full backdrop-blur-md border border-white/20"
           >
-            مغامرة تعليمية
-            <motion.svg
-              viewBox="0 0 200 16"
-              className="absolute -bottom-2 left-0 h-3 w-full text-sky"
-              preserveAspectRatio="none"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.9, ease: "easeInOut" }}
-            >
-              <motion.path
-                d="M2 10 Q 50 2, 100 8 T 198 6"
-                stroke="currentColor"
-                strokeWidth="4"
-                strokeLinecap="round"
-                fill="none"
-              />
-            </motion.svg>
-          </motion.span>{" "}
-          ممتعة
-        </motion.h1>
+            <div className="flex gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              ))}
+            </div>
+            <span className="text-sm font-bold text-white">4.9/5 من 450+ تقييم</span>
+          </motion.div>
 
-        {/* Description */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-8 max-w-2xl text-lg md:text-xl text-ink-muted leading-loose"
-        >
-          قصص تفاعلية ذكية، آمنة ومسلية، مصممة خصيصاً لتنمية خيال طفلك وبناء
-          مهاراته اللغوية والأخلاقية.
-        </motion.p>
+          {/* العنوان مع التدرج اللوني */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="text-5xl md:text-7xl font-black text-white leading-tight mb-6"
+          >
+            حوّل وقت الشاشة إلى{" "}
+            <span className="inline-block  text-primary">
+              مغامرة تعليمية
+            </span>
+          </motion.h1>
 
-        {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: 0.45 }}
-          className="mt-10 flex flex-col sm:flex-row items-center  gap-4 w-full sm:w-auto"
-        >
-          {accessToken ? (
-            <>
-              <Link href="/childAdventure">
-                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-                  <Button
-                    variant="sky"
-                    fullWidth
-                    className="text-lg !py-4 !px-10 "
-                  >
-                    🚀 متابعة رحلة طفلك
-                  </Button>
-                </motion.div>
-              </Link>
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="text-xl text-white/90 mb-10 leading-relaxed max-w-lg font-bold"
+          >
+            قصص تفاعلية ذكية مصممة خصيصاً لتنمية خيال طفلك وبناء مهاراته في بيئة آمنة وممتعة.
+          </motion.p>
 
-              <Link href="/ParentDashboard/ParentLogin">
-                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-                  <Button
-                    variant="outline"
-                    fullWidth
-                    className="text-lg !py-4 !px-10 hover:bg-primary hover:text-white border-primary"
-                  >
-                    لوحة التحكم
-                  </Button>
-                </motion.div>
-              </Link>
-            </>
-          ) : (
-            <>
-              <div className="relative w-full sm:w-auto">
-                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-                  <Button
-                    variant="sky"
-                    fullWidth
-                    className="text-lg !py-4 !px-10 bg-primary relative overflow-hidden"
-                    onClick={() => setOpenSchoolChoice((v) => !v)}
-                  >
-                    <motion.span
-                      className="absolute inset-0 bg-white/20"
-                      initial={{ x: "-100%" }}
-                      animate={{ x: "200%" }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        repeatDelay: 1.5,
-                        ease: "easeInOut",
-                      }}
-                      style={{ skewX: -20 }}
-                    />
-                    <span className="relative">ابدأ رحلة طفلك السحرية الآن ✨</span>
-                  </Button>
-                </motion.div>
+          {/* الأزرار */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="flex flex-col sm:flex-row gap-4"
+          >
+            <Button size="lg" className="rounded-full px-8 py-7 text-lg font-bold shadow-xl bg-primary hover:bg-primary/90">
+              ابدأ رحلة طفلك الآن <ArrowLeft className="mr-2 h-5 w-5" />
+            </Button>
+            <Button size="lg" variant="destructive" className="rounded-full px-8 py-7 text-lg font-bold border-white/30 text-white hover:bg-white/10 backdrop-blur-sm">
+              شاهد آراء الأهالي
+            </Button>
+          </motion.div>
+        </div>
+      </div>
 
-                {openSchoolChoice && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -8, scale: 0.96 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute left-1/2 -translate-x-1/2 mt-3 w-56 bg-white shadow-xl rounded-xl overflow-hidden border z-50"
-                  >
-                    {/* <Link
-                      href="/auth/register/school"
-                      className="block px-4 py-3 hover:bg-sky/10 text-right transition-colors"
-                      onClick={() => setOpenSchoolChoice(false)}
-                    >
-                      تسجيل مدرسة
-                    </Link>
-
-                    <Link
-                      href="/auth/register"
-                      className="block px-4 py-3 hover:bg-sky/10 text-right border-t transition-colors"
-                      onClick={() => setOpenSchoolChoice(false)}
-                    >
-                      ولي أمر
-                    </Link> */}
-                  </motion.div>
-                )}
-              </div>
-
-              <Link href="#testimonials" className="w-full sm:w-auto">
-                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-                  <Button
-                    variant="outline"
-                    fullWidth
-                    className="text-lg !py-4 !px-10"
-                  >
-                    شاهد آراء الأهالي 💬
-                  </Button>
-                </motion.div>
-              </Link>
-            </>
-          )}
-        </motion.div>
-
-        {/* Badges */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: 0.6 }}
-          className="mt-16 flex flex-wrap justify-center gap-4"
-        >
-          {[
-            { variant: "sunny", label: "🧠 محتوى متوافق مع علم نفس الطفل" },
-            { variant: "dreamy", label: "🛡️ آمن وخالٍ من الإعلانات تماماً" },
-            { variant: "sky", label: "🔒 رقابة وتحكم كامل للأبوين" },
-          ].map((b, i) => (
-            <motion.div
-              key={i}
-              whileHover={{ y: -3, scale: 1.03 }}
-              transition={{ type: "spring", stiffness: 300, damping: 15 }}
-            >
-              <Badge variant={b.variant as "sky" | "sunny" | "dreamy" | "dark"}>{b.label}</Badge>
-            </motion.div>
-          ))}
-        </motion.div>
-
+      {/* Wave Divider */}
+      <div className="absolute bottom-0 left-0 right-0 z-20">
+        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+          <path
+            d="M0 120L60 105C120 90 240 60 360 52.5C480 45 600 60 720 67.5C840 75 960 75 1080 67.5C1200 60 1320 45 1380 37.5L1440 30V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+            fill="hsl(var(--background))"
+          />
+        </svg>
       </div>
     </section>
   );

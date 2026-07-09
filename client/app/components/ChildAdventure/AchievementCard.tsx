@@ -1,6 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 
 interface AchievementCardProps {
   title: string;
@@ -23,33 +25,29 @@ export default function AchievementCard({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: index * 0.1 }}
       whileHover={{ scale: 1.05 }}
-      className={`
-        rounded-3xl
-        p-4
-        text-center
-        shadow-lg
-        border-[3px]
-        transition-all
-        ${
-          unlocked
-            ? "bg-sunny border-white"
-            : "bg-blossom border-white opacity-70"
-        }
-      `}
     >
-      <div className="text-4xl mb-3">{icon}</div>
+      <Card
+        className={`text-center transition-all ${
+          unlocked
+            ? "bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950 dark:to-yellow-950 border-2 border-amber-300 dark:border-amber-700 shadow-md hover:shadow-lg"
+            : "bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 border-2 border-slate-300 dark:border-slate-600 opacity-70"
+        }`}
+      >
+        <CardContent className="pt-6 pb-6">
+          <div className="text-5xl mb-4">{icon}</div>
 
-      <h3 className="text-lg font-bold text-ink">{title}</h3>
+          <h3 className="text-lg font-bold text-foreground mb-2">{title}</h3>
 
-      <p className="mt-1 text-sm text-ink-mute">{description}</p>
+          <p className="text-sm text-muted-foreground mb-4">{description}</p>
 
-      <div className="mt-3 text-sm font-bold">
-        {unlocked ? (
-          <span className="text-primary">مفتوح ✨</span>
-        ) : (
-          <span className="text-ink-mute">مغلق 🔒</span>
-        )}
-      </div>
+          <Badge
+            variant={unlocked ? "default" : "secondary"}
+            className="text-xs font-semibold"
+          >
+            {unlocked ? "✨ مفتوح" : "🔒 مغلق"}
+          </Badge>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }

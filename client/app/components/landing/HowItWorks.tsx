@@ -1,33 +1,35 @@
 "use client";
 import { motion } from "framer-motion";
-// استيراد المكونات الموحدة بالمسار النسبي الصحيح
-import Badge from "../ui/Badge";
-import Card from "../ui/Card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const steps = [
   {
-    icon: "🧙‍♂️",
+    icon: "🧑",
     number: "١",
     title: "اختر الشخصية والموضوع",
-    description: "...",
-    color: "bg-sky/10 text-sky",
+    description: "ابدأ بتخصيص مغامرتك — اختر بطلك المفضل والمادة التي تريد إتقانها.",
+    color: "text-sky",
     iconBg: "bg-sky/15",
+    active: false,
   },
   {
-    icon: "🧩",
+    icon: "🎮",
     number: "٢",
     title: "استمتع بالقصة التفاعلية",
-    description: "...",
-    color: "bg-primary/10 text-primary",
+    description: "انغمس في قصة شيقة تعليمية مليئة بالتحديات والمفاجآت التي تنمّي معلوماتك.",
+    color: "text-primary",
     iconBg: "bg-primary/15",
+    active: true,
   },
   {
     icon: "🏆",
     number: "٣",
     title: "تعلم واكسب الجوائز",
-    description: "...",
-    color: "bg-sunny/20 text-amber-600",
+    description: "اجمع النقاط وافتح الشارات والمكافآت كلما أتقنت مهارة جديدة.",
+    color: "text-amber-600",
     iconBg: "bg-sunny/25",
+    active: false,
   },
 ];
 
@@ -35,66 +37,62 @@ export default function HowItWorks() {
   return (
     <section id="how-it-works" className="py-24" dir="rtl">
       <div className="container mx-auto px-6 max-w-7xl">
-
-        {/* النصوص العلوية المنسقة بالبادج الموحد والخط العريض */}
-        <div className="mx-auto mb-16 max-w-3xl text-center font-sans">
-         <Badge variant="sky">
-           كيف تبدأ المغامرة؟
-        </Badge>
-          <h2 className="mt-4 text-4xl md:text-5xl font-black text-header tracking-tight">
-            ثلاث خطوات بسيطة لتجربة تعليمية ممتعة
-          </h2>
-          <p className="mt-4 text-base font-bold text-ink-muted md:text-lg">
-            نمط واضح وبسيط للأطفال والأهل مع تجربة تبدأ سريعاً وتبقي الجميع متحمسين.
-          </p>
-        </div>
-
-        {/* شبكة الكروت الموروثة من الـ UI */}
-        <div className="grid gap-8 md:grid-cols-3 items-stretch font-sans">
-          {steps.map((step) => (
+        <div className="grid gap-8 md:grid-cols-3 items-stretch">
+          {steps.map((step, index) => (
             <motion.div
               key={step.title}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.25 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
+              transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
               className="flex"
             >
-              {/* وراثة الكارت بالكامل وجعل الخلفية الهادئة مريحة للعين */}
               <Card
-                hoverEffect
-                className=" w-full bg-white/80 backdrop-blur-sm border border-primary/10 shadow-card p-8 text-center flex flex-col items-center justify-between"
+                className={`w-full rounded-2xl transition-all duration-300 ${
+                  step.active
+                    ? "border-2 border-primary shadow-lg"
+                    : "border border-border-warm/30 shadow-none"
+                }`}
               >
-                <div>
-                  {/* دائرة الأيقونة أو الإيموجي */}
+                <CardContent className="p-8 text-center flex flex-col items-center">
+                  {/* الأيقونة */}
                   <div
-                    className={`mx-auto flex h-16 w-16 items-center justify-center rounded-2xl text-3xl border border-border-warm/20 ${step.iconBg}`}
+                    className={`flex h-16 w-16 items-center justify-center rounded-2xl border border-border-warm/20 text-3xl ${step.iconBg}`}
                   >
                     {step.icon}
                   </div>
 
-                  {/* رقم الخطوة الدائري الملون بروح الموف السحري */}
+                  {/* رقم الخطوة */}
                   <div
-                    className={`mt-5 inline-flex h-10 w-10 items-center justify-center hover:bg-primary hover:text-white rounded-full font-black ${step.color}`}
+                    className={`mt-5 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-sm font-black ${step.color}`}
                   >
                     {step.number}
                   </div>
 
-                  {/* عنوان الخطوة */}
-                  <h3 className="mt-5 text-xl font-black text-ink tracking-tight">
+                  {/* العنوان */}
+                  <h3 className="mt-5 text-lg font-black text-ink">
                     {step.title}
                   </h3>
-                </div>
 
-                {/* وصف الخطوة السفلي */}
-                <p className="mt-4 text-sm font-bold leading-relaxed text-ink-muted">
-                  {step.description}
-                </p>
+                  {/* الوصف */}
+                  <p className="mt-3 text-sm font-bold text-ink-muted leading-relaxed">
+                    {step.description}
+                  </p>
+                </CardContent>
               </Card>
             </motion.div>
           ))}
         </div>
 
+        {/* CTA */}
+        <div className="mt-16 flex flex-col items-center text-center">
+          <Button className="rounded-full bg-primary hover:bg-primary/90 text-white px-8 py-6 text-base font-black">
+            ابدأ مغامرتك الآن
+          </Button>
+          <p className="mt-4 text-sm font-bold text-ink-muted">
+            مجاني تماماً — لا بطاقة بنكية مطلوبة
+          </p>
+        </div>
       </div>
     </section>
   );

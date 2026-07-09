@@ -3,36 +3,58 @@
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { ROUTES } from '@/utils/constants'
+import { Button } from '@/components/ui/Button'
+import { LogOut, User } from 'lucide-react'
 
 export default function Header() {
   const { user, logout } = useAuth()
 
   return (
-    <header className="bg-white shadow-sm">
-      <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href={ROUTES.HOME} className="text-2xl font-bold text-primary">
+    <header className="border-b border-border bg-card">
+      <nav className="container mx-auto px-4 py-3 sm:py-4 flex justify-between items-center">
+        <Link href={ROUTES.HOME} className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
           حدوتة
         </Link>
 
-        <div className="flex gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {user ? (
             <>
-              <span className="text-sm text-gray-600">{user.name}</span>
-              <button
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10">
+                <User className="w-4 h-4 text-primary" />
+                <span className="text-xs sm:text-sm font-medium text-foreground hidden sm:inline">
+                  {user.name}
+                </span>
+              </div>
+              <Button
                 onClick={logout}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                size="sm"
+                variant="outline"
+                className="gap-2"
               >
-                تسجيل الخروج
-              </button>
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">خروج</span>
+              </Button>
             </>
           ) : (
             <>
-              <Link href={ROUTES.LOGIN} className="px-4 py-2 text-primary hover:underline">
-                دخول
-              </Link>
-              <Link href={ROUTES.REGISTER} className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark">
-                إنشاء حساب
-              </Link>
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="hidden sm:inline-flex"
+              >
+                <Link href={ROUTES.LOGIN}>
+                  دخول
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+              >
+                <Link href={ROUTES.REGISTER}>
+                  إنشاء حساب
+                </Link>
+              </Button>
             </>
           )}
         </div>

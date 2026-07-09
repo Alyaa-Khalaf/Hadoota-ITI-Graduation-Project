@@ -1,35 +1,21 @@
-import { InputHTMLAttributes } from "react";
+import * as React from "react"
+import { Input as InputPrimitive } from "@base-ui/react/input"
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label: string;
-  error?: string;
-}
+import { cn } from "@/lib/utils"
 
-export default function Input({ label, error, className = "", id, ...props }: InputProps) {
+function Input({ className, type, label, ...props }: React.ComponentProps<"input"> & { label?: string }) {
   return (
-    <div className="w-full text-right font-sans">
-      {/* الـ Label العلوي باللون الدافئ */}
-      <label htmlFor={id} className="block text-sm font-black text-ink mb-2">
-        {label}
-      </label>
-      
-      {/* حقل الإدخال بتنسيق ناعم ومتناسق */}
-      <input
-        id={id}
-        className={`w-full rounded-2xl border bg-story-bg/40 px-5 py-3.5 text-sm font-bold text-ink outline-none transition duration-200 placeholder:text-ink-muted/50 focus:bg-white ${
-          error 
-            ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
-            : "border-border-warm focus:border-primary focus:ring-1 focus:ring-primary"
-          } ${className}`}
-        {...props}
-      />
-      
-      {/* رسالة الخطأ إن وُجدت */}
-      {error && (
-        <p className="mt-1.5 text-xs font-black text-red-500 animate-fadeIn">
-          ⚠️ {error}
-        </p>
+    <InputPrimitive
+      type={type}
+      data-slot="input"
+      className={cn(
+        "h-7 w-full min-w-0 rounded-md border border-input bg-input/20 px-2 py-0.5 text-lg transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-xs/relaxed file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 md:text-xs/relaxed dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+        className
       )}
-    </div>
-  );
+      {...props}
+    />
+  )
 }
+
+export { Input }
+export default Input

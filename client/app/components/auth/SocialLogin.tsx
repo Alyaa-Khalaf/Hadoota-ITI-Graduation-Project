@@ -1,7 +1,9 @@
 "use client";
-import Button from "../ui/Button";
+import { Button } from "@/components/ui/Button"; // تأكد من استيراد المكون الصحيح
 import { signIn } from "next-auth/react";
-
+import Chrome  from "lucide-react"; // أيقونة بديلة لجوجل
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faGoogle } from "@fortawesome/free-brands-svg-icons"
 interface SocialLoginProps {
   isLoading: boolean;
 }
@@ -9,28 +11,27 @@ interface SocialLoginProps {
 export default function SocialLogin({ isLoading }: SocialLoginProps) {
   const handleGoogleLogin = () => {
     if (isLoading) return;
-    // هنا بيتم التوجيه لـ API جوجل الخاص بعلياء
     signIn("google", { callbackUrl: "/childAdventure" });
   };
 
   return (
-    <div className="space-y-3 font-sans">
-      <div className="relative flex py-2 items-center">
-        <div className="flex-grow border-t border-border-warm/60"></div>
-        <span className="flex-shrink mx-4 text-xs font-bold text-ink-muted">أو يمكنك المتابعة عبر</span>
-        <div className="flex-grow border-t border-border-warm/60"></div>
+    <div className="space-y-4 font-sans">
+      <div className="relative flex items-center py-2">
+        <div className="flex-grow border-t border-border-warm"></div>
+        <span className="flex-shrink mx-4 text-sm font-bold text-ink-muted">أو المتابعة عبر</span>
+        <div className="flex-grow border-t border-border-warm"></div>
       </div>
 
       <Button
         type="button"
-        variant="sky"
-        fullWidth={true}
+        variant="outline" // أو استخدم variant="sky" إذا كان معرفاً لديك
+        className="w-full !py-6 font-black flex items-center justify-center gap-3 border-border-warm hover:bg-primary-wash hover:border-primary transition-all duration-300"
         disabled={isLoading}
         onClick={handleGoogleLogin}
-        className="!py-3 font-bold flex items-center justify-center gap-2"
       >
-        <span>🌐</span>
-        <span>الدخول بواسطة حساب جوجل</span>
+        {/* يمكنك استبدال Chrome بأيقونة Google من react-icons/fc إذا أردت اللون الرسمي */}
+       <FontAwesomeIcon icon={faGoogle} className="text-[#DB4437]" />
+        <span className="text-ink">الدخول بواسطة حساب جوجل</span>
       </Button>
     </div>
   );

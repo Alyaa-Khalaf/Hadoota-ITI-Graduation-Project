@@ -9,14 +9,16 @@
     "install:all": "npm install && cd client && npm install && cd ../server && npm install"
   },
   "devDependencies": {
-    "concurrently": "^8.2.0"
+    "concurrently": "^8.2.0",
+    "nodemon": "^3.1.14"
   },
   "dependencies": {
+    "@base-ui/react": "^1.6.0",
     "@google/generative-ai": "^0.24.1",
     "@sendgrid/mail": "^8.1.6",
     "cookie-parser": "^1.4.7",
     "lottie-react": "^2.4.1",
-    "lucide-react": "^1.20.0",
+    "lucide-react": "^1.23.0",
     "next-auth": "^4.24.14",
     "recharts": "^3.8.1"
   }

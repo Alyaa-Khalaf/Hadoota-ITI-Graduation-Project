@@ -104,7 +104,7 @@ function ChildAdventure() {
       <ChildNavbar />
       {/* <FloatingDecorations /> */}
 
-      <div className="relative z-10 p-6">
+      <div className="relative z-10 ">
         {/* دلوقتي الـ child.name مستحيل يضيع لو الطفل مسجل فعلاً */}
         <WelcomeHero name={selectedChild?.name || "بطل"} />
 

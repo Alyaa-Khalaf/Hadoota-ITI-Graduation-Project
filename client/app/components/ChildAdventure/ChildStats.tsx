@@ -4,120 +4,64 @@ import { motion } from "framer-motion";
 import AdventureHeader from "./AdventureHeader";
 import { useGamification } from "@/hooks/useGamification";
 import { useSelectedChild } from "@/context/childContext";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+
 export default function ChildStats() {
-const { selectedChild } = useSelectedChild();
+  const { selectedChild } = useSelectedChild();
   const { gamification, loading } = useGamification(selectedChild?._id || "");
 
-  if (loading) {
-    return (
-      <div className="text-center py-6">
-        ⏳ Loading stats...
-      </div>
-    );
-  }
+  if (loading) return <div className="text-center py-12 text-teal-600 font-bold">جاري تحميل إنجازاتك يا بطل... ⏳</div>;
+  if (!gamification) return null;
 
-  if (!gamification) {
-    return (
-      <div className="text-center py-6">
-        لا توجد بيانات
-      </div>
-    );
-  }
-  console.log("Selected Child:", selectedChild?._id);
+  const { stars, level } = gamification;
+  const isPro = stars >= 100;
+  const badgeTitle = isPro ? "مستكشف محترف" : "مغامر صغير";
 
-  const stars = gamification.stars;
-  const level = gamification.level;
-
-  const badge =
-    stars >= 100
-      ? "مستكشف محترف 🚀"
-      : "مغامر صغير ✨";
-
-  const items = [
-    {
-      id: 1,
-      label: "نجمة",
-      value: stars,
-      icon: "⭐",
-    },
-    {
-      id: 2,
-      label: "مستوى",
-      value: level,
-      icon: "🏆",
-    },
+  const stats = [
+    { label: "النجوم", value: stars, icon: "⭐", color: "from-teal-50 to-white border-teal-200" },
+    { label: "المستوى", value: level, icon: "🏆", color: "from-coral-50 to-white border-coral-200" },
   ];
 
   return (
-    <section>
-      <AdventureHeader
-        header="إنجازاتك"
-        subHeader="شوف اللي حققته ⭐"
-      />
+    <section className="space-y-8 max-w-4xl mx-auto px-4 py-10" dir="rtl">
+      <AdventureHeader header="إنجازاتك" subHeader="شوف اللي حققته يا بطل ⭐" />
 
-      <motion.div
-        dir="rtl"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="grid grid-cols-2 gap-4 mt-8"
-      >
-        {items.map((item) => (
-          <motion.div
-            key={item.id}
-            whileHover={{ scale: 1.05 }}
-            className="
-              rounded-3xl
-              p-5
-              text-center
-              bg-cat-adventure
-              border-[3px]
-              border-primary
-              shadow-lg
-              font-bold
-            "
-          >
-            <div className="text-4xl mb-3">
-              {item.icon}
-            </div>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+        
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {stats.map((stat, idx) => (
+            <motion.div key={stat.label} whileHover={{ y: -5 }} transition={{ type: "spring", stiffness: 300 }}>
+              <Card className={`bg-gradient-to-br ${stat.color} border-2 rounded-3xl shadow-lg shadow-black/5`}>
+                <CardContent className="pt-8 pb-8 text-center">
+                  <div className="text-5xl mb-4">{stat.icon}</div>
+                  <div className="text-5xl font-black text-slate-900 mb-2">{stat.value}</div>
+                  <p className="text-lg font-bold text-slate-500">{stat.label}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
 
-            <div className="text-4xl text-secondary">
-              {item.value}
-            </div>
-
-            <div className="mt-2 text-lg text-primary">
-              {item.label}
-            </div>
-          </motion.div>
-        ))}
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          whileHover={{ scale: 1.02 }}
-          className="
-            col-span-2
-            flex
-            items-center
-            gap-4
-            rounded-3xl
-            p-5
-            bg-sunny
-            border-[3px]
-            border-white
-            shadow-lg
-          "
-        >
-          <span className="text-5xl">🏆</span>
-
-          <div className="text-right text-ink">
-            <h3 className="text-2xl font-bold">
-              {badge}
-            </h3>
-
-            <p className="mt-1 font-medium">
-              إنجاز رائع — استمر في التقدم ✨
-            </p>
-          </div>
+        {/* Achievement Badge */}
+        <motion.div whileHover={{ scale: 1.01 }}>
+          <Card className="bg-gradient-to-r from-teal-500 to-teal-600 border-none rounded-3xl p-1 shadow-xl">
+            <CardContent className="bg-white/95 rounded-[1.3rem] p-6">
+              <div className="flex items-center gap-6">
+                <div className="text-6xl">🚀</div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-2xl font-black text-slate-900">{badgeTitle}</h3>
+                    <Badge className="bg-coral-500 hover:bg-coral-600 px-3 py-1 rounded-full text-white">
+                      {isPro ? "محترف" : "مبتدئ"}
+                    </Badge>
+                  </div>
+                  <p className="text-slate-600 font-medium">إنجاز رائع، استمر في جمع النجوم للوصول للمستوى التالي! ✨</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
       </motion.div>
     </section>
