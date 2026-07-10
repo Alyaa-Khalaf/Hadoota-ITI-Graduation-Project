@@ -1,6 +1,6 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Characters } from "@/types/childStory"
@@ -16,6 +16,7 @@ import dragon from "@/animation/dragon.json"
 import astronaut from "@/animation/astronaut.json"
 import superman from "@/animation/superman.json"
 import cat from "@/animation/cat.json"
+import { Sparkles, Check, ArrowLeft } from "lucide-react"
 
 const characters: (Characters & { value: string })[] = [
   { id: 1, name: "أسد", animation: lion, value: "أسد" },
@@ -47,148 +48,105 @@ export default function ChildCharactres() {
 
   if (loadingSelectedChild || !selectedChild) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-primary font-bold text-lg animate-pulse">
-          جاري التحميل...
-        </p>
+      <div dir="rtl" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-pink-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 rounded-full border-4 border-indigo-200 border-t-indigo-500 animate-spin" />
+          <p className="text-slate-600 font-medium">جاري التحميل...</p>
+        </div>
       </div>
     )
   }
 
   return (
     <div
-      className="story-background min-h-screen p-4 sm:p-6"
-      style={
-        {
-          "--bg-image": 'url("/assets/story night.jpg")',
-        } as React.CSSProperties
-      }
+      dir="rtl"
+      className="min-h-screen relative overflow-hidden bg-primary/10"
     >
-      {/* Header */}
-      <div className="text-center mb-8 sm:mb-12">
-        <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
-          اختر شخصيتك
-        </h1>
-        <p className="text-base sm:text-lg text-muted-foreground font-medium">
-          كل حدوتة تبدأ بشخصية ✨
-        </p>
-      </div>
+      {/* Decorative blobs - باستخدام ألوانك */}
+      <div className="pointer-events-none absolute -top-32 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-40 -left-24 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
 
-      {/* Characters Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto mb-12">
-        {characters.map((c) => {
-          const active = selected?.id === c.id
-
-          return (
-            <motion.div
-              key={c.id}
-              initial={{ opacity: 0, y: 20, scale: 0.8 }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                scale: active ? 1.05 : 1,
-              }}
-              whileHover={{ scale: 1.08, y: -4 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ duration: 0.3, type: "spring" }}
-              onClick={() => setSelected(c)}
-            >
-              <Card
-                className={`h-full cursor-pointer border-2 transition-all ${
-                  active
-                    ? "border-primary bg-primary/10 shadow-lg"
-                    : "border-border hover:border-primary/50 hover:shadow-md"
-                }`}
-              >
-                <CardContent className="pt-4 pb-4 flex flex-col items-center gap-3">
-                  {/* Character Animation */}
-                  <motion.div
-                    animate={{ y: [0, -4, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-20 h-20 sm:w-24 sm:h-24"
-                  >
-                    <Lottie
-                      key={c.id}
-                      animationData={c.animation}
-                      loop
-                      autoplay
-                      className="w-full h-full"
-                    />
-                  </motion.div>
-
-                  {/* Character Name */}
-                  <span className={`font-bold text-sm sm:text-base text-center ${
-                    active ? "text-primary" : "text-foreground"
-                  }`}>
-                    {c.name}
-                  </span>
-
-                  {/* Selected Badge */}
-                  {active && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="text-lg"
-                    >
-                      ✓
-                    </motion.div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          )
-        })}
-      </div>
-
-      {/* Selection Details */}
-      {selected && (
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-10 sm:py-14 pb-40">
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto"
+          className="text-center mb-12"
         >
-          <Card className="border-2 bg-gradient-to-br from-primary/10 to-primary/5">
-            <CardContent className="pt-8 pb-8 text-center">
-              <p className="text-xs sm:text-sm text-muted-foreground font-semibold mb-3">
-                شخصيتك المختارة
-              </p>
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-foreground tracking-tight text-primary">
+            مين بطل الحكاية النهاردة؟ 🌟
+          </h1>
+          <p className="mt-4 text-muted-foreground text-lg sm:text-xl">
+            اختار شخصيتك المفضلة وابدأ المغامرة
+          </p>
+        </motion.div>
 
-              <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4">
-                {selected.name}
-              </h2>
-
-              {/* Selected Character Animation */}
+        {/* Characters Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          {characters.map((c, i) => {
+            const active = selected?.id === c.id;
+            return (
               <motion.div
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="w-28 h-28 sm:w-32 sm:h-32 mx-auto mb-6"
+                key={c.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.05 }}
+                whileHover={{ y: -8, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setSelected(c)}
+                className="cursor-pointer"
               >
-                <Lottie
-                  key={`selected-${selected.id}`}
-                  animationData={selected.animation}
-                  loop
-                  autoplay
-                  className="w-full h-full"
-                />
+                <Card
+                  className={`group relative h-full   transition-all duration-300 ${
+                    active
+                      ? "border-primary bg-primary/10 shadow-lg"
+                      : "border-border bg-card hover:border-primary/50"
+                  }`}
+                >
+                  <CardContent className="p-6 flex flex-col items-center gap-4">
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-muted/50 flex items-center justify-center">
+                      <Lottie animationData={c.animation} loop className="w-full h-full" />
+                    </div>
+                    <p className={`font-bold text-lg ${active ? "text-primary" : "text-foreground"}`}>
+                      {c.name}
+                    </p>
+                  </CardContent>
+                </Card>
               </motion.div>
+            );
+          })}
+        </div>
 
-              {/* Start Button */}
-              <motion.div
-                animate={{ y: [0, -4, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
+        {/* Floating Action Bar */}
+        <AnimatePresence>
+          {selected && (
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              className="fixed bottom-6 inset-x-4 z-50 flex justify-center"
+            >
+              <div className="w-full max-w-lg rounded-3xl border border-border bg-background/80 backdrop-blur-2xl shadow-2xl p-3 sm:p-4 flex items-center gap-4">
+                <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center">
+                  <Lottie animationData={selected.animation} loop className="w-10 h-10" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-muted-foreground">البطل المختار</p>
+                  <p className="text-xl font-extrabold text-foreground">{selected.name}</p>
+                </div>
                 <Button
                   onClick={handleStart}
                   size="lg"
-                  className="rounded-xl font-bold text-base sm:text-lg"
+                  variant={"default"}
+                  className="gap-2 rounded-xl px-5 py-5 text-base font-semibold"
                 >
-                  ابدأ الحدوتة ✨
+                  ابدأ الآن 🚀
                 </Button>
-              </motion.div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
-  )
+  );
 }

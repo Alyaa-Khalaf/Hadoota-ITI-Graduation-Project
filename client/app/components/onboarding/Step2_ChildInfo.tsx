@@ -42,7 +42,7 @@ export default function Step2_ChildInfo({ onNext, onPrev }: Step2Props) {
           placeholder="مثال: أحمد"
           value={child.name}
           onChange={(e) => setChild({ name: e.target.value })}
-          className="h-12 rounded-2xl border-slate-200 focus:ring-2 focus:ring-primary/20"
+          className="h-12 text-md rounded-2xl border-slate-200 focus:ring-2 focus:ring-primary/20"
         />
       </div>
 

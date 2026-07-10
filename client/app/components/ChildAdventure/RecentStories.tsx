@@ -12,6 +12,7 @@ import { BookOpen, ChevronLeft, Sparkles, CheckCircle2 } from "lucide-react";
 
 export default function RecentStories() {
   const router = useRouter();
+  
   const { stories, loading } = useRecentStories();
 
   if (loading) {
@@ -60,7 +61,7 @@ export default function RecentStories() {
   }
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 container my-8">
       <AdventureHeader header="حواديتك" subHeader="ارجع كمل مغامراتك 📚" />
 
       <motion.div

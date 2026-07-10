@@ -14,7 +14,11 @@ export function useRecentStories() {
 
   useEffect(() => {
     const fetchStories = async () => {
-      if (isLoading || !accessToken || !selectedChild?._id) return;
+      if (isLoading || !accessToken || !selectedChild?._id) {
+         setLoading(false);
+     return;
+        ;
+}
 
       try {
         setLoading(true);
@@ -33,6 +37,7 @@ export function useRecentStories() {
         if (res.ok) {
           setStories(data.data.stories || []);
         }
+        console.log("Fetched stories:", data.data.stories);
       } catch (err) {
         console.error("Failed to fetch stories:", err);
       } finally {
@@ -42,6 +47,7 @@ export function useRecentStories() {
 
     fetchStories();
   }, [accessToken, isLoading, selectedChild?._id]);
+  console.log("Recent stories:", stories);
 
   return { stories, loading };
 }
