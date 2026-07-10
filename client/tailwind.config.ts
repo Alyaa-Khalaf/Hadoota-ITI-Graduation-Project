@@ -94,17 +94,21 @@ export default {
         "2xl": "1400px",
       },
     },
+    
     extend: {
       fontFamily: {
-        heading: ['Fredoka', 'sans-serif'],
-        body: ['Inter', 'sans-serif'],
-      },
+  heading: ['var(--font-baloo)', 'sans-serif'],
+  body: ['var(--font-baloo)', 'sans-serif'],
+  sans: ['var(--font-baloo)', 'sans-serif'],
+},
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        popover: "hsl(var(--popover))",
+
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -127,10 +131,6 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
           success: "hsl(var(--accent-success))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
         },
         card: {
           DEFAULT: "hsl(var(--card))",

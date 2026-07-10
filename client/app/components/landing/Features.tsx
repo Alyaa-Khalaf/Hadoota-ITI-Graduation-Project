@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import Link from "next/link"; // استبدلنا Button بـ Link لـ Next.js
 
 type Feature = {
@@ -39,11 +39,11 @@ const features: Feature[] = [
 
 export function FeaturesSection() {
   return (
-    <section dir="rtl" className="relative overflow-hidden bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50 px-4 py-24 sm:px-8 sm:py-32">
+    <section dir="rtl" className="relative overflow-hidden  px-4 py-24 sm:px-8 sm:py-32">
       {/* الخلفية والأشكال المتحركة كما هي */}
       <div className="relative mx-auto max-w-7xl">
         <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mx-auto max-w-3xl text-center">
-          <Badge variant="secondary" className="mb-6 rounded-full border border-white/60 bg-white/60 px-4 py-1.5 text-sm font-medium text-rose-700 shadow-sm backdrop-blur-md">
+          <Badge variant="secondary" className="mb-6 rounded-full border border-white/60 bg-white/60 px-4 py-1.5 text-sm font-medium text-primary shadow-sm backdrop-blur-md">
              لماذا حدوتة؟
           </Badge>
           <h2 className="text-4xl font-bold leading-tight tracking-tight text-slate-900 sm:text-5xl md:text-6xl">

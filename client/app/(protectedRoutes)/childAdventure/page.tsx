@@ -12,6 +12,7 @@ import { useSelectedChild } from "@/context/childContext";
 import { useAuth } from '@/context/AuthContext';
 import React from 'react'
 import PreviousButton from '@/components/ui/PreviousButton';
+import Footer from "@/components/landing/Footer";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -112,7 +113,8 @@ function ChildAdventure() {
 
         <QuickActions />
         <RecentStories />
-        <Achievements />
+        {/* <Achievements /> */}
+        {/* <Footer/> */}
       </div>
     </div>
   );

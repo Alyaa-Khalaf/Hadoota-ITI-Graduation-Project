@@ -68,7 +68,10 @@ export default function Hero() {
             transition={{ duration: 0.7, delay: 0.3 }}
             className="flex flex-col sm:flex-row gap-4"
           >
-            <Button size="lg" className="rounded-full px-8 py-7 text-lg font-bold shadow-xl bg-primary hover:bg-primary/90">
+            <Button 
+            size="lg" 
+            className="rounded-full px-8 py-7 text-lg font-bold shadow-xl bg-primary hover:bg-primary/90"
+            >
               ابدأ رحلة طفلك الآن <ArrowLeft className="mr-2 h-5 w-5" />
             </Button>
             <Button size="lg" variant="destructive" className="rounded-full px-8 py-7 text-lg font-bold border-white/30 text-white hover:bg-white/10 backdrop-blur-sm">

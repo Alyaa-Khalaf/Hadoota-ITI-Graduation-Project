@@ -195,7 +195,7 @@ html[dir="rtl"] * {
 @layer base {
   :root {
     --background: 30 100% 99%;
-    --foreground: 0 0% 18%;
+     --foreground: 0 0% 18%;
 
     --card: 30 100% 99%;
     --card-foreground: 0 0% 18%;
@@ -283,7 +283,9 @@ html[dir="rtl"] * {
   }
   body {
     @apply bg-background text-foreground font-body antialiased;
-    font-family: 'Cairo', sans-serif;
+font-family: var(--font-baloo), sans-serif;
+    font-size: 1.125rem; /* تعادل 18px تقريباً بدلاً من 16px */
+    line-height: 1.75;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading;
@@ -331,6 +333,20 @@ html[dir="rtl"] * {
 .animate-pulse-grow { animation: pulse-grow 2s ease-in-out infinite; }
 .animate-wiggle-strong { animation: wiggle-strong 0.5s ease-in-out infinite; }
 
+@layer utilities {
+  .pill-nav {
+    background-color: hsl(var(--card) / 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border));
+    border-radius: 9999px;
+    box-shadow: var(--card-shadow);
+    transition: box-shadow 0.3s ease, background-color 0.3s ease;
+  }
+  .pill-nav:hover {
+    box-shadow: var(--card-shadow-hover);
+  }
+}
 /*  */
 
 #root {

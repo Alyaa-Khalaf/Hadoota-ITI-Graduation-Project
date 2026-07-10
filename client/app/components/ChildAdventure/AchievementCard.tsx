@@ -2,7 +2,8 @@
 
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface AchievementCardProps {
   title: string;
@@ -21,28 +22,31 @@ export default function AchievementCard({
 }: AchievementCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.85 }}
+      initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: index * 0.1 }}
-      whileHover={{ scale: 1.05 }}
+      whileHover={{ scale: 1.02 }}
     >
       <Card
-        className={`text-center transition-all ${
-          unlocked
-            ? "bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950 dark:to-yellow-950 border-2 border-amber-300 dark:border-amber-700 shadow-md hover:shadow-lg"
-            : "bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 border-2 border-slate-300 dark:border-slate-600 opacity-70"
-        }`}
+        className={cn(
+          "rounded-3xl border  border-border/50 bg-background/50 backdrop-blur-xl shadow-sm transition-all overflow-hidden",
+          unlocked 
+            ? "border-primary/20 shadow-primary/5" 
+            : "grayscale opacity-80"
+        )}
       >
-        <CardContent className="pt-6 pb-6">
-          <div className="text-5xl mb-4">{icon}</div>
+        <CardContent className="p-6 text-center">
+          <div className="text-5xl mb-4 flex justify-center items-center h-16 w-16 mx-auto rounded-2xl bg-muted/50">
+            {icon}
+          </div>
 
-          <h3 className="text-lg font-bold text-foreground mb-2">{title}</h3>
-
+          <h3 className="text-lg font-bold text-foreground mb-1">{title}</h3>
           <p className="text-sm text-muted-foreground mb-4">{description}</p>
 
           <Badge
             variant={unlocked ? "default" : "secondary"}
-            className="text-xs font-semibold"
+            size="md"
+            className="rounded-full shadow-none"
           >
             {unlocked ? "✨ مفتوح" : "🔒 مغلق"}
           </Badge>

@@ -7,10 +7,6 @@ import AdventureHeader from "./AdventureHeader";
 import { Card, CardContent } from "@/components/ui/Card";
 import { motion } from "framer-motion";
 
-type Badge = {
-  name: string;
-};
-
 export default function Achievements() {
   const { selectedChild } = useSelectedChild();
   const childId = selectedChild?._id || "demo-child";
@@ -18,48 +14,27 @@ export default function Achievements() {
 
   if (loading) {
     return (
-      <section className="space-y-6">
-        <AdventureHeader
-          header="الإنجازات"
-          subHeader="كل خطوة بتقربك من البطولة 🏆"
-        />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <section className="space-y-12 bg-primary/10">
+        <AdventureHeader header="الإنجازات" subHeader="كل خطوة بتقربك من البطولة 🏆" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 rounded-lg bg-muted animate-pulse" />
+            <div key={i} className="h-40 rounded-3xl bg-muted/50 animate-pulse" />
           ))}
         </div>
       </section>
     );
   }
 
-  if (!gamification) {
-    return (
-      <section className="space-y-6">
-        <AdventureHeader
-          header="الإنجازات"
-          subHeader="كل خطوة بتقربك من البطولة 🏆"
-        />
-        <Card className="bg-blue-50 dark:bg-blue-950 border-2 border-blue-200 dark:border-blue-800">
-          <CardContent className="pt-8 pb-8 text-center">
-            <p className="text-muted-foreground">لا توجد بيانات متاحة</p>
-          </CardContent>
-        </Card>
-      </section>
-    );
-  }
-
-  const badges: Badge[] = gamification.badges?.map((name) => ({ name })) || [];
-
-  const achievements = badges.map((achievement, index) => ({
+  const achievements = gamification?.badges?.map((name: string, index: number) => ({
     id: index + 1,
-    title: achievement.name,
+    title: name,
     icon: "🏆",
-    description: "تم فتح هذا الإنجاز",
+    description: "إنجاز رائع ومميز!",
     unlocked: true,
-  }));
+  })) || [];
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-12 my-18 container mx-auto">
       <AdventureHeader
         header="الإنجازات"
         subHeader="كل خطوة بتقربك من البطولة 🏆"
@@ -73,23 +48,17 @@ export default function Achievements() {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
         >
           {achievements.map((achievement, index) => (
-            <AchievementCard
-              key={achievement.id}
-              {...achievement}
-              index={index}
-            />
+            <AchievementCard key={achievement.id} {...achievement} index={index} />
           ))}
         </motion.div>
       ) : (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="bg-amber-50 dark:bg-amber-950 border-2 border-amber-200 dark:border-amber-800">
+          <Card className="rounded-3xl border-dashed border-border/60 bg-background/50 backdrop-blur-md">
             <CardContent className="pt-12 pb-12 text-center">
-              <div className="text-5xl mb-4">🏆</div>
-              <p className="text-lg font-semibold text-foreground mb-2">
-                مفيش إنجازات لسه...
-              </p>
+              <div className="text-6xl mb-4">✨</div>
+              <h3 className="text-xl font-bold mb-2">مفيش إنجازات لسه...</h3>
               <p className="text-muted-foreground">
-                كمل حواديتك وهتفتح إنجازات جديدة ✨
+                كمل حواديتك وهتفتح إنجازات جديدة تظهر هنا
               </p>
             </CardContent>
           </Card>

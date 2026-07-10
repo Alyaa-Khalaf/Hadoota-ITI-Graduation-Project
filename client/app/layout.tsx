@@ -1,15 +1,22 @@
 import type { ReactNode } from "react";
-// @ts-ignore
-import "./globals.css";
+import './globals.css';
+import { Baloo_Bhaijaan_2 } from "next/font/google"; // استيراد الخط الجديد
+
 import { AuthProvider } from "./context/AuthContext";
 import Providers from "./components/Providers";
-import GoogleTokenSync from "./components/auth/GoogleTokenSync"; // ← جديد
+import GoogleTokenSync from "./components/auth/GoogleTokenSync";
 import { ChildProvider } from "./context/childContext";
 import { ThemeProvider } from "./context/ThemeContext";
-import { Inter } from "next/font/google";
+// 1. استيراد Tajawal
+import { Tajawal } from "next/font/google";
 import { cn } from "@/lib/utils";
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+// 2. إعداد الخط
+const baloo = Baloo_Bhaijaan_2({
+  subsets: ["arabic"],
+  weight: ["400", "700"],
+  variable: "--font-baloo", // متغير جديد
+});
 
 export const metadata = {
   title: "Hadoota",
@@ -18,17 +25,18 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" className={cn("font-sans", inter.variable)}>
-      <body>
-          <ThemeProvider>
-        <Providers>
-          <AuthProvider>
-            <ChildProvider>
-              <GoogleTokenSync /> {/* ← جديد */}
-              {children}
-            </ChildProvider>
-          </AuthProvider>
-        </Providers>
+    // 3. إضافة المتغير للكلاسات وتطبيق الخط على body
+    <html lang="ar" dir="rtl" className={cn(baloo.variable)}>
+      <body className={cn("font-sans antialiased", baloo.className)}>
+        <ThemeProvider>
+          <Providers>
+            <AuthProvider>
+              <ChildProvider>
+                <GoogleTokenSync />
+                {children}
+              </ChildProvider>
+            </AuthProvider>
+          </Providers>
         </ThemeProvider>
       </body>
     </html>

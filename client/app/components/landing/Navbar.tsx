@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Menu, X, Palette, Sparkles } from "lucide-react";
+import { Menu, X, Palette, Sparkles, LogIn } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
-import { Button } from "@/components/ui/Button";
+import { Button}  from "@/components/ui/Button";
 
 const navigation = [
   { name: "المميزات", href: "#features" },
@@ -38,9 +38,10 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center gap-1">
             {navigation.map((item) => (
               <Link
+                
                 key={item.name}
                 href={item.href}
-                className="px-4 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
+                className="px-4 py-2 rounded-full text-md font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
               >
                 {item.name}
               </Link>
@@ -59,15 +60,22 @@ export default function Navbar() {
             {accessToken ? (
               <Button
                 onClick={() => router.push("/childAdventure")}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 font-semibold shadow-lg hover:shadow-primary/20 transition-all"
+                variant={"default"}
+                  size={"lg"}
+                // className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 font-semibold shadow-lg hover:shadow-primary/20 transition-all"
               >
                 🚀 مغامراتي
               </Button>
             ) : (
               <>
-                <Button variant="ghost" className="rounded-full font-medium p-4 text-sm" onClick={() => router.push("/auth/login")}>
-                  تسجيل الدخول
-                </Button>
+               <Button 
+  variant="ghost" 
+  className="rounded-full font-medium p-4 text-sm gap-2" // أضفت gap-2 لترك مسافة بين الأيقونة والنص
+  onClick={() => router.push("/auth/login")}
+>
+  تسجيل الدخول
+  <LogIn className="size-4" /> {/* هنا قمنا بإضافة الأيقونة */}
+</Button>
                 <Button
                   onClick={() => router.push("/auth/register")}
                   className="bg-primary text-sm p-4 hover:bg-primary/90 text-primary-foreground rounded-full px-6 font-semibold shadow-lg hover:shadow-primary/20 transition-all"
@@ -105,15 +113,20 @@ export default function Navbar() {
 
             <div className="flex flex-col gap-3 pt-4 border-t border-border">
               {accessToken ? (
-                <Button onClick={() => { setIsOpen(false); router.push("/childAdventure"); }} className="w-full rounded-full">
+                <Button 
+                // variant="default"
+                size="default"
+                onClick={() => { setIsOpen(false); 
+                router.push("/childAdventure"); }} 
+                >
                   🚀 مغامراتي
                 </Button>
               ) : (
                 <>
-                  <Button variant="outline" className="w-full rounded-full" onClick={() => { setIsOpen(false); router.push("/auth/login"); }}>
+                  <Button variant="outline"  onClick={() => { setIsOpen(false); router.push("/auth/login"); }}>
                     تسجيل الدخول
                   </Button>
-                  <Button className="w-full rounded-full" onClick={() => { setIsOpen(false); router.push("/auth/register"); }}>
+                  <Button  onClick={() => { setIsOpen(false); router.push("/auth/register"); }}>
                     جرّب مجانًا
                   </Button>
                 </>

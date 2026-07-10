@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Check, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { API_BASE } from "@/lib/apiConfig";
 import type { Plan } from "@/types/pricing";
 
@@ -41,7 +41,8 @@ export default function Pricing() {
           className="text-center mb-16"
         >
           <div className="flex justify-center mb-4">
-            <Badge variant="secondary">💰 الأسعار بخطط مرنة</Badge>
+            <Badge variant="secondary"
+            size={"lg"}>💰 الأسعار بخطط مرنة</Badge>
           </div>
           <h2 className="font-heading text-4xl md:text-5xl font-bold text-foreground mb-4">
             اختر الخطة المناسبة <span className="text-gradient-primary">لطفلك</span>
@@ -75,7 +76,9 @@ export default function Pricing() {
                     <div>
                       {plan.badge && (
                         <div className="mb-5">
-                          <Badge variant={plan.highlight ? "default" : "secondary"}>
+                          <Badge variant={plan.highlight ? "default" : "secondary"}
+                         size="md" className="rounded-full p-3 text-xs"
+                          >
                             {plan.badge}
                           </Badge>
                         </div>
@@ -116,6 +119,7 @@ export default function Pricing() {
                     <div className="mt-10">
                       <Button
                         variant={plan.highlight ? "default" : "outline"}
+                        size={"lg"}
                         className="w-full text-base font-semibold rounded-full"
                         onClick={() => handleChoose(plan.slug)}
                         disabled={checkoutSlug !== null}
