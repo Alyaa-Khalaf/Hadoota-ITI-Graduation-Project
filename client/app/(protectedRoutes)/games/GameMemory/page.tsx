@@ -11,7 +11,7 @@ function MemoryGames() {
 
    useScreenTimeSession(selectedChild?._id)
   return (
-    <div>
+    <div className='bg-section-alt'>
       <HomeButton href="/childAdventure" />
       <MemoryGame/>
       <PreviousButton/>

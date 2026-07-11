@@ -61,8 +61,12 @@ export function FeaturesSection() {
         </div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-16 flex flex-col items-center justify-center gap-3 sm:mt-20">
-          <Button asChild size="lg" className="rounded-full bg-slate-900 px-8 py-6 text-base font-medium text-white shadow-lg hover:scale-[1.02]">
-            <Link href="/auth/register">ابدأ أول قصة الآن</Link>
+        <Button
+            size="lg"
+            variant={"default"}
+            className=" px-5 py-5 text-lg"
+          >
+            ابدأ مغامرتك الآن
           </Button>
           <p className="text-sm text-slate-500">مجاناً — بدون الحاجة لبطاقة ائتمان</p>
         </motion.div>

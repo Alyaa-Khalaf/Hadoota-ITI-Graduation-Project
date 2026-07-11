@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useSelectedChild } from "@/context/childContext";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/Button";
 
 type Card = {
   id: number;
@@ -22,25 +24,19 @@ const IMAGES = [
 export default function MemoryGame() {
   const { selectedChild } = useSelectedChild();
   const { accessToken } = useAuth();
-
   const [cards, setCards] = useState<Card[]>([]);
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matched, setMatched] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
   const [disabled, setDisabled] = useState(false);
-
   const [score, setScore] = useState(0);
   const [rewardSent, setRewardSent] = useState(false);
 
   const createGame = () => {
     const duplicated = [...IMAGES, ...IMAGES];
-
     const shuffled = duplicated
       .sort(() => Math.random() - 0.5)
-      .map((image, index) => ({
-        id: index,
-        image,
-      }));
+      .map((image, index) => ({ id: index, image }));
 
     setCards(shuffled);
     setFlipped([]);
@@ -50,15 +46,10 @@ export default function MemoryGame() {
     setRewardSent(false);
   };
 
-  useEffect(() => {
-    createGame();
-  }, []);
+  useEffect(() => { createGame(); }, []);
 
   const handleFlip = (index: number) => {
-    if (disabled) return;
-    if (flipped.includes(index)) return;
-    if (matched.includes(index)) return;
-    if (flipped.length === 2) return;
+    if (disabled || flipped.includes(index) || matched.includes(index) || flipped.length === 2) return;
 
     const newFlipped = [...flipped, index];
     setFlipped(newFlipped);
@@ -66,160 +57,85 @@ export default function MemoryGame() {
     if (newFlipped.length === 2) {
       setMoves((prev) => prev + 1);
       setDisabled(true);
-
       const firstCard = cards[newFlipped[0]];
       const secondCard = cards[newFlipped[1]];
 
       if (firstCard.image === secondCard.image) {
         setScore((prev) => prev + 10);
         setMatched((prev) => [...prev, ...newFlipped]);
-
-        setTimeout(() => {
-          setFlipped([]);
-          setDisabled(false);
-        }, 600);
+        setTimeout(() => { setFlipped([]); setDisabled(false); }, 600);
       } else {
-        setTimeout(() => {
-          setFlipped([]);
-          setDisabled(false);
-        }, 1000);
+        setTimeout(() => { setFlipped([]); setDisabled(false); }, 1000);
       }
     }
   };
 
   const isWinner = cards.length > 0 && matched.length === cards.length;
 
-  const sendReward = async () => {
-    try {
-      const childId = selectedChild?._id;
-      if (!childId) return;
-
-      const res = await fetch(
-        "http://localhost:5000/api/gamification/reward",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-            childId,
-            type: "star",
-            amount: score,
-            reason: "Memory Game",
-          }),
-        }
-      );
-
-      const data = await res.json();
-      console.log("REWARD RESPONSE:", data);
-    } catch (err) {
-      console.log("Reward error:", err);
-    }
-  };
-
-  useEffect(() => {
-    if (isWinner && !rewardSent) {
-      sendReward();
-      setRewardSent(true);
-    }
-  }, [isWinner, rewardSent]);
-
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="text-center mb-6">
-        <h1 className="text-4xl font-black text-primary mb-2">
-          لعبة الذاكرة 🧠
-        </h1>
-
-        <p className="font-bold text-gray-500">
-          عدد المحاولات: {moves}
-        </p>
-
-        <p className="font-black text-sunny text-xl mt-2">
-          ⭐ النقاط: {score}
-        </p>
+    <div className="max-w-4xl mx-auto p-6 ">
+      <div className="text-center mb-10">
+        <h1 className="text-5xl font-black text-primary mb-4">لعبة الذاكرة 🧠</h1>
+        <div className="flex justify-center gap-8 font-bold text-lg">
+          <span className="text-muted-foreground">عدد المحاولات: {moves}</span>
+          <span className="text-primary">⭐ النقاط: {score}</span>
+        </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-5">
+      {/* Grid - تم تكبير الفراغات وتعديل العرض ليكون أكثر تناسقاً */}
+      <div className="grid grid-cols-3 md:grid-cols-4 gap-6">
         {cards.map((card, index) => {
-          const isFlipped =
-            flipped.includes(index) || matched.includes(index);
-
+          const isFlipped = flipped.includes(index) || matched.includes(index);
           return (
-            <button
+            <motion.button
               key={card.id}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => handleFlip(index)}
-              className={`
-                w-full
-                h-[140px]
-                rounded-[28px]
-                shadow-lg
-                flex
-                items-center
-                justify-center
-                overflow-hidden
-                transition
-                hover:scale-105
-                relative
-                ${
-                  isFlipped
-                    ? "bg-white"
-                    : "bg-gradient-to-br from-primary-light to-primary"
-                }
-              `}
+              className={`w-full h-[180px] rounded-[32px] shadow-xl flex items-center justify-center overflow-hidden transition-all border-4 ${
+                isFlipped ? "bg-white border-white" : "bg-primary border-primary"
+              }`}
             >
               {isFlipped ? (
-                <img
-                  src={card.image}
-                  className="w-full h-full object-cover"
-                  alt=""
-                />
+                <img src={card.image} className="w-full h-full object-cover" alt="" />
               ) : (
-                <div className="relative w-full h-full flex items-center justify-center">
-                  <div className="absolute inset-2 rounded-[20px] border-2 border-white/30 bg-white/5" />
-
-                  <span className="text-3xl font-black text-white relative z-10">
-                    {(index % IMAGES.length) + 1}
-                  </span>
-                </div>
+                <span className="text-4xl font-black text-white/20">?</span>
               )}
-            </button>
+            </motion.button>
           );
         })}
       </div>
 
-      {isWinner && (
-        <div className="mt-8 text-center bg-primary-wash border border-primary-light rounded-3xl p-6">
-          <h2 className="text-3xl font-black text-meadow mb-2">
-            🎉 مبروك!
-          </h2>
+      {/* رسالة الفوز */}
+      <AnimatePresence>
+        {isWinner && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }}
+            className="mt-12 text-center bg-card border border-border rounded-3xl p-8 shadow-2xl"
+          >
+            <h2 className="text-4xl font-black text-primary mb-4">🎉 مبروك! أنهيت اللعبة</h2>
+           <div className="flex justify-center gap-4 mt-6">
+  {/* زر إعادة اللعب */}
+  <Button
+    onClick={createGame}
+    className="px-8 py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-lg hover:scale-105 transition-transform"
+  >
+    إعادة اللعب 🔄
+  </Button>
 
-          <p className="font-bold mb-2">
-            أنهيت اللعبة بنجاح
-          </p>
-
-          <p className="font-black text-primary mb-4">
-            ⭐ مجموع النقاط: {score}
-          </p>
-
-          <div className="flex justify-center gap-4">
-            <button
-              onClick={createGame}
-              className="px-6 py-3 rounded-full bg-primary text-white font-black hover:bg-primary-light active:scale-95 transition-all"
-            >
-              إعادة اللعب
-            </button>
-
-            <Link
-              href="/games/GamesHub"
-              className="px-6 py-3 rounded-full bg-sky text-white font-black hover:brightness-110 active:scale-95 transition-all"
-            >
-              العودة للألعاب 🎮
-            </Link>
-          </div>
-        </div>
-      )}
+  {/* زر العودة */}
+  <Link href="/games/GamesHub">
+    <Button
+      variant="outline"
+      className="px-8 py-4 rounded-2xl border-2 border-primary text-primary font-bold text-lg hover:bg-primary/5 hover:scale-105 transition-transform"
+    >
+      العودة للألعاب 🎮
+    </Button>
+  </Link>
+</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

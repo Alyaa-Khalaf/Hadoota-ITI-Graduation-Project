@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useChild } from "@/hooks/useChild";
 import { useSelectedChild } from "@/context/childContext";
+import { motion } from "framer-motion";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -196,24 +197,21 @@ const { selectedChild } = useSelectedChild();
     );
   }
 
-  return (
-    <div className="max-w-4xl mx-auto p-6">
+return (
+  <div className="min-h-screen bg-background p-6">
+    <div className="max-w-4xl mx-auto">
+      {/* Header */}
       <div className="text-center mb-8">
         <div className="text-6xl mb-3">❓</div>
-
-        <h1 className="text-5xl font-black text-purple-600 mb-3">
+        <h1 className="text-5xl font-black text-game-quiz-foreground mb-3">
           اختبر نفسك
         </h1>
-
-        <p className="text-lg font-bold text-gray-500">
+        <p className="text-lg font-bold text-muted-foreground">
           السؤال {currentQuestion + 1} من {round.length}
         </p>
 
         <div className="flex items-center justify-center gap-3 mt-3">
-          <p className="text-2xl font-black text-amber-600">
-            ⭐ النقاط: {score}
-          </p>
-
+          <p className="text-2xl font-black text-amber-500">⭐ النقاط: {score}</p>
           {streak >= 2 && (
             <span className="px-3 py-1 rounded-full bg-orange-100 text-orange-600 font-black text-sm">
               🔥 متتالية {streak}
@@ -222,30 +220,31 @@ const { selectedChild } = useSelectedChild();
         </div>
       </div>
 
-      <div className="w-full h-4 bg-gray-200 rounded-full mb-8 overflow-hidden">
+      {/* Progress Bar */}
+      <div className="w-full h-4 bg-muted rounded-full mb-8 overflow-hidden">
         <div
-          className="h-full bg-green-500 transition-all duration-500"
-          style={{
-            width: `${((currentQuestion + 1) / round.length) * 100}%`,
-          }}
+          className="h-full bg-game-quiz transition-all duration-500"
+          style={{ width: `${((currentQuestion + 1) / round.length) * 100}%` }}
         />
       </div>
 
-      <div className="bg-white rounded-[40px] shadow-xl p-8">
-        <div className="flex justify-center mb-4">
-          <span className={`px-4 py-1 rounded-full font-black text-sm ${diffStyle.badge}`}>
+      {/* Quiz Card */}
+      <div className="bg-card rounded-[40px] shadow-xl p-8 border-t-8 border-game-quiz">
+        <div className="flex justify-center mb-6">
+          <span className={`px-4 py-1 rounded-full font-bold text-sm ${diffStyle.badge}`}>
             {diffStyle.label} • {diffStyle.points} نقطة
           </span>
         </div>
 
-        <h2 className="text-3xl font-black text-center mb-8 leading-relaxed">
+        <h2 className="text-3xl font-black text-center text-foreground mb-8 leading-relaxed">
           {question.question}
         </h2>
 
         <div className="grid gap-4">
           {question.options.map((option) => {
-            const isCorrect = selectedAnswer && option === question.answer;
-            const isWrong = selectedAnswer === option && option !== question.answer;
+            const isSelected = selectedAnswer === option;
+            const isCorrect = isSelected && option === question.answer;
+            const isWrong = isSelected && option !== question.answer;
 
             return (
               <button
@@ -253,18 +252,13 @@ const { selectedChild } = useSelectedChild();
                 onClick={() => handleAnswer(option)}
                 disabled={!!selectedAnswer}
                 className={`
-                  p-5
-                  rounded-[24px]
-                  text-xl
-                  font-black
-                  transition-all
-                  shadow-md
+                  p-5 rounded-[24px] text-xl font-bold transition-all shadow-md
                   ${
                     isCorrect
                       ? "bg-green-500 text-white"
                       : isWrong
                       ? "bg-red-400 text-white"
-                      : "bg-blue-400 text-white hover:scale-[1.02]"
+                      : "bg-game-quiz text-game-quiz-foreground hover:scale-[1.02] hover:brightness-105"
                   }
                 `}
               >
@@ -275,5 +269,6 @@ const { selectedChild } = useSelectedChild();
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

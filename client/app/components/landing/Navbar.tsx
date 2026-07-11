@@ -60,9 +60,9 @@ export default function Navbar() {
             {accessToken ? (
               <Button
                 onClick={() => router.push("/childAdventure")}
-                variant={"default"}
-                  size={"lg"}
-                // className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 font-semibold shadow-lg hover:shadow-primary/20 transition-all"
+                 size="lg"
+            variant={"default"}
+            className=" px-5 py-5 text-lg"
               >
                 🚀 مغامراتي
               </Button>
