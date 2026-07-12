@@ -1,5 +1,6 @@
 "use client";
 
+import {motion} from "framer-motion";
 import React, {
   createContext,
   useContext,
@@ -183,24 +184,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }}
     >
       {isLoading ? (
-        <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-amber-50">
-          <div className="flex gap-4 text-5xl">
-            <span className="animate-bounce">🐶</span>
-            <span className="animate-bounce [animation-delay:200ms]">🐱</span>
-            <span className="animate-bounce [animation-delay:400ms]">🐸</span>
-          </div>
+  <div className="min-h-screen flex flex-col items-center justify-center bg-background relative overflow-hidden">
+    {/* خلفية تجميلية - Blobs */}
+    <div className="absolute top-1/4 -left-20 w-72 h-72 bg-primary/20 rounded-full blur-[100px]" />
+    <div className="absolute bottom-1/4 -right-20 w-72 h-72 bg-rose-200/30 rounded-full blur-[100px]" />
 
-          <h2 className="text-2xl font-bold text-purple-600">
-            جاري التحميل...
-          </h2>
+    <div className="relative z-10 flex flex-col items-center gap-8 p-8 max-w-sm w-full text-center">
+      {/* أيقونات متحركة بانسيابية */}
+      <div className="flex gap-4">
+        {['🐶', '🐱', '🐸'].map((emoji, i) => (
+          <motion.div
+            key={emoji}
+            animate={{ y: [0, -15, 0] }}
+            transition={{ 
+              duration: 1.5, 
+              repeat: Infinity, 
+              delay: i * 0.2,
+              ease: "easeInOut" 
+            }}
+            className="text-5xl"
+          >
+            {emoji}
+          </motion.div>
+        ))}
+      </div>
 
-          <div className="w-52 h-3 bg-gray-200 rounded overflow-hidden">
-            <div className="h-full w-full bg-green-400 animate-pulse origin-left" />
-          </div>
-        </div>
-      ) : (
-        children
-      )}
+      <div className="space-y-2">
+        <h2 className="text-2xl font-black text-primary">جاري التجهيز...</h2>
+        <p className="text-muted-foreground text-sm font-medium">مغامرتك الرائعة تبدأ الآن ✨</p>
+      </div>
+
+      {/* شريط تحميل عصري */}
+      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+        <motion.div 
+          className="h-full bg-primary"
+          initial={{ width: "0%" }}
+          animate={{ width: "100%" }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+        />
+      </div>
+    </div>
+  </div>
+) : (
+  children
+)}
     </AuthContext.Provider>
   );
 };

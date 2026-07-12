@@ -2,10 +2,12 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import RegisterForm from "../../components/auth/RegisterForm";
+import PreviousButton from "@/components/ui/PreviousButton";
 
 export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-[#f3efe9] flex items-center justify-center p-6 font-sans" dir="rtl">
+      <PreviousButton/>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

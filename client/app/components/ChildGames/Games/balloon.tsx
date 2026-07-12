@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useSelectedChild } from "@/context/childContext";
-import { useAuth } from "@/context/AuthContext";
+import { useReward } from "@/hooks/useReward";
 
 type Balloon = {
   id: number;
@@ -16,8 +15,7 @@ const icons = ["⭐", "⭐", "⭐", "💣", "❤️"];
 const GAME_DURATION = 30;
 
 export default function BalloonGame() {
-  const { selectedChild } = useSelectedChild();
-  const { accessToken } = useAuth();
+const { addReward } = useReward();
 
   const [balloons, setBalloons] = useState<Balloon[]>([]);
   const [score, setScore] = useState(0);
@@ -29,36 +27,7 @@ export default function BalloonGame() {
 
   const isPlayingRef = useRef(true);
 
-  // ==========================
-  // إرسال المكافأة
-  // ==========================
-  const sendReward = async () => {
-    try {
-      if (!selectedChild?._id) return;
-
-      const res = await fetch(
-        "http://localhost:5000/api/gamification/reward",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-            childId: selectedChild._id,
-            type: "star",
-            amount: score,
-            reason: "Balloon Game",
-          }),
-        }
-      );
-
-      const data = await res.json();
-      console.log("Reward:", data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  
 
   // ==========================
   // Timer
@@ -147,12 +116,12 @@ export default function BalloonGame() {
   // ==========================
   // إرسال النجوم عند نهاية اللعبة
   // ==========================
-  useEffect(() => {
-    if (time === 0 && !rewardSent) {
-      sendReward();
-      setRewardSent(true);
-    }
-  }, [time, rewardSent]);
+ useEffect(() => {
+  if (time === 0 && !rewardSent) {
+    addReward(score, "Balloon Game");
+    setRewardSent(true);
+  }
+}, [time, rewardSent, score, addReward]);
 
   // ==========================
   // إعادة اللعب

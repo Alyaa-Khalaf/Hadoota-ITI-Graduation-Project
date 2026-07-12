@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useSelectedChild } from "@/context/childContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
+import { useReward } from "@/hooks/useReward";
 
 type Card = {
   id: number;
@@ -22,8 +23,8 @@ const IMAGES = [
 ];
 
 export default function MemoryGame() {
-  const { selectedChild } = useSelectedChild();
-  const { accessToken } = useAuth();
+  const { addReward } = useReward();
+
   const [cards, setCards] = useState<Card[]>([]);
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matched, setMatched] = useState<number[]>([]);
@@ -71,6 +72,16 @@ export default function MemoryGame() {
   };
 
   const isWinner = cards.length > 0 && matched.length === cards.length;
+  useEffect(() => {
+    const rewardPlayer = async () => {
+      if (!isWinner || rewardSent) return;
+
+      await addReward(score, "Memory Game");
+      setRewardSent(true);
+    };
+
+    rewardPlayer();
+  }, [isWinner, rewardSent, score, addReward]);
 
   return (
     <div className="max-w-4xl mx-auto p-6 ">
@@ -92,9 +103,8 @@ export default function MemoryGame() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => handleFlip(index)}
-              className={`w-full h-[180px] rounded-[32px] shadow-xl flex items-center justify-center overflow-hidden transition-all border-4 ${
-                isFlipped ? "bg-white border-white" : "bg-primary border-primary"
-              }`}
+              className={`w-full h-[180px] rounded-[32px] shadow-xl flex items-center justify-center overflow-hidden transition-all border-4 ${isFlipped ? "bg-white border-white" : "bg-primary border-primary"
+                }`}
             >
               {isFlipped ? (
                 <img src={card.image} className="w-full h-full object-cover" alt="" />
@@ -109,30 +119,30 @@ export default function MemoryGame() {
       {/* رسالة الفوز */}
       <AnimatePresence>
         {isWinner && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }}
             className="mt-12 text-center bg-card border border-border rounded-3xl p-8 shadow-2xl"
           >
             <h2 className="text-4xl font-black text-primary mb-4">🎉 مبروك! أنهيت اللعبة</h2>
-           <div className="flex justify-center gap-4 mt-6">
-  {/* زر إعادة اللعب */}
-  <Button
-    onClick={createGame}
-    className="px-8 py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-lg hover:scale-105 transition-transform"
-  >
-    إعادة اللعب 🔄
-  </Button>
+            <div className="flex justify-center gap-4 mt-6">
+              {/* زر إعادة اللعب */}
+              <Button
+                onClick={createGame}
+                className="px-8 py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-lg hover:scale-105 transition-transform"
+              >
+                إعادة اللعب 🔄
+              </Button>
 
-  {/* زر العودة */}
-  <Link href="/games/GamesHub">
-    <Button
-      variant="outline"
-      className="px-8 py-4 rounded-2xl border-2 border-primary text-primary font-bold text-lg hover:bg-primary/5 hover:scale-105 transition-transform"
-    >
-      العودة للألعاب 🎮
-    </Button>
-  </Link>
-</div>
+              {/* زر العودة */}
+              <Link href="/games/GamesHub">
+                <Button
+                  variant="outline"
+                  className="px-8 py-4 rounded-2xl border-2 border-primary text-primary font-bold text-lg hover:bg-primary/5 hover:scale-105 transition-transform"
+                >
+                  العودة للألعاب 🎮
+                </Button>
+              </Link>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -62,7 +62,7 @@ export default function Navbar() {
                 onClick={() => router.push("/childAdventure")}
                  size="lg"
             variant={"default"}
-            className=" px-5 py-5 text-lg"
+            className=" px-5 py-5 text-lg sm:text-md"
               >
                 🚀 مغامراتي
               </Button>

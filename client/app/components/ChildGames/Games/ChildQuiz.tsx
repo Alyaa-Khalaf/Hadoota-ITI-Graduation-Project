@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
-import { useChild } from "@/hooks/useChild";
-import { useSelectedChild } from "@/context/childContext";
 import { motion } from "framer-motion";
+import { useReward } from "@/hooks/useReward";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -81,8 +79,8 @@ function buildRound(): Question[] {
 }
 
 export default function QuizGame() {
-const { selectedChild } = useSelectedChild();
-  const { accessToken } = useAuth();
+
+const { addReward } = useReward();
 
   const [round, setRound] = useState<Question[]>(() => buildRound());
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -117,35 +115,14 @@ const { selectedChild } = useSelectedChild();
     }, 1000);
   };
 
-  const sendReward = async () => {
-    try {
-      const childId = selectedChild?._id;
-      if (!childId || !accessToken) return;
-
-      await fetch("http://localhost:5000/api/gamification/reward", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          childId,
-          type: "star",
-          amount: score,
-          reason: "Quiz Game Reward",
-        }),
-      });
-    } catch (error) {
-      console.error("Reward Error:", error);
-    }
-  };
+ 
 
   useEffect(() => {
-    if (finished && !rewardSent) {
-      sendReward();
-      setRewardSent(true);
-    }
-  }, [finished]);
+  if (finished && !rewardSent) {
+    addReward(score, "Quiz Game");
+    setRewardSent(true);
+  }
+}, [finished, rewardSent, score, addReward]);
 
   const restartGame = () => {
     setRound(buildRound());

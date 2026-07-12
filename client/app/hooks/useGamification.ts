@@ -49,7 +49,9 @@ export function useGamification(childId: string) {
       });
 
       const data = await res.json();
-
+console.log("Response:", data);
+console.log("Status:", res.status);
+console.log("Gamification Data:", data.data);
       if (res.ok && data?.success) {
         setGamification(data.data);
       } else {

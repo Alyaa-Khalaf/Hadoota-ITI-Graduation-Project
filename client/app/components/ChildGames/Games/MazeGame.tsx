@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useReward } from "@/hooks/useReward";
 
 // ============================================================
 // Types
@@ -230,6 +231,9 @@ function DirectionButton({
 // ============================================================
 
 export default function MazeGame() {
+  const { addReward } = useReward();
+  const [rewardSent, setRewardSent] = useState(false);
+
   const [resetKey, setResetKey] = useState(0);
   const [player, setPlayer] = useState<Position>({ row: 0, col: 0 });
   const [steps, setSteps] = useState(0);
@@ -246,15 +250,18 @@ export default function MazeGame() {
   );
 
   // عداد الوقت — بيوقف تلقائي لما اللعبة تخلص
-  useEffect(() => {
-    if (finished) return;
+ useEffect(() => {
+  if (!finished || rewardSent) return;
 
-    const timer = setInterval(() => {
-      setElapsed((t) => t + 1);
-    }, 1000);
+  const reward =
+    steps <= 20 ? 50 :
+    steps <= 35 ? 40 :
+    steps <= 50 ? 30 :
+    20;
 
-    return () => clearInterval(timer);
-  }, [finished, resetKey]);
+  addReward(reward, "Maze Game");
+  setRewardSent(true);
+}, [finished, rewardSent, steps, addReward]);
 
   const movePlayer = useCallback(
     (direction: Direction) => {
@@ -269,10 +276,19 @@ export default function MazeGame() {
         playStep();
         setSteps((s) => s + 1);
 
-        if (next.row === goal.row && next.col === goal.col) {
-          setFinished(true);
-          playWin();
-        }
+       if (next.row === goal.row && next.col === goal.col) {
+  setFinished(true);
+  playWin();
+
+  // كل ما الخطوات أقل المكافأة أكبر
+  const reward =
+    steps <= 20 ? 50 :
+    steps <= 35 ? 40 :
+    steps <= 50 ? 30 :
+    20;
+
+  addReward(reward, "Maze Game");
+}
 
         return next;
       });
@@ -299,6 +315,7 @@ export default function MazeGame() {
     setElapsed(0);
     setFinished(false);
     setResetKey((k) => k + 1);
+    setRewardSent(false);
   }, []);
 
   const mazePixelSize = GRID_SIZE * CELL_PX;

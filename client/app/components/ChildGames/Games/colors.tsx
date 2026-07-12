@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useReward } from "@/hooks/useReward";
 
 // 🎨 الألوان المتاحة في اللعبة — اسم عربي + قيمة hex فعلية
 // (بنستخدم inline style مش كلاسات Tailwind، لأن الألوان بتتولّد
@@ -97,10 +98,13 @@ function generateRound() {
 }
 
 export default function ColorMatchGame() {
+  const { addReward } = useReward();
   const [round, setRound] = useState(generateRound);
   const [score, setScore] = useState(0);
   const [time, setTime] = useState(GAME_DURATION);
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
+  const [rewardSent, setRewardSent] = useState(false);
+     const [resetKey, setResetKey] = useState(0);
 
   const isPlayingRef = useRef(true);
   const { playCorrect, playWrong } = useGameSounds();
@@ -121,7 +125,15 @@ export default function ColorMatchGame() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [resetKey]);
+
+  // إرسال النجوم عند نهاية اللعبة
+  useEffect(() => {
+  if (time === 0 && !rewardSent) {
+    addReward(score, "Color Match Game");
+    setRewardSent(true);
+  }
+}, [time, rewardSent, score, addReward]);
 
   const handleChoice = (hex: string) => {
     if (!isPlayingRef.current) return;
@@ -143,12 +155,15 @@ export default function ColorMatchGame() {
     }, 500);
   };
 
-  const handleRestart = () => {
-    setScore(0);
-    setTime(GAME_DURATION);
-    setRound(generateRound());
-    isPlayingRef.current = true;
-  };
+
+const handleRestart = () => {
+  setScore(0);
+  setTime(GAME_DURATION);
+  setRound(generateRound());
+  setFeedback(null);
+  setRewardSent(false);
+  setResetKey((k) => k + 1);
+};
 
   return (
     <div
