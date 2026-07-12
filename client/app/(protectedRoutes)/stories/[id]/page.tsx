@@ -3,15 +3,26 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, AlertCircle, Home, ArrowRight } from "lucide-react";
+import { BookOpen, AlertCircle, Home, ArrowRight, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { API_BASE } from "@/lib/apiConfig";
 import { mapScenesWithAuthMedia, type MappedStoryScene } from "@/services/mediaService";
 import StoryPlayer from "@/components/story-player/StoryPlayer";
 import HomeButton from "@/components/ui/HomeButton";
 import PreviousButton from "@/components/ui/PreviousButton";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/Button";
+
+// ديكور خفيف بس ثابت — نجوم وفقاقيع طايرة في الخلفية، بدون تأثير على أي لوجيك
+const FLOATING_BITS = [
+  { icon: "⭐", top: "8%", left: "6%", size: "text-3xl", delay: 0 },
+  { icon: "✨", top: "18%", left: "88%", size: "text-2xl", delay: 0.4 },
+  { icon: "🌟", top: "72%", left: "10%", size: "text-3xl", delay: 0.8 },
+  { icon: "☁️", top: "60%", left: "90%", size: "text-4xl", delay: 0.2 },
+  { icon: "🎈", top: "85%", left: "80%", size: "text-3xl", delay: 0.6 },
+  { icon: "✨", top: "40%", left: "4%", size: "text-xl", delay: 1 },
+];
+
+
 
 export default function StoryReaderPage() {
   const { id } = useParams<{ id: string }>();
@@ -70,66 +81,64 @@ export default function StoryReaderPage() {
     };
   }, [id, accessToken, isLoading]);
 
-  // ---------- LOADING ----------
+  // ---------- LOADING (بدون كارد) ----------
   if (loading) {
     return (
       <div
         dir="rtl"
         className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background px-4"
       >
-        {/* Decorative blobs */}
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
           <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-secondary/40 blur-3xl" />
           <div className="absolute top-1/2 left-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/20 blur-3xl" />
         </div>
+        {/* <FloatingDecor /> */}
 
-        <Card className="w-full max-w-md border-border/60 bg-card/70 shadow-xl backdrop-blur-xl">
-          <CardContent className="flex flex-col items-center gap-6 py-12">
-            <motion.div
-              initial={{ scale: 0.6, rotate: -10 }}
-              animate={{ scale: 1, rotate: [0, -8, 8, 0] }}
-              transition={{
-                scale: { type: "spring", stiffness: 260, damping: 18 },
-                rotate: { repeat: Infinity, duration: 2.4, ease: "easeInOut" },
-              }}
-              className="grid h-24 w-24 place-items-center rounded-3xl bg-primary/10 text-6xl shadow-inner"
-            >
-              📖
-            </motion.div>
+        <div className="w-full max-w-md flex flex-col items-center gap-6 text-center">
+          <motion.div
+            initial={{ scale: 0.6, rotate: -10 }}
+            animate={{ scale: 1, rotate: [0, -8, 8, 0] }}
+            transition={{
+              scale: { type: "spring", stiffness: 260, damping: 18 },
+              rotate: { repeat: Infinity, duration: 2.4, ease: "easeInOut" },
+            }}
+            className="text-7xl"
+          >
+            📖
+          </motion.div>
 
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl font-extrabold text-foreground">
-                بنفتح صفحات الحدوتة...
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                استنى ثانية، الحكاية جاية 💫
-              </p>
-            </div>
+          <div className="space-y-2">
+            <h2 className="text-3xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              بنفتح صفحات الحدوتة...
+            </h2>
+            <p className="text-base text-muted-foreground">
+              استنى ثانية، الحكاية جاية 💫
+            </p>
+          </div>
 
-            <div className="flex items-center gap-2">
-              {[0, 1, 2].map((i) => (
-                <motion.span
-                  key={i}
-                  initial={{ y: 0, opacity: 0.4 }}
-                  animate={{ y: [-6, 0, -6], opacity: [0.4, 1, 0.4] }}
-                  transition={{
-                    duration: 1.1,
-                    repeat: Infinity,
-                    delay: i * 0.15,
-                    ease: "easeInOut",
-                  }}
-                  className="h-3 w-3 rounded-full bg-primary"
-                />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+          <div className="flex items-center gap-2">
+            {[0, 1, 2].map((i) => (
+              <motion.span
+                key={i}
+                initial={{ y: 0, opacity: 0.4 }}
+                animate={{ y: [-6, 0, -6], opacity: [0.4, 1, 0.4] }}
+                transition={{
+                  duration: 1.1,
+                  repeat: Infinity,
+                  delay: i * 0.15,
+                  ease: "easeInOut",
+                }}
+                className="h-3.5 w-3.5 rounded-full bg-primary"
+              />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
-  // ---------- ERROR ----------
+  // ---------- ERROR (بدون كارد) ----------
   if (error || !scenes) {
     return (
       <div
@@ -143,99 +152,84 @@ export default function StoryReaderPage() {
 
         <AnimatePresence>
           <motion.div
-            key="error-card"
-            initial={{ opacity: 0, y: 20, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+            key="error-content"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 220, damping: 20 }}
-            className="w-full max-w-md"
+            className="w-full max-w-md flex flex-col items-center gap-5 text-center"
           >
-            <Card className="border-border/60 bg-card/80 shadow-2xl backdrop-blur-xl">
-              <CardContent className="flex flex-col items-center gap-5 py-10 text-center">
-                <div className="relative">
-                  <div className="grid h-24 w-24 place-items-center rounded-3xl bg-destructive/10 text-6xl">
-                    📕
-                  </div>
-                  <span className="absolute -bottom-1 -left-1 grid h-9 w-9 place-items-center rounded-full bg-destructive text-destructive-foreground shadow-md">
-                    <AlertCircle className="h-5 w-5" />
-                  </span>
-                </div>
+            <div className="relative">
+              <div className="grid h-28 w-28 place-items-center text-7xl">
+                📕
+              </div>
+              <span className="absolute -bottom-1 -left-1 grid h-9 w-9 place-items-center rounded-full bg-destructive text-destructive-foreground shadow-md">
+                <AlertCircle className="h-5 w-5" />
+              </span>
+            </div>
 
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-extrabold text-foreground">
-                    الصفحة دي ضاعت منّا شوية
-                  </h2>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {error || "تعذّر تحميل الحدوتة"}
-                  </p>
-                </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-extrabold text-foreground">
+                الصفحة دي ضاعت منّا شوية
+              </h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {error || "تعذّر تحميل الحدوتة"}
+              </p>
+            </div>
 
-                <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-center">
-                  <Button
-                    variant="outline"
-                    onClick={() => router.back()}
-                    className="rounded-2xl"
-                  >
-                    <ArrowRight className="ml-1 h-4 w-4" />
-                    رجوع
-                  </Button>
-                  <Button
-                    onClick={() => router.push("/childAdventure")}
-                    className="rounded-2xl font-bold shadow-md"
-                  >
-                    <Home className="ml-1 h-4 w-4" />
-                    الرجوع للمغامرة
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-center">
+              <Button
+                variant="outline"
+                onClick={() => router.back()}
+                className="rounded-2xl"
+              >
+                <ArrowRight className="ml-1 h-4 w-4" />
+                رجوع
+              </Button>
+              <Button
+                onClick={() => router.push("/childAdventure")}
+                className="rounded-2xl font-bold shadow-md"
+              >
+                <Home className="ml-1 h-4 w-4" />
+                الرجوع للمغامرة
+              </Button>
+            </div>
           </motion.div>
         </AnimatePresence>
       </div>
     );
   }
 
-  // ---------- READY ----------
+  // ---------- READY (بدون أي كارد حوالين StoryPlayer) ----------
   return (
-    <div dir="rtl" className="relative min-h-screen bg-background">
+    <div dir="rtl" className="relative min-h-screen bg-primary/10">
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-secondary/30 blur-3xl" />
       </div>
 
+
       {/* Top bar */}
-      <header className="sticky top-0 z-20 border-b border-border/50 bg-background/70 backdrop-blur-xl">
+      <header className="sticky top-0 z-20 border-b-2 border-border/50 bg-background/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-2">
             <PreviousButton />
             <HomeButton />
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 rounded-full border border-border/60 bg-card/60 px-4 py-1.5 shadow-sm backdrop-blur"
-          >
+          <div className="flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-primary" />
             <h1 className="max-w-[60vw] truncate text-sm font-bold text-foreground sm:text-base">
               {title}
             </h1>
-          </motion.div>
+            <Sparkles className="h-3.5 w-3.5 text-accent" />
+          </div>
 
           <div className="w-[88px]" />
         </div>
       </header>
 
-      {/* Player */}
-      <main className="mx-auto max-w-5xl px-4 py-6">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="overflow-hidden rounded-3xl border border-border/60 bg-card/70 shadow-2xl backdrop-blur-xl"
-        >
-          <StoryPlayer scenes={scenes} title={title} />
-        </motion.div>
-      </main>
+      {/* Player - بدون أي صندوق أو حدود حواليه */}
+      <StoryPlayer scenes={scenes} title={title} />
     </div>
   );
 }

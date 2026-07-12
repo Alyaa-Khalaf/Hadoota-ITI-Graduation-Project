@@ -329,48 +329,63 @@ export default function StoryPlayer({
 
   // -------------------- شاشة "اضغطي للبدء" --------------------
   if (needsTapToPlay) {
-    return (
-      <>
-        {audioElement}
-        <div
-          dir="rtl"
-          className="min-h-[70vh] flex items-center justify-center p-6 bg-gradient-to-b from-page-dreamy via-page-sky to-white"
+   return (
+  <>
+    {audioElement}
+    {/* خلفية بتأثير Dreamy Gradient */}
+    <div className="min-h-[70vh] flex items-center justify-center p-6 bg-gradient-to-br from-[#E0F2FE] via-[#EDE9FE] to-[#FCE7F3]">
+      
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 200, damping: 20 }}
+        className="max-w-md w-full bg-white/70 backdrop-blur-2xl rounded-[3rem] shadow-2xl p-10 text-center border border-white/50"
+      >
+        {/* أيقونة تفاعلية */}
+        <motion.div
+          animate={{ y: [0, -10, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          className="text-7xl mb-6"
         >
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-md w-full bg-white rounded-3xl shadow-story border-[3px] border-primary-light p-8 text-center"
+          🎧
+        </motion.div>
+
+        {title && (
+          <h1 className="text-3xl font-black text-foreground mb-3 tracking-tight">
+            {title}
+          </h1>
+        )}
+
+        <p className="text-muted-foreground mb-8 leading-relaxed font-medium">
+          {hasAudio
+            ? "الحدوتة جاهزة! اضغطي لتسمعي القصة مع الصوت 🎙️"
+            : "الحدوتة جاهزة! اضغطي للبدء (الصوت غير متاح — سيتم عرض النص فقط)"}
+        </p>
+
+        {/* زر عصري بـ Gradient */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          type="button"
+          onClick={handleStartListening}
+          className="w-full bg-gradient-to-r from-primary to-primary/80 text-white font-black px-8 py-5 rounded-[2rem] shadow-xl shadow-primary/20 transition-all text-lg hover:shadow-2xl"
+        >
+          ▶️ استمعي للحدوتة
+        </motion.button>
+
+        {playbackError && (
+          <motion.p 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }}
+            className="text-destructive text-sm mt-6 font-bold bg-destructive/10 py-2 px-4 rounded-full"
           >
-            <motion.div
-              animate={{ rotate: [0, -6, 6, 0] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-              className="text-6xl mb-4"
-            >
-              🎧
-            </motion.div>
-            {title && (
-              <h1 className="text-xl font-black text-primary mb-2">{title}</h1>
-            )}
-            <p className="text-ink-muted mb-6 leading-relaxed">
-              {hasAudio
-                ? "الحدوتة جاهزة! اضغطي لتسمعي القصة مع الصوت"
-                : "الحدوتة جاهزة! اضغطي للبدء (الصوت غير متاح — سيتم عرض النص فقط)"}
-            </p>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              type="button"
-              onClick={handleStartListening}
-              className="bg-sunny text-ink font-black px-8 py-4 rounded-2xl shadow-button hover:brightness-105 transition text-lg border-2 border-white"
-            >
-              ▶️ استمعي للحدوتة
-            </motion.button>
-            {playbackError && (
-              <p className="text-rose text-sm mt-4 font-bold">{playbackError}</p>
-            )}
-          </motion.div>
-        </div>
-      </>
-    );
+            {playbackError}
+          </motion.p>
+        )}
+      </motion.div>
+    </div>
+  </>
+);
   }
 
   const displayedText = words.slice(0, visibleWords).join(" ");
@@ -412,7 +427,7 @@ export default function StoryPlayer({
             transition={{ duration: 0.35 }}
             className="bg-white rounded-3xl shadow-story border border-border-warm overflow-hidden"
           >
-            <div className="w-full bg-gradient-to-b from-cat-magic to-white flex items-center justify-center">
+            <div className="relative w-full h-[55vh] sm:h-[60vh] min-h-[320px] max-h-[560px]">
               <motion.img
                 key={scene.image}
                 initial={{ opacity: 0, scale: 1.03 }}
@@ -420,17 +435,20 @@ export default function StoryPlayer({
                 transition={{ duration: 0.5 }}
                 src={scene.image}
                 alt=""
-                className="w-full max-h-[min(70vh,32rem)] object-contain"
+                className="absolute inset-0 w-full h-full object-cover"
               />
-            </div>
 
-            <div className="p-5 sm:p-6 min-h-[120px]">
-              <p className="text-lg sm:text-xl leading-relaxed text-ink text-right">
-                {showChoices ? scene.text : displayedText}
-                {!showChoices && visibleWords < words.length && (
-                  <span className="inline-block w-0.5 h-5 bg-primary mr-1 animate-pulse align-middle" />
-                )}
-              </p>
+              {/* تدرّج غامق تحت النص عشان يبان واضح فوق أي خلفية */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent pointer-events-none" />
+
+              <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+                <p className="text-lg sm:text-xl leading-relaxed text-white text-right drop-shadow-md">
+                  {showChoices ? scene.text : displayedText}
+                  {!showChoices && visibleWords < words.length && (
+                    <span className="inline-block w-0.5 h-5 bg-white mr-1 animate-pulse align-middle" />
+                  )}
+                </p>
+              </div>
             </div>
           </motion.div>
         </AnimatePresence>
