@@ -333,7 +333,7 @@ export default function StoryPlayer({
   <>
     {audioElement}
     {/* خلفية بتأثير Dreamy Gradient */}
-    <div className="min-h-[70vh] flex items-center justify-center p-6 bg-gradient-to-br from-[#E0F2FE] via-[#EDE9FE] to-[#FCE7F3]">
+    <div className="min-h-[70vh] flex items-center justify-center p-6 ">
       
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}

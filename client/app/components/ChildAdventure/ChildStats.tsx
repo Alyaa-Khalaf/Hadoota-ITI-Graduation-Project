@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/Badge";
 import { Star, Trophy } from "lucide-react";
 import { useGamification } from "@/hooks/useGamification";
 import { useSelectedChild } from "@/context/childContext";
@@ -36,7 +36,7 @@ export default function ChildStats() {
     <motion.section 
       initial={{ opacity: 0, y: 20 }} 
       animate={{ opacity: 1, y: 0 }} 
-      className="space-y-6 container"
+      className="space-y-6 container bg-pr"
       dir="rtl"
     >
       <AdventureHeader header="إنجازاتك" subHeader="شوف اللي حققته ⭐" />

@@ -6,7 +6,7 @@ import { useRecentStories } from "@/hooks/useRecentStories";
 import AdventureHeader from "./AdventureHeader";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/Badge";
 import { Progress } from "@/components/ui/progress";
 import { BookOpen, ChevronLeft, Sparkles, Star } from "lucide-react";
 
@@ -36,7 +36,7 @@ export default function RecentStories() {
       <section className="space-y-6 my-8 container" id="stories">
         <AdventureHeader header="حواديتك" subHeader="ارجع كمل مغامراتك 📚" />
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="rounded-[32px] border-4 border-dashed bg-primary border-border overflow-hidden">
+          <Card className="rounded-[32px]   bg-primary border-border overflow-hidden">
             <CardContent className="pt-14 pb-14 text-center relative">
               {/* زخارف كرتونية */}
               <span className="absolute top-4 left-6 text-2xl animate-bounce">✨</span>
@@ -99,7 +99,7 @@ export default function RecentStories() {
             >
               <Card
                 onClick={() => router.push(`/stories/${story._id}`)}
-                className="group rounded-[26px] border-2 border-border/60 bg-accent-foreground shadow-sm transition-all hover:shadow-lg hover:border-primary/40 cursor-pointer overflow-hidden"
+                className="group rounded-[26px] border-none bg-accent-foreground shadow-sm transition-all hover:shadow-md hover:bg-accent-foreground/80 cursor-pointer overflow-hidden"
               >
                 <CardContent className="p-4 sm:p-5">
                   <div className="flex items-center gap-4" dir="rtl">

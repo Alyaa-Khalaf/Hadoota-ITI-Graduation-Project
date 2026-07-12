@@ -13,9 +13,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import Link from "next/link"; // استبدلنا Button بـ Link لـ Next.js
 
 type Feature = {
   icon: LucideIcon;
