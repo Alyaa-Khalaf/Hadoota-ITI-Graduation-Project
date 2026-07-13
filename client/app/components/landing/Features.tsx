@@ -38,12 +38,12 @@ const features: Feature[] = [
 
 export function FeaturesSection() {
   return (
-    <section dir="rtl" className="relative overflow-hidden  px-4 py-24 sm:px-8 sm:py-32">
-      {/* الخلفية والأشكال المتحركة كما هي */}
+    // تم ضبط الخلفية لتكون بيضاء (bg-white)
+    <section dir="rtl" className="relative overflow-hidden bg-white px-4 py-24 sm:px-8 sm:py-32">
       <div className="relative mx-auto max-w-7xl">
         <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mx-auto max-w-3xl text-center">
           <Badge variant="secondary" className="mb-6 rounded-full border border-white/60 bg-white/60 px-4 py-1.5 text-sm font-medium text-primary shadow-sm backdrop-blur-md">
-             لماذا حدوتة؟
+              لماذا حدوتة؟
           </Badge>
           <h2 className="text-4xl font-bold leading-tight tracking-tight text-slate-900 sm:text-5xl md:text-6xl">
             كل قصة تصنع مغامرة جديدة
@@ -60,10 +60,10 @@ export function FeaturesSection() {
         </div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-16 flex flex-col items-center justify-center gap-3 sm:mt-20">
-        <Button
+          <Button
             size="lg"
             variant={"default"}
-            className=" px-5 py-5 text-lg"
+            className="px-5 py-5 text-lg"
           >
             ابدأ مغامرتك الآن
           </Button>
@@ -74,12 +74,11 @@ export function FeaturesSection() {
   );
 }
 
-// فصلنا الـ Card في مكون فرعي لتحسين الأداء (أفضل ممارسة في Next.js)
 function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
   const Icon = feature.icon;
   return (
     <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.06 }} whileHover={{ y: -6 }} className={`group ${feature.span}`}>
-      <Card className="relative h-full overflow-hidden rounded-3xl border border-white/60 bg-white/60 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.1)] backdrop-blur-xl">
+      <Card className="relative h-full overflow-hidden rounded-3xl border border-white/60 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.1)] backdrop-blur-xl">
         <CardContent className="relative flex h-full flex-col items-start gap-5 p-7 sm:p-8">
           <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${feature.iconBg} shadow-sm ring-1 ring-white/70`}>
             <Icon className={`h-7 w-7 ${feature.iconColor}`} />

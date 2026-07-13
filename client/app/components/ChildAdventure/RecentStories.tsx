@@ -12,7 +12,6 @@ import { BookOpen, ChevronLeft, Sparkles, Star } from "lucide-react";
 
 export default function RecentStories() {
   const router = useRouter();
-
   const { stories, loading } = useRecentStories();
 
   if (loading) {
@@ -21,10 +20,7 @@ export default function RecentStories() {
         <AdventureHeader header="حواديتك" subHeader="ارجع كمل مغامراتك 📚" />
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-24 rounded-[28px] bg-muted/60 animate-pulse"
-            />
+            <div key={i} className="h-24 rounded-[var(--radius)] bg-muted animate-pulse" />
           ))}
         </div>
       </section>
@@ -36,37 +32,30 @@ export default function RecentStories() {
       <section className="space-y-6 my-8 container" id="stories">
         <AdventureHeader header="حواديتك" subHeader="ارجع كمل مغامراتك 📚" />
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="rounded-[32px]   bg-primary border-border overflow-hidden">
+          {/* خلفية كارت الترحيب معدلة لتناسب ألواننا */}
+          <Card className="rounded-[var(--radius)] border-none bg-accent/30 shadow-none">
             <CardContent className="pt-14 pb-14 text-center relative">
-              {/* زخارف كرتونية */}
-              <span className="absolute top-4 left-6 text-2xl animate-bounce">✨</span>
-              <span className="absolute top-8 right-8 text-xl animate-pulse">⭐</span>
+              <span className="absolute top-4 left-6 text-2xl">✨</span>
+              <span className="absolute top-8 right-8 text-xl">⭐</span>
 
-              <motion.div
-                animate={{ rotate: [0, -8, 8, -8, 0] }}
-                transition={{ repeat: Infinity, duration: 3, repeatDelay: 1 }}
-                className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-[24px] bg-primary/10 shadow-inner"
-              >
+              <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-[24px] bg-primary/10">
                 <BookOpen className="h-9 w-9 text-primary" />
-              </motion.div>
+              </div>
 
-              <h3 className="font-heading font-extrabold text-2xl text-foreground mb-2">
+              <h3 className="font-bold text-2xl text-foreground mb-2">
                 لسه معملتش أي حدوتة 🌟
               </h3>
-              <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto leading-relaxed">
+              <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto">
                 ابدأ أول مغامرة وهنحطهالك هنا عشان ترجعلها في أي وقت
               </p>
-              <motion.div whileTap={{ scale: 0.92 }} whileHover={{ scale: 1.05 }}>
-                <Button
-                  onClick={() => router.push("/characters")}
-                  size="lg"
-                  className="gap-2 rounded-full px-8 h-12 text-base font-bold shadow-lg"
-                  variant="ghost"
-                >
-                  <Sparkles className="h-5 w-5" />
-                  ابدأ حدوتة جديدة
-                </Button>
-              </motion.div>
+              <Button
+                onClick={() => router.push("/characters")}
+                size="lg"
+                className="gap-2 rounded-full px-8 h-12 text-base font-bold"
+              >
+                <Sparkles className="h-5 w-5" />
+                ابدأ حدوتة جديدة
+              </Button>
             </CardContent>
           </Card>
         </motion.div>
@@ -78,12 +67,7 @@ export default function RecentStories() {
     <section className="space-y-6 container my-8">
       <AdventureHeader header="حواديتك" subHeader="ارجع كمل مغامراتك 📚" />
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ staggerChildren: 0.08 }}
-        className="space-y-3.5"
-      >
+      <motion.div className="space-y-4">
         {stories.map((story: any, index: number) => {
           const progress = story.progress ?? 0;
           const isCompleted = progress >= 100;
@@ -91,77 +75,43 @@ export default function RecentStories() {
           return (
             <motion.div
               key={story._id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ delay: index * 0.06, type: "spring", stiffness: 300, damping: 20 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
             >
               <Card
                 onClick={() => router.push(`/stories/${story._id}`)}
-                className="group rounded-[26px] border-none bg-accent-foreground shadow-sm transition-all hover:shadow-md hover:bg-accent-foreground/80 cursor-pointer overflow-hidden"
+                className="group rounded-[var(--radius)] border border-border/50 bg-card shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden"
               >
-                <CardContent className="p-4 sm:p-5">
+                <CardContent className="p-5">
                   <div className="flex items-center gap-4" dir="rtl">
-                    {/* أيقونة القصة */}
-                    <div className="relative flex h-14 w-14 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-primary/10 transition-transform group-hover:scale-105 group-hover:bg-primary/15">
-                      <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+                    {/* أيقونة القصة بتنسيق ألوان أهدأ */}
+                    <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary/5">
+                      <BookOpen className="h-7 w-7 text-primary" />
                       {isCompleted && (
-                        <motion.span
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: "spring", stiffness: 400, damping: 12 }}
-                          className="absolute -top-2 -left-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md"
-                        >
+                        <div className="absolute -top-1 -left-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
                           <Star className="h-3.5 w-3.5 fill-current" />
-                        </motion.span>
+                        </div>
                       )}
                     </div>
 
-                    {/* معلومات القصة */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <h3 className="font-heading font-bold text-base sm:text-lg text-foreground truncate">
-                          {story.title}
-                        </h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-lg text-foreground truncate">{story.title}</h3>
                         {isCompleted && (
-                          <Badge
-                            variant="secondary"
-                            className="rounded-full text-[10px] font-bold shrink-0 hidden sm:inline-flex px-2.5 py-0.5"
-                          >
-                            🎉 خلصت!
-                          </Badge>
+                          <Badge variant="secondary" className="rounded-full text-[10px] font-bold">🎉 خلصت!</Badge>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground truncate mb-2.5">
-                        {story.topic}
-                      </p>
+                      <p className="text-sm text-muted-foreground truncate mb-3">{story.topic}</p>
 
-                      {/* شريط التقدم */}
-                      <div className="flex items-center gap-2.5">
-                        <Progress
-                          value={progress}
-                          className="h-2.5 flex-1 rounded-full [&>div]:rounded-full"
-                        />
-                        <span className="text-xs font-extrabold text-primary tabular-nums shrink-0 bg-primary/10 rounded-full px-2 py-0.5">
-                          {progress}%
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <Progress value={progress} className="h-2 flex-1" />
+                        <span className="text-xs font-bold text-primary tabular-nums">{progress}%</span>
                       </div>
                     </div>
 
-                    {/* زر الإجراء */}
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/stories/${story._id}`);
-                      }}
-                      size="icon"
-                      variant="ghost"
-                      className="shrink-0 rounded-full h-11 w-11 text-muted-foreground group-hover:text-primary group-hover:bg-primary/10 transition-colors"
-                      aria-label="قراءة"
-                    >
+                    <div className="shrink-0 text-muted-foreground group-hover:text-primary">
                       <ChevronLeft className="h-6 w-6" />
-                    </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

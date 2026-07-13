@@ -69,7 +69,7 @@ export default function LoginForm() {
       {/* العنوان */}
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-900">أهلاً بعودتك</h2>
-        <p className="mt-2 text-sm text-gray-500">تابع رحلة طفلك اليومية</p>
+        <p className="mt-2 text-base text-gray-500">تابع رحلة طفلك اليومية</p>
       </div>
 
       {error && (
@@ -85,7 +85,7 @@ export default function LoginForm() {
           <div className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-3 text-gray-400">أو</span>
+          <span className="bg-white px-3 text-gray-400 text-base">أو</span>
         </div>
       </div>
 
@@ -132,7 +132,7 @@ export default function LoginForm() {
         <div className="text-left">
           <Link
             href="/auth/forgot-password"
-            className="text-xs font-medium text-gray-500 hover:text-gray-700"
+            className="text-sm font-bold text-gray-500 hover:text-gray-700"
           >
             نسيت كلمة المرور؟
           </Link>
@@ -142,7 +142,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full rounded-full bg-orange-400 hover:bg-orange-500 py-4 text-base font-bold text-gray-900 transition-colors disabled:opacity-50"
+          className="w-full rounded-full bg-primary hover:bg-primary/80 py-4 text-base font-bold text-gray-900 transition-colors disabled:opacity-50"
         >
           {isLoading ? "جاري الدخول..." : "تسجيل الدخول"}
         </button>

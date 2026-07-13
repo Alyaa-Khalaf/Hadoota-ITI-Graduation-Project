@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Input from "../ui/Input";
-import Button from "../ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
 import { API_ORIGIN } from "@/lib/apiConfig";
 
@@ -116,15 +116,14 @@ export default function ParentGateForm() {
         />
       </div>
 
-      <Button
-        type="submit"
-        variant="primary"
-        fullWidth
-        disabled={isLoading || !password}
-        className="!py-3.5 font-black"
-      >
-        {isLoading ? "جاري التأكيد..." : "تأكيد والدخول"}
-      </Button>
+     <Button
+  type="submit"
+  variant="default"
+  disabled={isLoading || !password}
+  className="w-full !py-6 text-base font-black rounded-xl shadow-lg hover:shadow-xl transition-all"
+>
+  {isLoading ? "جاري التأكيد..." : "تأكيد والدخول"}
+</Button>
     </form>
   );
 }
