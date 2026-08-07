@@ -1,4 +1,5 @@
 import * as React from "react"
+import type { ReactNode } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -97,4 +98,34 @@ export {
   CardAction,
   CardDescription,
   CardContent,
+}
+
+/**
+ * Legacy default-export Card used across the ParentDashboard and auth flows.
+ * Different API from the shadcn `Card` named export above (default export,
+ * padded white surface with an optional `hoverEffect`).
+ * Kept alongside so both import styles resolve on case-insensitive filesystems.
+ */
+interface LegacyCardProps {
+  children: ReactNode
+  className?: string
+  hoverEffect?: boolean
+}
+
+export default function LegacyCard({
+  children,
+  className = "",
+  hoverEffect = true,
+}: LegacyCardProps) {
+  return (
+    <div
+      className={cn(
+        "rounded-3xl bg-white p-8 border border-border-warm/30 shadow-sm transition duration-300",
+        hoverEffect && "hover:-translate-y-1.5 hover:shadow-md",
+        className
+      )}
+    >
+      {children}
+    </div>
+  )
 }
