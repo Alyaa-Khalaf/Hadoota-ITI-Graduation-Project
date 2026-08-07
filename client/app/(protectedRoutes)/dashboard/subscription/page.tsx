@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Button from "@/components/ui/Button";
+import {Button} from "@/components/ui/Button";
 import { API_BASE } from "@/lib/apiConfig";
 import type { Plan } from "@/types/pricing";
 import { useAuth } from "@/context/AuthContext";

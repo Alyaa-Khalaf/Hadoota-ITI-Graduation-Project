@@ -73,7 +73,7 @@ export default function Pricing() {
                 )}
 
                 {plan.badge && (
-                  <span className="inline-block bg-accent text-accent-foreground text-sm font-bold px-4 py-1.5 rounded-full mb-5">
+                  <span className="inline-block bg-primary/50 text-accent-foreground text-sm font-bold px-2 py-1.5 rounded-full mb-5">
                     {plan.badge}
                   </span>
                 )}

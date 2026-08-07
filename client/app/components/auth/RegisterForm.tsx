@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { API_ORIGIN } from "@/lib/apiConfig";
 import SocialLogin from "./SocialLogin";
-import { User, Mail, Lock, CheckCircle2 } from "lucide-react";
+import { User, Mail, Lock, CheckCircle2, EyeOff, Eye } from "lucide-react";
 
 export default function RegisterForm() {
   const router = useRouter();
   const { login } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -21,12 +24,7 @@ export default function RegisterForm() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // const passwordStrength = {
-  //   minLength: formData.password.length >= 8,
-  //   hasUpperCase: /[A-Z]/.test(formData.password),
-  //   hasLowerCase: /[a-z]/.test(formData.password),
-  //   hasNumber: /[0-9]/.test(formData.password),
-  // };
+
 
   const passwordsMatch = formData.password && formData.password === formData.confirmPassword;
 
@@ -148,75 +146,69 @@ export default function RegisterForm() {
         </div>
 
         {/* Password */}
-        <div>
-          <div className="relative">
-            <Lock className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="password"
-              required
-              disabled={isLoading}
-              placeholder="كلمة المرور"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full rounded-full bg-gray-50 border border-gray-200 pr-12 pl-4 py-4 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
-            />
-          </div>
-          {/* {formData.password && (
-            // <div className="mt-2 space-y-1 text-xs px-2">
-            //   <div
-            //     className={`flex items-center gap-2 ${
-            //       passwordStrength.minLength ? "text-green-600" : "text-gray-400"
-            //     }`}
-            //   >
-            //     <CheckCircle2 className="h-3 w-3" />
-            //     <span>8 أحرف على الأقل</span>
-            //   </div>
-            //   <div
-            //     className={`flex items-center gap-2 ${
-            //       passwordStrength.hasUpperCase ? "text-green-600" : "text-gray-400"
-            //     }`}
-            //   >
-            //     <CheckCircle2 className="h-3 w-3" />
-            //     <span>حرف كبير واحد</span>
-            //   </div>
-            // </div>
-          )} */}
-        </div>
+        {/* Password */}
+<div className="relative">
+  <Lock className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+  <input
+    type={showPassword ? "text" : "password"}
+    required
+    disabled={isLoading}
+    placeholder="كلمة المرور"
+    value={formData.password}
+    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+    className="w-full rounded-full bg-gray-50 border border-gray-200 pr-12 pl-12 py-4 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+  />
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+  >
+    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+  </button>
+</div>
 
-        {/* Confirm Password */}
-        <div>
-          <div className="relative">
-            <Lock className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="password"
-              required
-              disabled={isLoading}
-              placeholder="تأكيد كلمة المرور"
-              value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              className={`w-full rounded-full bg-gray-50 border pr-12 pl-4 py-4 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 ${
-                formData.confirmPassword && !passwordsMatch
-                  ? "border-red-400"
-                  : "border-gray-200"
-              }`}
-            />
-          </div>
-          {formData.confirmPassword &&
-            (passwordsMatch ? (
-              <p className="mt-2 px-2 text-xs text-green-600 flex items-center gap-1">
-                <CheckCircle2 className="h-3 w-3" />
-                كلمات المرور متطابقة
-              </p>
-            ) : (
-              <p className="mt-2 px-2 text-xs text-red-500">كلمات المرور غير متطابقة</p>
-            ))}
-        </div>
+{/* Confirm Password */}
+<div>
+  <div className="relative">
+    <Lock className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+    <input
+      type={showConfirmPassword ? "text" : "password"}
+      required
+      disabled={isLoading}
+      placeholder="تأكيد كلمة المرور"
+      value={formData.confirmPassword}
+      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+      className={`w-full rounded-full bg-gray-50 border pr-12 pl-12 py-4 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 ${
+        formData.confirmPassword && !passwordsMatch
+          ? "border-red-400"
+          : "border-gray-200"
+      }`}
+    />
+    <button
+      type="button"
+      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+    >
+      {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+    </button>
+  </div>
+  {formData.confirmPassword &&
+    (passwordsMatch ? (
+      <p className="mt-2 px-2 text-xs text-green-600 flex items-center gap-1">
+        <CheckCircle2 className="h-3 w-3" />
+        كلمات المرور متطابقة
+      </p>
+    ) : (
+      <p className="mt-2 px-2 text-xs text-red-500">كلمات المرور غير متطابقة</p>
+    ))}
+</div>
+
 
         {/* Submit */}
         <button
           type="submit"
           disabled={isLoading || !passwordsMatch}
-          className="w-full rounded-full bg-orange-400 hover:bg-orange-500 py-4 text-base font-bold text-gray-900 transition-colors disabled:opacity-50"
+          className="w-full rounded-full bg-primary hover:bg-primary/80 py-4 text-base font-bold text-gray-900 transition-colors disabled:opacity-50"
         >
           {isLoading ? "جاري إنشاء الحساب..." : "ابدأ المغامرة الآن"}
         </button>

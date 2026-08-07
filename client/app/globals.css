@@ -194,86 +194,104 @@ html[dir="rtl"] * {
 
 @layer base {
   :root {
-    --background: 30 100% 99%;
-     --foreground: 0 0% 18%;
+    /* خلفية سماوية فاتحة بلمسة لونية واضحة */
+    --background: 200 70% 96%;
+    --foreground: 220 30% 20%;
 
-    --card: 30 100% 99%;
-    --card-foreground: 0 0% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 20%;
 
-    --popover: 30 100% 99%;
-    --popover-foreground: 0 0% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 20%;
 
-    --primary: 36 58% 58%;
+    /* اللون الأساسي: برتقالي دافئ ومرح */
+    --primary: 24 95% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 10%;
+    /* اللون الثانوي: وردي دافئ */
+    --secondary: 340 85% 65%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 42%;
+    --muted: 200 50% 93%;
+    --muted-foreground: 220 15% 45%;
 
-    --accent: 36 58% 58%;
-    --accent-foreground: 0 0% 100%;
+    /* اللون المميز: أصفر مشمس */
+    --accent: 45 95% 60%;
+    --accent-foreground: 220 30% 20%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 4 80% 62%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 20% 90%;
-    --input: 30 20% 90%;
-    --ring: 36 58% 58%;
+    --border: 200 40% 88%;
+    --input: 200 40% 88%;
+    --ring: 24 95% 58%;
 
-    --radius: 0.75rem;
+    --radius: 1.25rem;
 
-    /* Custom tokens */
-    --primary-soft: 30 33% 93%;
-    --primary-dark: 36 52% 48%;
-    --accent-success: 122 39% 49%;
+    /* Custom tokens - لمسات دافئة ومرحة */
+    --primary-soft: 24 90% 92%;
+    --primary-dark: 24 85% 46%;
+    --accent-success: 145 55% 48%;
 
-    --hero-gradient: linear-gradient(135deg, hsl(0 0% 10% / 0.55), hsl(30 20% 15% / 0.6));
-    --section-gradient: linear-gradient(180deg, hsl(30 100% 99%) 0%, hsl(30 33% 93%) 100%);
-    --card-shadow: 0 4px 24px -4px hsl(0 0% 18% / 0.08);
-    --card-shadow-hover: 0 12px 40px -8px hsl(0 0% 18% / 0.15);
+    --hero-gradient: linear-gradient(135deg, hsl(24 90% 55% / 0.55), hsl(340 80% 62% / 0.55));
+    --section-gradient: linear-gradient(180deg, hsl(200 70% 96%) 0%, hsl(45 90% 92%) 100%);
+    --card-shadow: 0 4px 24px -4px hsl(220 30% 20% / 0.08);
+    --card-shadow-hover: 0 12px 40px -8px hsl(220 30% 20% / 0.16);
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 36 58% 58%;
+    --sidebar-background: 200 60% 95%;
+    --sidebar-foreground: 220 30% 22%;
+    --sidebar-primary: 24 95% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 45 90% 90%;
+    --sidebar-accent-foreground: 220 30% 20%;
+    --sidebar-border: 200 40% 88%;
+    --sidebar-ring: 24 95% 58%;
+
+    /* ألوان دافئة ومرحة إضافية لعناصر القصص والأيقونات */
+    --sunny: 46 100% 70%;
+    --meadow: 122 45% 65%;
+    --sky: 200 90% 72%;
+    --magic: 285 65% 75%;
+    --blossom: 335 90% 80%;
+    --rose: 350 85% 70%;
+
+    --cat-adventure: 200 90% 92%;
+    --cat-animals: 30 95% 90%;
+    --cat-magic: 285 65% 94%;
+    --cat-nature: 145 55% 92%;
+    --cat-family: 340 90% 93%;
   }
 
   .dark {
-    --background: 0 0% 7%;
-    --foreground: 30 20% 95%;
-    --card: 0 0% 11%;
-    --card-foreground: 30 20% 95%;
-    --popover: 0 0% 11%;
-    --popover-foreground: 30 20% 95%;
-    --primary: 36 58% 58%;
+    --background: 220 25% 12%;
+    --foreground: 40 40% 95%;
+    --card: 220 22% 16%;
+    --card-foreground: 40 40% 95%;
+    --popover: 220 22% 16%;
+    --popover-foreground: 40 40% 95%;
+    --primary: 24 90% 58%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 30 20% 95%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 36 58% 58%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 30 20% 95%;
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 36 58% 58%;
-    --primary-soft: 30 15% 18%;
-    --primary-dark: 36 52% 42%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 36 58% 48%;
+    --secondary: 340 65% 55%;
+    --secondary-foreground: 40 40% 95%;
+    --muted: 220 18% 20%;
+    --muted-foreground: 40 20% 70%;
+    --accent: 45 85% 55%;
+    --accent-foreground: 220 30% 15%;
+    --destructive: 4 65% 45%;
+    --destructive-foreground: 40 40% 95%;
+    --border: 220 15% 24%;
+    --input: 220 15% 24%;
+    --ring: 24 90% 58%;
+    --primary-soft: 24 40% 22%;
+    --primary-dark: 24 80% 45%;
+    --sidebar-background: 220 25% 10%;
+    --sidebar-foreground: 40 40% 92%;
+    --sidebar-primary: 24 90% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 36 58% 58%;
+    --sidebar-accent: 220 18% 18%;
+    --sidebar-accent-foreground: 40 40% 92%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 24 90% 58%;
   }
 }
 

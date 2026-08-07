@@ -18,7 +18,7 @@ export default function SocialLogin({ isLoading }: SocialLoginProps) {
     <div className="space-y-4 font-sans">
       <div className="relative flex items-center py-2">
         <div className="flex-grow border-t border-border-warm"></div>
-        <span className="flex-shrink mx-4 text-sm font-bold text-ink-muted">أو المتابعة عبر</span>
+        <span className="flex-shrink mx-4 text-sm font-bold text-ink-muted"> المتابعة عبر</span>
         <div className="flex-grow border-t border-border-warm"></div>
       </div>
 
@@ -31,7 +31,7 @@ export default function SocialLogin({ isLoading }: SocialLoginProps) {
       >
         {/* يمكنك استبدال Chrome بأيقونة Google من react-icons/fc إذا أردت اللون الرسمي */}
        <FontAwesomeIcon icon={faGoogle} className="text-[#DB4437]" />
-        <span className="text-ink">الدخول بواسطة حساب جوجل</span>
+        <span className="text-ink text-base">الدخول بواسطة حساب جوجل</span>
       </Button>
     </div>
   );

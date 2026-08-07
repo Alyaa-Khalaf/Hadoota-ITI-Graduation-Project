@@ -22,7 +22,7 @@ export default function LoginPage() {
 
         <div className="text-center mt-8 text-sm text-gray-500">
           ليس لديك حساب؟{" "}
-          <Link href="/auth/register" className="font-semibold text-gray-800 hover:underline">
+          <Link href="/auth/register" className="font-bold text-sm text-gray-800 hover:underline">
             أنشئ حساباً الآن
           </Link>
         </div>
